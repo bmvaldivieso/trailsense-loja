@@ -1,0 +1,14 @@
+# Sistema operativo
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Editores / IDEs
+.vscode/
+.idea/
+*.iml
+
+# Archivos de entorno sensibles
+.env
+*.env.localestructura.txt
+estructura.txt

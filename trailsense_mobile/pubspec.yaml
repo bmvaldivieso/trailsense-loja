@@ -1,0 +1,51 @@
+name: trailsense_mobile
+description: "A new Flutter project."
+
+publish_to: 'none' 
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # GetX
+  get: ^4.7.2
+
+  # Tipografías
+  google_fonts: ^6.3.1
+
+  # Iconos
+  font_awesome_flutter: ^10.10.0
+
+  # SVG
+  flutter_svg: ^2.2.1
+
+  # Responsive
+  flutter_screenutil: ^5.9.3
+
+  # HTTP
+  dio: ^5.7.0
+  
+  # Storage
+  get_storage: ^2.1.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0
+
+flutter:
+
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/animations/
+
