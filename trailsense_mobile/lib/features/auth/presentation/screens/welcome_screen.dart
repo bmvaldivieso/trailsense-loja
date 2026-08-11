@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 class WelcomeScreen extends StatelessWidget {
@@ -10,7 +11,9 @@ class WelcomeScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 28.0),
+          padding: EdgeInsets.symmetric(
+            horizontal: 28.w,
+          ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -19,38 +22,47 @@ class WelcomeScreen extends StatelessWidget {
               // 1. Logo
               Image.asset(
                 'assets/images/logo_trailsense.png',
-                height: 140,
-                width: 140,
+                height: 140.h,
+                width: 140.w,
               ),
 
-              const SizedBox(height: 32),
+              SizedBox(height: 32.h),
 
               // 2. Nombre de la App
               RichText(
                 textAlign: TextAlign.center,
-                text: const TextSpan(
+                text: TextSpan(
                   style: TextStyle(
-                    fontSize: 28,
+                    fontSize: 28.sp,
                     fontWeight: FontWeight.bold,
                   ),
                   children: [
                     TextSpan(
                       text: 'TrailSense ',
-                      style: TextStyle(color: Color(0xFF60A5FA)),
+                      style: TextStyle(
+                        color: const Color(0xFF60A5FA),
+                        fontSize: 28.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     TextSpan(
                       text: 'Loja',
-                      style: TextStyle(color: Color(0xFF1E40AF)),
+                      style: TextStyle(
+                        color: const Color(0xFF1E40AF),
+                        fontSize: 28.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 32),
+              SizedBox(height: 32.h),
+
               // 3. Botón Iniciar
               SizedBox(
                 width: double.infinity,
-                height: 52,
+                height: 52.h,
                 child: ElevatedButton(
                   onPressed: () {
                     Get.toNamed('/login');
@@ -59,13 +71,13 @@ class WelcomeScreen extends StatelessWidget {
                     backgroundColor: const Color(0xFF4C8DFF),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(10.r),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Iniciar',
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 18.sp,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
                     ),
@@ -74,7 +86,6 @@ class WelcomeScreen extends StatelessWidget {
               ),
 
               const Spacer(flex: 2),
-
             ],
           ),
         ),

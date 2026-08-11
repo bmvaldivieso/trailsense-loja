@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import '../controllers/splash_controller.dart';
 
 class SplashScreen extends GetView<SplashController> {
@@ -8,7 +9,7 @@ class SplashScreen extends GetView<SplashController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF3B82F6), // Azul de la captura
+      backgroundColor: const Color(0xFF3B82F6),
       body: Center(
         child: Image.asset(
           'assets/animations/animacion_inicio.gif',

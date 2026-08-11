@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+
 import '../controllers/login_controller.dart';
 
 class LoginScreen extends GetView<LoginController> {
@@ -12,41 +14,48 @@ class LoginScreen extends GetView<LoginController> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        toolbarHeight: 56.h,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black, size: 28),
+          icon: Icon(
+            Icons.arrow_back,
+            color: Colors.black,
+            size: 28.r,
+          ),
           onPressed: () => Get.back(),
         ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 28.0),
+          padding: EdgeInsets.symmetric(
+            horizontal: 28.w,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
 
               // 1. Título de bienvenida
-              const Text(
+              Text(
                 '¡Bienvenido de nuevo!',
                 style: TextStyle(
-                  fontSize: 26,
+                  fontSize: 26.sp,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
                 ),
               ),
 
-              const SizedBox(height: 36),
+              SizedBox(height: 36.h),
 
               // 2. Subtítulo botones sociales
-              const Text(
+              Text(
                 'Iniciar sesión con:',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 16.sp,
                   color: Colors.black87,
                 ),
               ),
 
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
 
               // 3. Botones Redes Sociales
               Row(
@@ -54,138 +63,164 @@ class LoginScreen extends GetView<LoginController> {
                 children: [
                   _SocialButton(
                     backgroundColor: const Color(0xFF3B5998),
-                    child: const Text(
+                    child: Text(
                       'f',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 22,
+                        fontSize: 22.sp,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     onTap: () {},
                   ),
+
                   _SocialButton(
                     backgroundColor: Colors.white,
                     hasBorder: true,
                     child: Image.network(
                       'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg',
-                      height: 24,
-                      errorBuilder: (_, __, ___) => const Text(
+                      height: 24.h,
+                      errorBuilder: (_, __, ___) => Text(
                         'G',
                         style: TextStyle(
                           color: Colors.red,
                           fontWeight: FontWeight.bold,
-                          fontSize: 20,
+                          fontSize: 20.sp,
                         ),
                       ),
                     ),
                     onTap: () {},
                   ),
+
                   _SocialButton(
                     backgroundColor: Colors.white,
                     hasBorder: true,
-                    child: const Icon(
+                    child: Icon(
                       Icons.phone,
-                      color: Color(0xFF51B082),
-                      size: 24,
+                      color: const Color(0xFF51B082),
+                      size: 24.r,
                     ),
                     onTap: () {},
                   ),
                 ],
               ),
 
-              const SizedBox(height: 32),
+              SizedBox(height: 32.h),
 
               // 4. Separador "o"
-              const Center(
+              Center(
                 child: Text(
                   'o',
                   style: TextStyle(
                     color: Colors.black54,
-                    fontSize: 16,
+                    fontSize: 16.sp,
                   ),
                 ),
               ),
 
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
 
               // 5. Campo de Correo Electrónico
               TextField(
                 controller: controller.emailController,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   hintText: 'Correo electrónico',
-                  hintStyle: TextStyle(color: Colors.grey),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFFE0E0E0)),
+                  hintStyle: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 16.sp,
                   ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFF4C8DFF)),
+                  enabledBorder: const UnderlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Color(0xFFE0E0E0),
+                    ),
+                  ),
+                  focusedBorder: const UnderlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Color(0xFF4C8DFF),
+                    ),
                   ),
                 ),
               ),
 
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
 
               // 6. Campo de Contraseña
               TextField(
                 controller: controller.passwordController,
                 obscureText: true,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   hintText: 'Contraseña',
-                  hintStyle: TextStyle(color: Colors.grey),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFFE0E0E0)),
+                  hintStyle: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 16.sp,
                   ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFF4C8DFF)),
+                  enabledBorder: const UnderlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Color(0xFFE0E0E0),
+                    ),
+                  ),
+                  focusedBorder: const UnderlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Color(0xFF4C8DFF),
+                    ),
                   ),
                 ),
               ),
 
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
 
               // 7. Mensaje de Error Reactivo
-              Obx(() => controller.errorMessage.value.isNotEmpty
-                  ? Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child: Text(
-                        controller.errorMessage.value,
-                        style: const TextStyle(
-                          color: Colors.red,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
+              Obx(
+                () => controller.errorMessage.value.isNotEmpty
+                    ? Padding(
+                        padding: EdgeInsets.only(
+                          bottom: 8.h,
                         ),
-                      ),
-                    )
-                  : const SizedBox.shrink()),
+                        child: Text(
+                          controller.errorMessage.value,
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      )
+                    : const SizedBox.shrink(),
+              ),
 
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
 
               // 8. Botón Iniciar Sesión / Spinner de Carga
               SizedBox(
                 width: double.infinity,
-                height: 52,
+                height: 52.h,
                 child: Obx(
                   () => controller.isLoading.value
-                      ? const Center(
-                          child: CircularProgressIndicator(
-                            color: Color(0xFF4C8DFF),
+                      ? Center(
+                          child: SizedBox(
+                            width: 24.r,
+                            height: 24.r,
+                            child: const CircularProgressIndicator(
+                              color: Color(0xFF4C8DFF),
+                            ),
                           ),
                         )
                       : ElevatedButton(
-                          onPressed: controller.login, // Llama a la función de autenticación
+                          onPressed: controller.login,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4C8DFF),
+                            backgroundColor:
+                                const Color(0xFF4C8DFF),
                             elevation: 0,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius:
+                                  BorderRadius.circular(10.r),
                             ),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Iniciar Sesión',
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 18.sp,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
                             ),
@@ -194,24 +229,30 @@ class LoginScreen extends GetView<LoginController> {
                 ),
               ),
 
-              const SizedBox(height: 32),
+              SizedBox(height: 32.h),
 
               // 9. Enlace hacia Registrarse
               Center(
                 child: GestureDetector(
                   onTap: () {
-                    // Get.toNamed('/register');
+                    Get.toNamed('/register');
                   },
                   child: RichText(
-                    text: const TextSpan(
-                      style: TextStyle(fontSize: 15, color: Colors.black87),
+                    text: TextSpan(
+                      style: TextStyle(
+                        fontSize: 15.sp,
+                        color: Colors.black87,
+                      ),
                       children: [
-                        TextSpan(text: '¿Necesitas una cuenta? '),
+                        const TextSpan(
+                          text: '¿Necesitas una cuenta? ',
+                        ),
                         TextSpan(
                           text: 'Registrarse',
                           style: TextStyle(
-                            color: Color(0xFFDC2626), // Rojo del diseño
+                            color: const Color(0xFFDC2626),
                             fontWeight: FontWeight.bold,
+                            fontSize: 15.sp,
                           ),
                         ),
                       ],
@@ -220,7 +261,7 @@ class LoginScreen extends GetView<LoginController> {
                 ),
               ),
 
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
             ],
           ),
         ),
@@ -247,18 +288,23 @@ class _SocialButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(12.r),
       child: Container(
-        width: 95,
-        height: 60,
+        width: 95.w,
+        height: 60.h,
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           border: hasBorder
-              ? Border.all(color: const Color(0xFFEEEEEE), width: 1.5)
+              ? Border.all(
+                  color: const Color(0xFFEEEEEE),
+                  width: 1.5,
+                )
               : null,
         ),
-        child: Center(child: child),
+        child: Center(
+          child: child,
+        ),
       ),
     );
   }
