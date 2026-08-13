@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../../../core/storage/token_storage.dart';
-import '../../../home/presentation/screens/home_screen.dart';
 
 class LoginController extends GetxController {
   final AuthRepository _authRepository = AuthRepository();
@@ -37,8 +36,8 @@ class LoginController extends GetxController {
         response.data['refresh'],
       );
 
-      // Redirige al Home mediante ruta nombrada (recomendado con GetX)
-      Get.offAllNamed('/home');
+      // Redirige al Main mediante ruta nombrada (recomendado con GetX)
+      Get.offAllNamed('/main');
     } catch (_) {
       errorMessage.value = 'Credenciales incorrectas.';
     } finally {

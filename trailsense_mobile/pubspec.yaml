@@ -35,6 +35,9 @@ dependencies:
   # Storage
   get_storage: ^2.1.1
 
+  # Selección de imágenes
+  image_picker: ^1.2.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -73,8 +73,7 @@ class RegisterSuccessScreen extends StatelessWidget {
                 height: 54.h,
                 child: ElevatedButton(
                   onPressed: () {
-                    // Navegación con GetX hacia la pantalla de login (limpiando el stack de registro)
-                    Get.offAllNamed('/login'); // O la ruta de inicio de sesión configurada
+                    Get.offAllNamed('/login'); 
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFF5F7FA),

@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 class RegisterScreen extends StatelessWidget {
-  const RegisterScreen({Key? key}) : super(key: key);
+  const RegisterScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +16,7 @@ class RegisterScreen extends StatelessWidget {
             children: [
               SizedBox(height: 72.h),
 
-              // Logo principal ilustrativo
+              // Logo
               Center(
                 child: Container(
                   width: 180.w,
@@ -25,7 +25,10 @@ class RegisterScreen extends StatelessWidget {
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
-                      colors: [Color(0xFF00C6FF), Color(0xFF7000FF)],
+                      colors: [
+                        Color(0xFF00C6FF),
+                        Color(0xFF7000FF),
+                      ],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     ),
@@ -41,7 +44,6 @@ class RegisterScreen extends StatelessWidget {
 
               SizedBox(height: 32.h),
 
-              // Sección "Comience con:"
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -53,9 +55,10 @@ class RegisterScreen extends StatelessWidget {
                   ),
                 ),
               ),
+
               SizedBox(height: 16.h),
 
-              // Botones de inicio de sesión social
+              // Redes sociales todavía fuera del alcance
               Row(
                 children: [
                   Expanded(
@@ -69,7 +72,7 @@ class RegisterScreen extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      onTap: () {},
+                      onTap: null,
                     ),
                   ),
                   SizedBox(width: 16.w),
@@ -85,7 +88,7 @@ class RegisterScreen extends StatelessWidget {
                           color: const Color(0xFFDC2626),
                         ),
                       ),
-                      onTap: () {},
+                      onTap: null,
                     ),
                   ),
                   SizedBox(width: 16.w),
@@ -98,7 +101,7 @@ class RegisterScreen extends StatelessWidget {
                         color: const Color(0xFF52B788),
                         size: 26.sp,
                       ),
-                      onTap: () {},
+                      onTap: null,
                     ),
                   ),
                 ],
@@ -106,7 +109,6 @@ class RegisterScreen extends StatelessWidget {
 
               SizedBox(height: 32.h),
 
-              // Sección "O regístrese con:"
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -118,9 +120,10 @@ class RegisterScreen extends StatelessWidget {
                   ),
                 ),
               ),
+
               SizedBox(height: 16.h),
 
-              // Botón principal "Correo"
+              // Registro mediante correo
               SizedBox(
                 width: double.infinity,
                 height: 56.h,
@@ -148,7 +151,6 @@ class RegisterScreen extends StatelessWidget {
 
               SizedBox(height: 32.h),
 
-              // Footer: ¿Ya tienes cuenta? Iniciar Sesión
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -161,7 +163,6 @@ class RegisterScreen extends StatelessWidget {
                   ),
                   GestureDetector(
                     onTap: () {
-                      // Navegar a la pantalla de inicio de sesión
                       Get.offAllNamed('/login');
                     },
                     child: Text(
@@ -176,7 +177,7 @@ class RegisterScreen extends StatelessWidget {
                 ],
               ),
 
-              const Spacer(flex: 1),
+              const Spacer(),
             ],
           ),
         ),
@@ -189,15 +190,14 @@ class _SocialButton extends StatelessWidget {
   final Widget child;
   final Color backgroundColor;
   final bool hasBorder;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const _SocialButton({
-    Key? key,
     required this.child,
     required this.backgroundColor,
     this.hasBorder = false,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -210,19 +210,24 @@ class _SocialButton extends StatelessWidget {
           color: backgroundColor,
           borderRadius: BorderRadius.circular(12.r),
           border: hasBorder
-              ? Border.all(color: Colors.grey.shade300, width: 1.w)
+              ? Border.all(
+                  color: Colors.grey.shade300,
+                  width: 1.w,
+                )
               : null,
           boxShadow: hasBorder
               ? [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
+                    color: Colors.black.withValues(alpha: 0.03),
                     blurRadius: 4.r,
                     offset: Offset(0, 2.h),
-                  )
+                  ),
                 ]
               : null,
         ),
-        child: Center(child: child),
+        child: Center(
+          child: child,
+        ),
       ),
     );
   }
