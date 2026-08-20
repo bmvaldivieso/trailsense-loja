@@ -45,10 +45,13 @@ class LoginController extends GetxController {
     }
   }
 
-  @override
-  void onClose() {
-    emailController.dispose();
-    passwordController.dispose();
-    super.onClose();
+  // ============================================================
+  // LIMPIEZA DE CAMPOS LOGIN
+  // ============================================================
+
+  void limpiarCampos() {
+    emailController.clear();
+    passwordController.clear();
+    errorMessage.value = '';
   }
 }

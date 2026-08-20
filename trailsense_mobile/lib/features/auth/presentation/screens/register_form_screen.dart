@@ -14,14 +14,11 @@ class RegisterFormScreen extends GetView<RegisterController> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back,
-            color: Colors.black,
-            size: 24.sp,
-          ),
+          icon: Icon(Icons.arrow_back, color: Colors.black, size: 24.sp),
           onPressed: () => Get.back(),
         ),
       ),
@@ -39,48 +36,46 @@ class RegisterFormScreen extends GetView<RegisterController> {
                 // FOTO DE PERFIL
                 // =========================================================
                 Center(
-                  child: Obx(
-                    () {
-                      final File? foto = controller.fotoPerfil.value;
+                  child: Obx(() {
+                    final File? foto = controller.fotoPerfil.value;
 
-                      return GestureDetector(
-                        onTap: controller.seleccionarFoto,
-                        child: Stack(
-                          alignment: Alignment.bottomRight,
-                          children: [
-                            CircleAvatar(
-                              radius: 52.r,
-                              backgroundColor: const Color(0xFFE9F6FE),
-                              backgroundImage: foto != null
-                                  ? FileImage(foto)
-                                  : null,
-                              child: foto == null
-                                  ? Icon(
-                                      Icons.person,
-                                      size: 55.sp,
-                                      color: const Color(0xFF4C8DFF),
-                                    )
-                                  : null,
-                            ),
+                    return GestureDetector(
+                      onTap: controller.seleccionarFoto,
+                      child: Stack(
+                        alignment: Alignment.bottomRight,
+                        children: [
+                          CircleAvatar(
+                            radius: 52.r,
+                            backgroundColor: const Color(0xFFE9F6FE),
+                            backgroundImage: foto != null
+                                ? FileImage(foto)
+                                : null,
+                            child: foto == null
+                                ? Icon(
+                                    Icons.person,
+                                    size: 55.sp,
+                                    color: const Color(0xFF4C8DFF),
+                                  )
+                                : null,
+                          ),
 
-                            Container(
-                              width: 32.w,
-                              height: 32.h,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Color(0xFF4C8DFF),
-                              ),
-                              child: Icon(
-                                Icons.camera_alt,
-                                color: Colors.white,
-                                size: 18.sp,
-                              ),
+                          Container(
+                            width: 32.w,
+                            height: 32.h,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Color(0xFF4C8DFF),
                             ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                            child: Icon(
+                              Icons.camera_alt,
+                              color: Colors.white,
+                              size: 18.sp,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
                 ),
 
                 SizedBox(height: 12.h),
@@ -149,6 +144,27 @@ class RegisterFormScreen extends GetView<RegisterController> {
                 SizedBox(height: 24.h),
 
                 // =========================================================
+                // APELLIDO
+                // =========================================================
+                _buildUnderlineTextField(
+                  controller: controller.apellidoCtrl,
+                  hintText: 'Apellido',
+                  keyboardType: TextInputType.name,
+                  textInputAction: TextInputAction.next,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Ingresa tu apellido';
+                    }
+                    if (value.trim().length < 2) {
+                      return 'El apellido es demasiado corto';
+                    }
+                    return null;
+                  },
+                ),
+
+                SizedBox(height: 24.h),
+
+                // =========================================================
                 // EMAIL
                 // =========================================================
                 _buildUnderlineTextField(
@@ -161,9 +177,7 @@ class RegisterFormScreen extends GetView<RegisterController> {
                       return 'Ingresa tu correo';
                     }
 
-                    final emailRegex = RegExp(
-                      r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
-                    );
+                    final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
 
                     if (!emailRegex.hasMatch(value.trim())) {
                       return 'Ingresa un correo válido';
@@ -216,8 +230,7 @@ class RegisterFormScreen extends GetView<RegisterController> {
                   () => _buildUnderlineTextField(
                     controller: controller.confirmPasswordCtrl,
                     hintText: 'Confirmar Contraseña',
-                    obscureText:
-                        !controller.mostrarConfirmPassword.value,
+                    obscureText: !controller.mostrarConfirmPassword.value,
                     textInputAction: TextInputAction.done,
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -257,8 +270,7 @@ class RegisterFormScreen extends GetView<RegisterController> {
                           : controller.registrar,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF4C8DFF),
-                        disabledBackgroundColor:
-                            const Color(0xFF9DBFFF),
+                        disabledBackgroundColor: const Color(0xFF9DBFFF),
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10.r),
@@ -342,39 +354,23 @@ class RegisterFormScreen extends GetView<RegisterController> {
       keyboardType: keyboardType,
       textInputAction: textInputAction,
       validator: validator,
-      style: TextStyle(
-        fontSize: 15.sp,
-        color: Colors.black87,
-      ),
+      style: TextStyle(fontSize: 15.sp, color: Colors.black87),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: TextStyle(
-          color: const Color(0xFFBDBDBD),
-          fontSize: 15.sp,
-        ),
-        contentPadding: EdgeInsets.symmetric(
-          vertical: 10.h,
-        ),
+        hintStyle: TextStyle(color: const Color(0xFFBDBDBD), fontSize: 15.sp),
+        contentPadding: EdgeInsets.symmetric(vertical: 10.h),
         suffixIcon: suffixIcon,
         enabledBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(
-            color: Color(0xFFE0E0E0),
-          ),
+          borderSide: BorderSide(color: Color(0xFFE0E0E0)),
         ),
         focusedBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(
-            color: Color(0xFF4285F4),
-          ),
+          borderSide: BorderSide(color: Color(0xFF4285F4)),
         ),
         errorBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(
-            color: Colors.red,
-          ),
+          borderSide: BorderSide(color: Colors.red),
         ),
         focusedErrorBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(
-            color: Colors.red,
-          ),
+          borderSide: BorderSide(color: Colors.red),
         ),
       ),
     );

@@ -84,12 +84,20 @@ class RegisterController extends GetxController {
   final RxString codigoIngresado = ''.obs;
 
   // ============================================================
-  // TEMPORIZADOR
+  // TEMPORIZADOR (código completo — 15 minutos)
   // ============================================================
 
-  static const int duracionCodigo = 15 * 60; // 15 minutos
+  static const int duracionCodigo = 15 * 60;
   final RxInt segundosRestantes = duracionCodigo.obs;
   Timer? _timer;
+
+  // ============================================================
+  // TEMPORIZADOR DE REENVÍO (cooldown corto)
+  // ============================================================
+
+  static const int duracionReenvio = 60; // 60 segundos
+  final RxInt segundosParaReenviar = 0.obs;
+  Timer? _timerReenvio;
 
   // ============================================================
   // CICLO DE VIDA
@@ -134,8 +142,10 @@ class RegisterController extends GetxController {
       return false;
     }
 
-    // Se eliminó la restricción obligatoria de apellidoCtrl
-    // para alinearlo con el RegisterFormScreen.
+    if (apellidoCtrl.text.trim().isEmpty) {
+      _mostrarError('Ingresa tu apellido.');
+      return false;
+    }
 
     if (!emailValido.value) {
       _mostrarError('Ingresa un correo electrónico válido.');
@@ -233,6 +243,7 @@ class RegisterController extends GetxController {
         emailRegistrado.value = email;
         _limpiarOtp();
         iniciarTemporizador();
+        iniciarCooldownReenvio();
 
         Get.toNamed('/verify-code');
       }
@@ -281,25 +292,9 @@ class RegisterController extends GetxController {
         Get.toNamed('/register-success');
       }
     } on DioException catch (e) {
-      final error = e.response?.data?['error'];
-
-      if (error == 'invalid_code') {
-        _mostrarError('El código de verificación es incorrecto.');
-      } else if (error == 'code_expired') {
-        _mostrarError(
-          'El código de verificación ha expirado. Solicita uno nuevo.',
-        );
-      } else if (error == 'code_not_found') {
-        _mostrarError(
-          'No existe un código de verificación activo. Solicita uno nuevo.',
-        );
-      } else {
-        _mostrarError(_obtenerMensajeError(e));
-      }
+      _mostrarError(_obtenerMensajeError(e));
     } catch (e) {
-      _mostrarError(
-        'No se pudo verificar el código. Intenta nuevamente.',
-      );
+      _mostrarError('No se pudo verificar el código. Intenta nuevamente.');
     } finally {
       isLoading.value = false;
     }
@@ -309,17 +304,15 @@ class RegisterController extends GetxController {
   // REENVIAR CÓDIGO
   // ============================================================
 
-  Future<void> reenviarCodigo() async {
+    Future<void> reenviarCodigo() async {
     if (isLoading.value) return;
 
     if (emailRegistrado.value.isEmpty) {
-      _mostrarError(
-        'No se encontró el correo asociado al registro.',
-      );
+      _mostrarError('No se encontró el correo asociado al registro.');
       return;
     }
 
-    if (segundosRestantes.value > 0) return;
+    if (segundosParaReenviar.value > 0) return;
 
     isLoading.value = true;
 
@@ -331,20 +324,14 @@ class RegisterController extends GetxController {
       if (response.statusCode == 200) {
         _limpiarOtp();
         iniciarTemporizador();
+        iniciarCooldownReenvio();
 
-        Get.snackbar(
-          'Código reenviado',
-          'Se ha enviado un nuevo código de verificación a tu correo.',
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 4),
-        );
+        _mostrarExito('Se ha enviado un nuevo código de verificación a tu correo.');
       }
     } on DioException catch (e) {
       _mostrarError(_obtenerMensajeError(e));
     } catch (e) {
-      _mostrarError(
-        'No se pudo reenviar el código. Intenta nuevamente.',
-      );
+      _mostrarError('No se pudo reenviar el código. Intenta nuevamente.');
     } finally {
       isLoading.value = false;
     }
@@ -376,6 +363,32 @@ class RegisterController extends GetxController {
   }
 
   // ============================================================
+  // TEMPORIZADOR DE REENVÍO
+  // ============================================================
+
+  void iniciarCooldownReenvio() {
+    _timerReenvio?.cancel();
+    segundosParaReenviar.value = duracionReenvio;
+
+    _timerReenvio = Timer.periodic(
+      const Duration(seconds: 1),
+      (timer) {
+        if (segundosParaReenviar.value > 0) {
+          segundosParaReenviar.value--;
+        } else {
+          _timerReenvio?.cancel();
+          _timerReenvio = null;
+        }
+      },
+    );
+  }
+
+  void detenerCooldownReenvio() {
+    _timerReenvio?.cancel();
+    _timerReenvio = null;
+  }
+
+  // ============================================================
   // FORMATO DEL TEMPORIZADOR
   // ============================================================
 
@@ -391,14 +404,18 @@ class RegisterController extends GetxController {
   // MENSAJES DE ERROR
   // ============================================================
 
-  String _obtenerMensajeError(DioException error) {
+    String _obtenerMensajeError(DioException error) {
     final data = error.response?.data;
 
     if (data is Map<String, dynamic>) {
-      final detail = data['detail'];
+      final mensajePorCodigo = _mensajeSegunCodigo(data['error']);
+      if (mensajePorCodigo != null) {
+        return mensajePorCodigo;
+      }
 
-      if (detail is String && detail.isNotEmpty) {
-        return detail;
+      final mensaje = data['message'] ?? data['detail'];
+      if (mensaje is String && mensaje.isNotEmpty) {
+        return mensaje;
       }
     }
 
@@ -409,12 +426,48 @@ class RegisterController extends GetxController {
     return 'Ocurrió un error. Intenta nuevamente.';
   }
 
-  void _mostrarError(String mensaje) {
+  String? _mensajeSegunCodigo(dynamic errorCode) {
+    switch (errorCode) {
+      case 'email_already_registered':
+        return 'Este correo ya está registrado.';
+      case 'invalid_code':
+        return 'El código ingresado no es correcto.';
+      case 'code_already_used':
+        return 'Este código ya no es válido. Solicita uno nuevo.';
+      case 'code_expired':
+        return 'El código expiró. Solicita uno nuevo.';
+      case 'code_not_found':
+        return 'No existe un código de verificación activo. Solicita uno nuevo.';
+      default:
+        return null;
+    }
+  }
+
+    void _mostrarError(String mensaje) {
     Get.snackbar(
       'Error',
       mensaje,
       snackPosition: SnackPosition.BOTTOM,
       duration: const Duration(seconds: 4),
+      backgroundColor: const Color(0xFFFDEDED),
+      colorText: const Color(0xFFB3261E),
+      icon: const Icon(Icons.error_outline, color: Color(0xFFB3261E)),
+      borderRadius: 12,
+      margin: const EdgeInsets.all(16),
+    );
+  }
+
+  void _mostrarExito(String mensaje) {
+    Get.snackbar(
+      'Listo',
+      mensaje,
+      snackPosition: SnackPosition.BOTTOM,
+      duration: const Duration(seconds: 4),
+      backgroundColor: const Color(0xFFE9F6FE),
+      colorText: const Color(0xFF3C80F7),
+      icon: const Icon(Icons.check_circle_outline, color: Color(0xFF3C80F7)),
+      borderRadius: 12,
+      margin: const EdgeInsets.all(16),
     );
   }
 
@@ -425,6 +478,7 @@ class RegisterController extends GetxController {
   @override
   void onClose() {
     detenerTemporizador();
+    detenerCooldownReenvio();
 
     emailCtrl.removeListener(_actualizarValidaciones);
     passwordCtrl.removeListener(_actualizarValidaciones);

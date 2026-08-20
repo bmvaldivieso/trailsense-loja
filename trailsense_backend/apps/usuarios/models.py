@@ -18,31 +18,14 @@ class Usuario(AbstractUser):
     total_reportes = models.PositiveIntegerField(default=0)
     kilometros_recorridos = models.FloatField(default=0)
 
-    nombre = models.CharField(
-        max_length=100,
-        blank=True,
-        default=''
-    )
-
-    apellido = models.CharField(
-        max_length=100,
-        blank=True,
-        default=''
-    )
-
     foto_perfil = models.ImageField(
         upload_to='perfiles/',
         null=True,
         blank=True
     )
 
-    reputacion_score = models.FloatField(
-        default=0
-    )
-
-    is_verified = models.BooleanField(
-        default=False
-    )
+    reputacion_score = models.FloatField(default=0)
+    is_verified = models.BooleanField(default=False)
 
     def __str__(self):
         return self.email

@@ -1,6 +1,5 @@
 # Django
 from django.contrib.auth import authenticate, get_user_model
-from django.core.mail import send_mail
 from django.db import transaction
 from django.utils import timezone
 
@@ -26,6 +25,14 @@ from .serializers import (
     VerifyCodeSerializer,
 )
 
+import logging
+
+from django.conf import settings
+
+from .emails import enviar_correo_verificacion
+
+logger = logging.getLogger(__name__)
+
 Usuario = get_user_model()
 
 class LoginView(APIView):
@@ -38,7 +45,6 @@ class LoginView(APIView):
         password = serializer.validated_data['password']
 
         user = authenticate(request, username=email, password=password)
-        # Si tu USERNAME_FIELD del modelo Usuario es 'email', usa username=email
         if user is None:
             return Response(
                 {"detail": "Credenciales incorrectas."},
@@ -52,7 +58,7 @@ class LoginView(APIView):
             "usuario": {
                 "id": user.id,
                 "email": user.email,
-                "nombre": getattr(user, "nombre", ""),
+                "nombre": user.first_name,  
                 "rol": getattr(user, "rol", ""),
             }
         }, status=status.HTTP_200_OK)
@@ -73,10 +79,26 @@ class RegisterView(APIView):
         serializer = RegisterSerializer(data=request.data)
 
         if not serializer.is_valid():
+            errors = serializer.errors
+
+            email_errors = errors.get("email")
+            if email_errors:
+                for err in email_errors:
+                    err_code = getattr(err, "code", None)
+                    if err_code in ["email_already_registered", "unique"]:
+                        return Response(
+                            {
+                                "error": "email_already_registered",
+                                "message": "Este correo ya está registrado.",
+                            },
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+
             return Response(
                 {
-                    "detail": "No se pudo completar el registro.",
-                    "errors": serializer.errors,
+                    "error": "validation_error",
+                    "message": "No se pudo completar el registro.",
+                    "errors": errors,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -102,21 +124,12 @@ class RegisterView(APIView):
             usado=False,
         )
 
+        # logger.info(f"[DEV] Código de verificación para {usuario.email}: {codigo}")
+        if settings.DEBUG:
+            print(f"[DEV] Código de verificación para {usuario.email}: {codigo}")
+
         # Enviar correo.
-        send_mail(
-            subject="Código de verificación - TrailSense Loja",
-            message=(
-                f"Hola {usuario.nombre},\n\n"
-                f"Tu código de verificación para TrailSense es:\n\n"
-                f"{codigo}\n\n"
-                f"Este código tiene una vigencia de 15 minutos.\n\n"
-                f"Si no realizaste este registro, puedes ignorar este mensaje.\n\n"
-                f"TrailSense Loja"
-            ),
-            from_email=None,
-            recipient_list=[usuario.email],
-            fail_silently=False,
-        )
+        enviar_correo_verificacion(usuario, codigo)
 
         return Response(
             {
@@ -166,13 +179,10 @@ class VerifyCodeView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        # Buscar el código no utilizado más reciente.
+        # Ya no filtra usado=False, busca el código exacto ingresado
         codigo_verificacion = (
             CodigoVerificacion.objects
-            .filter(
-                usuario=usuario,
-                usado=False
-            )
+            .filter(usuario=usuario, codigo=codigo)
             .order_by("-creado_en")
             .first()
         )
@@ -180,43 +190,34 @@ class VerifyCodeView(APIView):
         if codigo_verificacion is None:
             return Response(
                 {
-                    "detail": (
-                        "No existe un código de verificación activo. "
-                        "Solicita un nuevo código."
-                    ),
-                    "error": "code_not_found",
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Comprobar expiración.
-        if not codigo_verificacion.esta_vigente():
-            return Response(
-                {
-                    "detail": (
-                        "El código de verificación ha expirado. "
-                        "Solicita un nuevo código."
-                    ),
-                    "error": "code_expired",
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Comprobar código.
-        if codigo_verificacion.codigo != codigo:
-            return Response(
-                {
-                    "detail": "El código de verificación es incorrecto.",
                     "error": "invalid_code",
+                    "message": "El código ingresado no es correcto.",
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Código correcto.
+        if codigo_verificacion.usado:
+            return Response(
+                {
+                    "error": "code_already_used",
+                    "message": "Este código ya no es válido. Solicita uno nuevo.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if timezone.now() >= codigo_verificacion.expira_en:
+            return Response(
+                {
+                    "error": "code_expired",
+                    "message": "El código expiró. Solicita uno nuevo.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Código correcto
         codigo_verificacion.usado = True
         codigo_verificacion.save(update_fields=["usado"])
 
-        # Activar cuenta.
         usuario.is_active = True
         usuario.is_verified = True
         usuario.save(update_fields=["is_active", "is_verified"])
@@ -225,10 +226,7 @@ class VerifyCodeView(APIView):
             {
                 "detail": "Cuenta verificada correctamente.",
                 "verified": True,
-                "user": UsuarioSerializer(
-                    usuario,
-                    context={"request": request}
-                ).data,
+                "user": UsuarioSerializer(usuario, context={"request": request}).data,
             },
             status=status.HTTP_200_OK,
         )
@@ -294,19 +292,15 @@ class ResendCodeView(APIView):
             usado=False,
         )
 
+        # logger.info(f"[DEV] Código de verificación para {usuario.email}: {codigo}")
+        if settings.DEBUG:
+            print(f"[DEV] Código de verificación para {usuario.email}: {codigo}")
+
         # Enviar nuevo correo.
-        send_mail(
-            subject="Nuevo código de verificación - TrailSense Loja",
-            message=(
-                f"Hola {usuario.nombre},\n\n"
-                f"Tu nuevo código de verificación es:\n\n"
-                f"{codigo}\n\n"
-                f"Este código tiene una vigencia de 15 minutos.\n\n"
-                f"TrailSense Loja"
-            ),
-            from_email=None,
-            recipient_list=[usuario.email],
-            fail_silently=False,
+        enviar_correo_verificacion(
+            usuario,
+            codigo,
+            asunto="Nuevo código de verificación - TrailSense Loja",
         )
 
         return Response(

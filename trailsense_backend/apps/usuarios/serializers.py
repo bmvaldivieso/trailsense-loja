@@ -11,13 +11,7 @@ class LoginSerializer(serializers.Serializer):
 class RegisterSerializer(serializers.ModelSerializer):
     """
     Serializer utilizado para registrar nuevos usuarios.
-
-    El usuario se crea inicialmente:
-    - is_active=False
-    - is_verified=False
-
-    La cuenta se activa únicamente después de verificar
-    correctamente el código enviado al correo.
+    ...
     """
 
     password = serializers.CharField(
@@ -36,6 +30,9 @@ class RegisterSerializer(serializers.ModelSerializer):
         allow_null=True
     )
 
+    nombre = serializers.CharField(source="first_name", required=False, allow_blank=True)
+    apellido = serializers.CharField(source="last_name", required=False, allow_blank=True)
+
     class Meta:
         model = Usuario
         fields = [
@@ -48,52 +45,39 @@ class RegisterSerializer(serializers.ModelSerializer):
         ]
 
     def validate_email(self, value):
-        """
-        Comprueba que el correo no esté registrado.
-        """
         value = value.lower().strip()
 
         if Usuario.objects.filter(email__iexact=value).exists():
             raise serializers.ValidationError(
-                "El correo electrónico ya está registrado."
+                "Este correo ya está registrado.",
+                code="email_already_registered",
             )
 
         return value
 
     def validate(self, attrs):
-        """
-        Validaciones generales del registro.
-        """
         password = attrs.get("password")
         password2 = attrs.get("password2")
-
         if password != password2:
             raise serializers.ValidationError({
                 "password2": "Las contraseñas no coinciden."
             })
-
         return attrs
 
     def create(self, validated_data):
-        """
-        Crea el usuario utilizando set_password mediante create_user.
-        """
         validated_data.pop("password2")
-
         password = validated_data.pop("password")
         email = validated_data["email"]
-
-        # Tu modelo actual tiene username como REQUIRED_FIELD.
-        # Usamos el correo como username para no pedir otro dato
-        # innecesario al usuario.
         username = email
 
         usuario = Usuario.objects.create_user(
             username=username,
             email=email,
             password=password,
-            nombre=validated_data.get("nombre", ""),
-            apellido=validated_data.get("apellido", ""),
+            # CAMBIO: ahora validated_data trae "first_name"/"last_name"
+            # porque el `source=` en los campos declarados los renombra automáticamente
+            first_name=validated_data.get("first_name", ""),
+            last_name=validated_data.get("last_name", ""),
             foto_perfil=validated_data.get("foto_perfil"),
             is_active=False,
             is_verified=False,
@@ -136,6 +120,10 @@ class UsuarioSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
+    # NUEVO: exponer first_name/last_name bajo las llaves "nombre"/"apellido"
+    nombre = serializers.CharField(source="first_name", read_only=True)
+    apellido = serializers.CharField(source="last_name", read_only=True)
+
     class Meta:
         model = Usuario
         fields = [
@@ -154,18 +142,9 @@ class UsuarioSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
     def get_foto_perfil_url(self, obj):
-        """
-        Devuelve la URL absoluta de la foto de perfil.
-        """
-
         if not obj.foto_perfil:
             return None
-
         request = self.context.get("request")
-
         if request:
-            return request.build_absolute_uri(
-                obj.foto_perfil.url
-            )
-
-        return obj.foto_perfil.url    
+            return request.build_absolute_uri(obj.foto_perfil.url)
+        return obj.foto_perfil.url  

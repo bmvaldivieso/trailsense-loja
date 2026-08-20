@@ -104,10 +104,11 @@ class VerifyCodeScreen extends GetView<RegisterController> {
               // ===========================================================
               // REENVIAR
               // ===========================================================
+
               Obx(
                 () {
                   final puedeReenviar =
-                      controller.segundosRestantes.value <= 0;
+                      controller.segundosParaReenviar.value <= 0;
 
                   return Center(
                     child: TextButton(
@@ -115,7 +116,9 @@ class VerifyCodeScreen extends GetView<RegisterController> {
                           ? controller.reenviarCodigo
                           : null,
                       child: Text(
-                        'Reenviar código',
+                        puedeReenviar
+                            ? 'Reenviar código'
+                            : 'Reenviar en ${controller.segundosParaReenviar.value}s',
                         style: TextStyle(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w600,
