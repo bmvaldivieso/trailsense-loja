@@ -92,4 +92,36 @@ class AuthRepository {
       },
     );
   }
+
+  // =========================
+  // SOLICITAR RECUPERACIÓN DE CONTRASEÑA
+  // =========================
+  Future<Response> requestPasswordReset({
+    required String email,
+  }) {
+    return _dio.post(
+      '/auth/password-reset/request/',
+      data: {'email': email},
+    );
+  }
+
+  // =========================
+  // CONFIRMAR RECUPERACIÓN DE CONTRASEÑA
+  // =========================
+  Future<Response> resetPassword({
+    required String email,
+    required String codigo,
+    required String password,
+    required String password2,
+  }) {
+    return _dio.post(
+      '/auth/password-reset/confirm/',
+      data: {
+        'email': email,
+        'codigo': codigo,
+        'password': password,
+        'password2': password2,
+      },
+    );
+  }
 }

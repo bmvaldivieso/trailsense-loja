@@ -168,6 +168,24 @@ class LoginScreen extends GetView<LoginController> {
                 ),
               ),
 
+              SizedBox(height: 12.h),
+
+              // Enlace a recuperación de contraseña
+              Align(
+                alignment: Alignment.centerRight,
+                child: GestureDetector(
+                  onTap: () => Get.toNamed('/forgot-password'),
+                  child: Text(
+                    '¿Olvidaste tu contraseña?',
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF4C8DFF),
+                    ),
+                  ),
+                ),
+              ),
+              
               SizedBox(height: 16.h),
 
               // 7. Mensaje de Error Reactivo

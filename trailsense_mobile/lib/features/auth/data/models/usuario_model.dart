@@ -11,6 +11,12 @@ class UsuarioModel {
   final double reputacionScore;
   final bool isVerified;
 
+  // Campos nuevos Sprint 5
+  final String? cedula;
+  final String? telefono;
+  final String? genero;
+  final DateTime? fechaNacimiento;
+
   UsuarioModel({
     required this.id,
     required this.email,
@@ -23,6 +29,12 @@ class UsuarioModel {
     required this.totalKmRecorridos,
     required this.reputacionScore,
     required this.isVerified,
+
+    // Campos nuevos Sprint 5
+    this.cedula,
+    this.telefono,
+    this.genero,
+    this.fechaNacimiento,
   });
 
   factory UsuarioModel.fromJson(Map<String, dynamic> json) {
@@ -42,6 +54,14 @@ class UsuarioModel {
       reputacionScore:
           (json['reputacion_score'] ?? 0).toDouble(),
       isVerified: json['is_verified'] ?? false,
+
+      // Campos nuevos Sprint 5
+      cedula: json['cedula'],
+      telefono: json['telefono'],
+      genero: json['genero'],
+      fechaNacimiento: json['fecha_nacimiento'] != null
+          ? DateTime.tryParse(json['fecha_nacimiento'])
+          : null,
     );
   }
 
@@ -58,6 +78,12 @@ class UsuarioModel {
       'kilometros_recorridos': totalKmRecorridos,
       'reputacion_score': reputacionScore,
       'is_verified': isVerified,
+
+      // Campos nuevos Sprint 5
+      'cedula': cedula,
+      'telefono': telefono,
+      'genero': genero,
+      'fecha_nacimiento': fechaNacimiento?.toIso8601String(),
     };
   }
 }

@@ -69,7 +69,8 @@ class AppDrawer extends StatelessWidget {
               leading: Icon(Icons.person_outline, size: 24.r),
               title: Text('Perfil', style: TextStyle(fontSize: 16.sp)),
               onTap: () {
-                Navigator.pop(context);
+                Navigator.pop(context); // Cierra el drawer
+                Get.toNamed('/perfil'); // Navega a la pantalla de perfil
               },
             ),
             ListTile(

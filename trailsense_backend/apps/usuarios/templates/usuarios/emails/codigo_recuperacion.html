@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recuperación de contraseña</title>
+</head>
+<body style="margin:0; padding:0; background-color:#F2F5FA; font-family:Arial, Helvetica, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F2F5FA; padding:32px 0;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="background-color:#FFFFFF; border-radius:16px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.06);">
+
+          <tr>
+            <td style="background-color:#3C80F7; padding:32px; text-align:center;">
+              <h1 style="margin:0; color:#FFFFFF; font-size:22px; font-weight:700;">
+                TrailSense Loja
+              </h1>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:36px 32px 24px 32px;">
+              <p style="margin:0 0 16px 0; font-size:16px; color:#1D2A44;">
+                Hola <strong>{{ nombre }}</strong>,
+              </p>
+              <p style="margin:0 0 24px 0; font-size:15px; color:#4B5563; line-height:1.5;">
+                Recibimos una solicitud para restablecer tu contraseña. Usa el siguiente código para continuar.
+              </p>
+
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center" style="padding:8px 0 24px 0;">
+                    <div style="display:inline-block; background-color:#E9F6FE; border-radius:12px; padding:18px 36px;">
+                      <span style="font-size:36px; font-weight:700; letter-spacing:10px; color:#3C80F7;">
+                        {{ codigo }}
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:0 0 8px 0; font-size:14px; color:#6C757D; text-align:center;">
+                Este código vence en <strong>{{ minutos_expiracion }} minutos</strong>.
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:0 32px 32px 32px;">
+              <p style="margin:0; font-size:13px; color:#9AA5B1; line-height:1.5; border-top:1px solid #EEEEEE; padding-top:20px;">
+                Si tú no solicitaste este cambio, ignora este mensaje: tu contraseña actual seguirá funcionando con normalidad.
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="background-color:#F8FAFC; padding:20px 32px; text-align:center;">
+              <p style="margin:0; font-size:12px; color:#9AA5B1;">
+                &copy; TrailSense Loja · Explorando senderos con seguridad
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

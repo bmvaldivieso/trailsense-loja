@@ -25,3 +25,6 @@ media/*
 # Archivos de migraciones si decides no versionarlas (opcional, normalmente SÍ se versionan)
 # */migrations/*.py
 # !*/migrations/__init__.py
+
+# Certificados SSL/TLS locales
+certs/

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from .models import Usuario
+from .models import Usuario, CodigoVerificacion
 
 
 @admin.register(Usuario)
@@ -12,7 +12,7 @@ class UsuarioAdmin(UserAdmin):
             'fields': ('email', 'username', 'password')
         }),
         ('Información personal', {
-            'fields': ('first_name', 'last_name', 'foto_perfil')
+            'fields': ('first_name', 'last_name', 'cedula', 'telefono', 'genero', 'fecha_nacimiento', 'foto_perfil')
         }),
         ('Información de TrailSense', {
             'fields': (
@@ -47,6 +47,10 @@ class UsuarioAdmin(UserAdmin):
                 'password2',
                 'first_name',
                 'last_name',
+                'cedula',
+                'telefono',
+                'genero',
+                'fecha_nacimiento',
                 'rol',
                 'foto_perfil',
                 'is_active',
@@ -54,3 +58,29 @@ class UsuarioAdmin(UserAdmin):
             ),
         }),
     )
+
+
+@admin.register(CodigoVerificacion)
+class CodigoVerificacionAdmin(admin.ModelAdmin):
+
+    list_display = (
+        'usuario',
+        'codigo',
+        'tipo',
+        'creado_en',
+        'expira_en',
+        'usado',
+    )
+
+    list_filter = (
+        'tipo',
+        'usado',
+        'creado_en',
+    )
+
+    search_fields = (
+        'usuario__email',
+        'codigo',
+    )
+
+    ordering = ('-creado_en',)

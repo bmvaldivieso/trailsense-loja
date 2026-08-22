@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../data/repositories/auth_repository.dart';
@@ -29,20 +30,45 @@ class LoginController extends GetxController {
     isLoading.value = true;
     try {
       final response = await _authRepository.login(email, password);
-      
-      // Guarda los tokens JWT de acceso y refresco
       _tokenStorage.saveTokens(
-        response.data['access'], 
+        response.data['access'],
         response.data['refresh'],
       );
-
-      // Redirige al Main mediante ruta nombrada (recomendado con GetX)
       Get.offAllNamed('/main');
-    } catch (_) {
-      errorMessage.value = 'Credenciales incorrectas.';
+    } on DioException catch (e) {
+      errorMessage.value = _obtenerMensajeError(e);
+    } catch (e) {
+      errorMessage.value = 'Ocurrió un error. Intenta nuevamente.';
     } finally {
       isLoading.value = false;
     }
+  }
+
+  // ============================================================
+  // MANEJO DE ERRORES
+  // ============================================================
+
+  String _obtenerMensajeError(DioException error) {
+    if (error.response?.statusCode == 401) {
+      return 'Credenciales incorrectas.';
+    }
+
+    if (error.type == DioExceptionType.badCertificate) {
+      return 'No se pudo verificar la conexión segura con el servidor.';
+    }
+
+    if (error.type == DioExceptionType.connectionError ||
+        error.type == DioExceptionType.connectionTimeout) {
+      return 'No se pudo conectar con el servidor. Verifica tu conexión.';
+    }
+
+    final data = error.response?.data;
+    if (data is Map<String, dynamic>) {
+      final mensaje = data['detail'] ?? data['message'];
+      if (mensaje is String && mensaje.isNotEmpty) return mensaje;
+    }
+
+    return 'Ocurrió un error. Intenta nuevamente.';
   }
 
   // ============================================================

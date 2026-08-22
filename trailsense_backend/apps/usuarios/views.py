@@ -23,13 +23,20 @@ from .serializers import (
     RegisterSerializer,
     UsuarioSerializer,
     VerifyCodeSerializer,
+    RequestPasswordResetSerializer,
+    ResetPasswordSerializer,
 )
 
 import logging
 
 from django.conf import settings
 
-from .emails import enviar_correo_verificacion
+from .emails import enviar_correo_verificacion, enviar_correo_recuperacion
+
+from rest_framework.permissions import IsAuthenticated
+from .serializers import EditarPerfilSerializer, CambiarPasswordSerializer
+
+from core.permissions.roles import EsAdminOSuperusuario
 
 logger = logging.getLogger(__name__)
 
@@ -52,8 +59,12 @@ class LoginView(APIView):
             )
 
         refresh = RefreshToken.for_user(user)
+        refresh["rol"] = user.rol          
+        access = refresh.access_token
+        access["rol"] = user.rol 
+
         return Response({
-            "access": str(refresh.access_token),
+            "access": str(access),
             "refresh": str(refresh),
             "usuario": {
                 "id": user.id,
@@ -122,6 +133,7 @@ class RegisterView(APIView):
             codigo=codigo,
             expira_en=expira_en,
             usado=False,
+            tipo='verificacion',
         )
 
         # logger.info(f"[DEV] Código de verificación para {usuario.email}: {codigo}")
@@ -182,7 +194,7 @@ class VerifyCodeView(APIView):
         # Ya no filtra usado=False, busca el código exacto ingresado
         codigo_verificacion = (
             CodigoVerificacion.objects
-            .filter(usuario=usuario, codigo=codigo)
+            .filter(usuario=usuario, codigo=codigo, tipo='verificacion')
             .order_by("-creado_en")
             .first()
         )
@@ -276,7 +288,8 @@ class ResendCodeView(APIView):
         # Invalidar códigos anteriores.
         CodigoVerificacion.objects.filter(
             usuario=usuario,
-            usado=False
+            usado=False,
+            tipo='verificacion',
         ).update(usado=True)
 
         # Generar nuevo código.
@@ -290,6 +303,7 @@ class ResendCodeView(APIView):
             codigo=codigo,
             expira_en=expira_en,
             usado=False,
+            tipo='verificacion',
         )
 
         # logger.info(f"[DEV] Código de verificación para {usuario.email}: {codigo}")
@@ -311,3 +325,209 @@ class ResendCodeView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
+# Reseteo de contraseña
+class RequestPasswordResetView(APIView):
+    """
+    POST /api/auth/password-reset/request/
+
+    Genera un código de recuperación de contraseña de 4 dígitos
+    con una vigencia de 15 minutos.
+    """
+
+    permission_classes = [AllowAny]
+
+    @transaction.atomic
+    def post(self, request):
+        serializer = RequestPasswordResetSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(
+                {
+                    "error": "validation_error",
+                    "message": "Datos inválidos.",
+                    "errors": serializer.errors,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        email = serializer.validated_data["email"]
+
+        try:
+            usuario = Usuario.objects.get(email__iexact=email)
+        except Usuario.DoesNotExist:
+            return Response(
+                {
+                    "error": "user_not_found",
+                    "message": "No existe un usuario registrado con ese correo.",
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Invalidar códigos de recuperación anteriores.
+        CodigoVerificacion.objects.filter(
+            usuario=usuario,
+            usado=False,
+            tipo='recuperacion',
+        ).update(usado=True)
+
+        codigo = str(secrets.randbelow(9000) + 1000)
+        ahora = timezone.now()
+        expira_en = ahora + timedelta(minutes=15)
+
+        CodigoVerificacion.objects.create(
+            usuario=usuario,
+            codigo=codigo,
+            expira_en=expira_en,
+            usado=False,
+            tipo='recuperacion',
+        )
+
+        if settings.DEBUG:
+            print(f"[DEV] Código de recuperación para {usuario.email}: {codigo}")
+
+        enviar_correo_recuperacion(usuario, codigo)
+
+        return Response(
+            {
+                "detail": "Se ha enviado un código de recuperación a tu correo.",
+                "email": usuario.email,
+                "expires_in": 900,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class ResetPasswordView(APIView):
+    """
+    POST /api/auth/password-reset/confirm/
+
+    Verifica el código de recuperación y establece la nueva contraseña.
+    """
+
+    permission_classes = [AllowAny]
+
+    @transaction.atomic
+    def post(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(
+                {
+                    "error": "validation_error",
+                    "message": "Datos inválidos.",
+                    "errors": serializer.errors,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        email = serializer.validated_data["email"]
+        codigo = serializer.validated_data["codigo"]
+        password = serializer.validated_data["password"]
+
+        try:
+            usuario = Usuario.objects.get(email__iexact=email)
+        except Usuario.DoesNotExist:
+            return Response(
+                {
+                    "error": "user_not_found",
+                    "message": "No existe un usuario registrado con ese correo.",
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        codigo_verificacion = (
+            CodigoVerificacion.objects
+            .filter(usuario=usuario, codigo=codigo, tipo='recuperacion')
+            .order_by("-creado_en")
+            .first()
+        )
+
+        if codigo_verificacion is None:
+            return Response(
+                {
+                    "error": "invalid_code",
+                    "message": "El código ingresado no es correcto.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if codigo_verificacion.usado:
+            return Response(
+                {
+                    "error": "code_already_used",
+                    "message": "Este código ya no es válido. Solicita uno nuevo.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if timezone.now() >= codigo_verificacion.expira_en:
+            return Response(
+                {
+                    "error": "code_expired",
+                    "message": "El código expiró. Solicita uno nuevo.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Código correcto: establecer nueva contraseña.
+        usuario.set_password(password)
+        usuario.save(update_fields=["password"])
+
+        codigo_verificacion.usado = True
+        codigo_verificacion.save(update_fields=["usado"])
+
+        return Response(
+            {
+                "detail": "Contraseña restablecida correctamente.",
+                "reset": True,
+            },
+            status=status.HTTP_200_OK,
+        ) 
+
+
+class PerfilView(APIView):
+    """
+    GET  /api/auth/perfil/   -> ver mi perfil
+    PATCH /api/auth/perfil/  -> editar mi perfil (nombre, apellido, foto)
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response(UsuarioSerializer(request.user, context={"request": request}).data)
+
+    def patch(self, request):
+        serializer = EditarPerfilSerializer(request.user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        usuario = serializer.save()
+        return Response(UsuarioSerializer(usuario, context={"request": request}).data)
+
+
+class CambiarPasswordView(APIView):
+    """
+    POST /api/auth/perfil/cambiar-password/
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = CambiarPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        if not request.user.check_password(serializer.validated_data["password_actual"]):
+            return Response({"detail": "La contraseña actual es incorrecta."}, status=400)
+
+        request.user.set_password(serializer.validated_data["password_nueva"])
+        request.user.save(update_fields=["password"])
+        return Response({"detail": "Contraseña actualizada correctamente."})        
+
+
+
+class PanelAdminTestView(APIView):
+    """
+    Endpoint de verificación del sistema de roles (Sprint 5).
+    """
+    permission_classes = [IsAuthenticated, EsAdminOSuperusuario]
+
+    def get(self, request):
+        return Response({"detail": f"Acceso concedido para rol: {request.user.rol}"})

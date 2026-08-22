@@ -12,6 +12,14 @@ import '../features/auth/presentation/screens/register_success_screen.dart';
 import '../features/main/bindings/main_binding.dart';
 import '../features/main/presentation/screens/main_screen.dart';
 
+import '../features/auth/bindings/forgot_password_binding.dart';
+import '../features/auth/presentation/screens/forgot_password_screen.dart';
+import '../features/auth/presentation/screens/password_reset_success_screen.dart';
+
+import '../features/perfil/bindings/perfil_binding.dart';
+import '../features/perfil/presentation/screens/perfil_screen.dart';
+import '../features/perfil/presentation/screens/editar_perfil_screen.dart';
+
 class AppRoutes {
   static const splash = '/splash';
   static const welcome = '/welcome';
@@ -67,6 +75,35 @@ class AppRoutes {
       name: '/register-success',
       page: () => const RegisterSuccessScreen(),
       binding: RegisterBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    // ==========================================
+    // RECUPERACIÓN DE CONTRASEÑA
+    // ==========================================
+    GetPage(
+      name: '/forgot-password',
+      page: () => const ForgotPasswordScreen(),
+      binding: ForgotPasswordBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: '/password-reset-success',
+      page: () => const PasswordResetSuccessScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    // ==========================================
+    // PERFIL
+    // ==========================================
+    GetPage(
+      name: '/perfil',
+      page: () => const PerfilScreen(),
+      binding: PerfilBinding(),
+      transition: Transition.rightToLeft,
+    ),
+
+    GetPage(
+      name: '/editar-perfil',
+      page: () => const EditarPerfilScreen(),
       transition: Transition.rightToLeft,
     ),
   ];
