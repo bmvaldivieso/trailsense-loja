@@ -1,0 +1,15 @@
+<header class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-dark mb-0 fs-3">{{ page_title }}</h2>
+    <div class="d-flex align-items-center gap-3">
+        <div class="search-input-group position-relative">
+            <i class="bi bi-search position-absolute start-0 top-50 translate-middle-y ms-3 text-muted"></i>
+            <input type="text" class="form-control rounded-pill bg-search border-0 ps-5 pe-3" placeholder="Buscar algo">
+        </div>
+        <button class="btn btn-icon rounded-circle bg-white border-0 shadow-sm"><i
+                class="bi bi-gear text-muted"></i></button>
+        <button class="btn btn-icon rounded-circle bg-white border-0 shadow-sm"><i
+                class="bi bi-bell text-muted"></i></button>
+        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80"
+            alt="{{ request.user.email }}" class="rounded-circle avatar-img">
+    </div>
+</header>

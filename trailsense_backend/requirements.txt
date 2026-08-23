@@ -4,7 +4,9 @@ cryptography==50.0.0
 Django==6.0.7
 django-cors-headers==4.9.0
 django-extensions==4.1
+django-filter==25.2
 djangorestframework==3.17.1
+djangorestframework-gis==1.2.1
 djangorestframework_simplejwt==5.5.1
 MarkupSafe==3.0.3
 pillow==12.3.0

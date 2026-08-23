@@ -1,0 +1,33 @@
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background-color: #f4f6f9;
+}
+
+.sidebar { width: 250px; min-width: 250px; }
+.app-logo-small {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+}
+
+.nav-link { color: #6b7280; font-weight: 500; }
+.nav-link.active { color: #3b82f6 !important; background-color: #eff6ff; }
+
+.btn-logout { background-color: #c084fc; border: none; border-radius: 12px; }
+.btn-logout:hover { background-color: #a855f7; }
+
+.bg-search { background-color: #f0f2f5; }
+.avatar-img { width: 40px; height: 40px; object-fit: cover; }
+
+/*Bloquea el scroll global de la página */
+html, body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+}
+
+/*Seguridad por si el sidebar crece más que el viewport */
+.sidebar {
+    overflow-y: auto;
+}

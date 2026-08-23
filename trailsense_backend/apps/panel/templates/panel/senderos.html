@@ -1,0 +1,68 @@
+{% extends "panel/base.html" %}
+{% load static %}
+{% load l10n %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'panel/css/senderos.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold text-dark mb-0 fs-4">Senderos</h4>
+    <a href="{% url 'panel:sendero-nuevo' %}"
+        class="btn btn-primary rounded-pill px-4 py-2 fw-semibold d-flex align-items-center gap-2 text-decoration-none">
+        <i class="bi bi-plus-circle"></i> Nuevo
+    </a>
+</div>
+
+<div class="row g-4" id="senderosGrid">
+    {% for sendero in senderos %}
+    <div class="col-12 col-md-6 col-xl-4 sendero-item" data-nombre="{{ sendero.nombre|lower }}">
+        <div class="card border-0 rounded-4 shadow-sm {% if forloop.first %}bg-primary text-white{% else %}bg-white{% endif %} h-100 p-3">
+            <div class="d-flex justify-content-between mb-3">
+                <div>
+                    <span class="small {% if forloop.first %}opacity-75{% else %}text-muted{% endif %}">Nombre:</span>
+                    <h5 class="fw-bold {% if not forloop.first %}text-dark{% endif %} mb-3">{{ sendero.nombre }}</h5>
+                    <span class="small {% if forloop.first %}opacity-75{% else %}text-muted{% endif %}">Longitud:</span>
+                    <h6 class="fw-bold {% if not forloop.first %}text-dark{% endif %} mb-0">{{ sendero.longitud_km|unlocalize }} Km</h6>
+                </div>
+                {% if sendero.imagen_portada %}
+                <img src="{{ sendero.imagen_portada.url }}" class="img-sendero-card rounded-3" alt="{{ sendero.nombre }}">
+                {% else %}
+                <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=300&q=80" class="img-sendero-card rounded-3" alt="{{ sendero.nombre }}">
+                {% endif %}
+            </div>
+            <div class="d-flex gap-2 mt-auto">
+                <a href="{% url 'panel:detalle-sendero' sendero.pk %}"
+                    class="btn {% if forloop.first %}btn-light-transparent text-white{% else %}btn-light-gray text-dark{% endif %} w-50 fw-semibold rounded-3 text-decoration-none text-center py-2">
+                    Editar
+                </a>
+                <button
+                    class="btn {% if forloop.first %}btn-light text-primary{% else %}btn-primary{% endif %} w-50 fw-semibold rounded-3 py-2"
+                    disabled>
+                    Ver Mapa
+                </button>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info" id="senderosVacio">Aún no hay senderos registrados. Crea el primero con el botón
+            "Nuevo".</div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Buscador propio de esta pantalla, esquina inferior derecha -->
+<div class="senderos-search-floating">
+    <div class="position-relative">
+        <i class="bi bi-search position-absolute start-0 top-50 translate-middle-y ms-3 text-muted"></i>
+        <input type="text" id="buscarSenderoInput" class="form-control rounded-pill bg-white ps-5 pe-3 shadow"
+            placeholder="Buscar por nombre...">
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'panel/js/senderos.js' %}"></script>
+{% endblock %}

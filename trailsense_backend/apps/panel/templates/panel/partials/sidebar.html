@@ -1,0 +1,48 @@
+<aside class="sidebar bg-white d-flex flex-column justify-content-between p-3 border-end">
+    <div>
+        <div class="text-center py-3 mb-4">
+            <div class="app-logo-small mx-auto d-flex align-items-center justify-content-center">
+                <i class="bi bi-geo-alt-fill fs-4 text-white"></i>
+            </div>
+        </div>
+
+        <nav class="nav flex-column gap-2">
+            <a class="nav-link {% if active_page == 'dashboard' %}active{% else %}text-muted{% endif %} d-flex align-items-center gap-3 px-3 py-2 rounded-3"
+               href="{% url 'panel:dashboard' %}">
+                <i class="bi bi-house-door{% if active_page == 'dashboard' %}-fill{% endif %} fs-5"></i><span>Dashboard</span>
+            </a>
+            <a class="nav-link {% if active_page == 'senderos' %}active{% else %}text-muted{% endif %} d-flex align-items-center gap-3 px-3 py-2 rounded-3"
+               href="{% url 'panel:senderos' %}">
+                <i class="bi bi-map{% if active_page == 'senderos' %}-fill{% endif %} fs-5"></i><span>Senderos</span>
+            </a>
+            <a class="nav-link text-muted d-flex align-items-center gap-3 px-3 py-2 rounded-3" href="#">
+                <i class="bi bi-person fs-5"></i><span>Senderistas</span>
+            </a>
+            <a class="nav-link text-muted d-flex align-items-center gap-3 px-3 py-2 rounded-3" href="#">
+                <i class="bi bi-megaphone fs-5"></i><span>Incidencias</span>
+            </a>
+            <a class="nav-link text-muted d-flex align-items-center gap-3 px-3 py-2 rounded-3" href="#">
+                <i class="bi bi-globe fs-5"></i><span>Mapa Interactivo</span>
+            </a>
+            <a class="nav-link text-muted d-flex align-items-center gap-3 px-3 py-2 rounded-3" href="#">
+                <i class="bi bi-geo fs-5"></i><span>Recorridos</span>
+            </a>
+            <a class="nav-link text-muted d-flex align-items-center gap-3 px-3 py-2 rounded-3" href="#">
+                <i class="bi bi-arrow-counterclockwise fs-5"></i><span>Historial de actividad</span>
+            </a>
+            <a class="nav-link text-muted d-flex align-items-center gap-3 px-3 py-2 rounded-3" href="#">
+                <i class="bi bi-bell fs-5"></i><span>Notificaciones</span>
+            </a>
+            <a class="nav-link text-muted d-flex align-items-center gap-3 px-3 py-2 rounded-3" href="#">
+                <i class="bi bi-gear fs-5"></i><span>Configuración</span>
+            </a>
+        </nav>
+    </div>
+
+    <div class="pt-3">
+        <form method="post" action="{% url 'panel:logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-logout w-100 py-2 fw-semibold text-white">Cerrar Sesión</button>
+        </form>
+    </div>
+</aside>

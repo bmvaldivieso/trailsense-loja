@@ -1,0 +1,144 @@
+{% extends "panel/base.html" %}
+{% load static %}
+{% load l10n %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="{% static 'panel/css/detalle_sendero.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="card border-0 rounded-4 shadow-sm bg-white overflow-hidden">
+    {% if sendero and sendero.imagen_portada %}
+    <div class="hero-banner-sendero position-relative">
+        <img src="{{ sendero.imagen_portada.url }}" alt="{{ sendero.nombre }}" class="w-100 h-100 object-fit-cover">
+    </div>
+    {% endif %}
+
+    <div class="p-4 p-md-5">
+        <div class="d-flex justify-content-between align-items-center pb-3 mb-4 border-bottom">
+            <h5 class="fw-bold text-primary mb-0">
+                {% if sendero %}Editar {{ sendero.nombre }}{% else %}Nuevo Sendero{% endif %}
+            </h5>
+            {% if sendero %}
+            <form method="post" action="{% url 'panel:sendero-eliminar' sendero.pk %}"
+                onsubmit="return confirm('¿Eliminar este sendero permanentemente?');">
+                {% csrf_token %}
+                <button type="submit"
+                    class="btn btn-eliminar rounded-pill px-3 py-1-5 fw-semibold d-flex align-items-center gap-2">
+                    <i class="bi bi-x-circle"></i> Eliminar
+                </button>
+            </form>
+            {% endif %}
+        </div>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row g-4">
+                <div class="col-12 col-md-3 text-center text-md-start">
+                    <div class="position-relative d-inline-block profile-sendero-wrapper">
+                        <img src="{% if sendero and sendero.imagen_portada %}{{ sendero.imagen_portada.url }}{% else %}https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=300&q=80{% endif %}"
+                            alt="Portada" class="rounded-circle profile-sendero-img shadow-sm">
+                        <label class="btn btn-primary rounded-circle position-absolute bottom-0 end-0 p-2 edit-img-btn"
+                            style="cursor:pointer;">
+                            <i class="bi bi-pencil-fill fs-6"></i>
+                            <input type="file" name="imagen_portada" accept="image/*" hidden>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label text-dark fw-semibold small">Nombre</label>
+                        <input type="text" name="nombre" class="form-control form-control-pill"
+                            value="{{ sendero.nombre|default:'' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-dark fw-semibold small">Descripcion</label>
+                        <textarea name="descripcion" class="form-control form-control-pill text-muted small"
+                            rows="4">{{ sendero.descripcion|default:'' }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-dark fw-semibold small">Estado</label>
+                        <select name="estado" class="form-control form-control-pill text-muted">
+                            <option value="bueno" {% if sendero.estado == 'bueno' %}selected{% endif %}>Bueno</option>
+                            <option value="alerta" {% if sendero.estado == 'alerta' %}selected{% endif %}>Con alertas
+                                menores</option>
+                            <option value="critico" {% if sendero.estado == 'critico' %}selected{% endif %}>Crítico
+                            </option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-dark fw-semibold small">Canton</label>
+                        <input type="text" name="canton" class="form-control form-control-pill text-muted"
+                            value="{{ sendero.canton|default:'Loja' }}">
+                    </div>
+                    <!-- Longitud -->
+                    <div class="mb-3">
+                        <label class="form-label text-dark fw-semibold small">Longitud (Km)</label>
+                        <input type="number" step="0.01" name="longitud_km"
+                            class="form-control form-control-pill text-muted"
+                            value="{{ sendero.longitud_km|unlocalize|default:0 }}">
+                    </div>
+
+                    <!-- Horarios lado a lado, izquierda/derecha -->
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label text-dark fw-semibold small">Horario Apertura</label>
+                            <input type="text" name="horario_apertura" id="horarioApertura"
+                                class="form-control form-control-pill text-muted"
+                                value="{{ sendero.horario_apertura|time:'H:i'|default:'' }}">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label text-dark fw-semibold small">Horario Cierre</label>
+                            <input type="text" name="horario_cierre" id="horarioCierre"
+                                class="form-control form-control-pill text-muted"
+                                value="{{ sendero.horario_cierre|time:'H:i'|default:'' }}">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-5">
+                    <div class="mb-3">
+                        <label class="form-label text-dark fw-semibold small">Dificultad</label>
+                        <select name="dificultad" class="form-control form-control-pill text-muted">
+                            <option value="baja" {% if sendero.dificultad == 'baja' %}selected{% endif %}>Baja</option>
+                            <option value="media" {% if sendero.dificultad == 'media' %}selected{% endif %}>Media</option>
+                            <option value="alta" {% if sendero.dificultad == 'alta' %}selected{% endif %}>Alta</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-dark fw-semibold small">Geometria</label>
+                        <p class="text-muted small mb-2">Dibuja la ruta en el mapa o escribe el WKT manualmente — ambos se sincronizan.</p>
+
+                        <div id="mapaGeometria" class="mapa-geometria-container rounded-4 mb-2"></div>
+
+                        <button type="button" id="btnLimpiarDibujo" class="btn btn-sm btn-outline-secondary rounded-pill mb-2">
+                            <i class="bi bi-eraser"></i> Limpiar dibujo
+                        </button>
+
+                        <label class="form-label text-dark fw-semibold small">
+                            Geometria (WKT)
+                            <span class="text-muted fw-normal">— LINESTRING(lon lat, lon lat, ...)</span>
+                        </label>
+                        <textarea id="geometriaWktInput" name="geometria_wkt" class="form-control form-control-pill text-muted small" rows="3"
+                                  placeholder="LINESTRING(-79.2005 -3.9973, -79.199 -3.998)">{% if sendero %}{{ sendero.geometria.wkt }}{% endif %}</textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-3 mt-4">
+                        <button type="submit"
+                            class="btn btn-primary-custom rounded-pill px-4 py-2 fw-semibold">Guardar</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="{% static 'panel/js/detalle_sendero.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,57 @@
+html, body {
+    height: 100%;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background-color: #ffffff;
+}
+
+.mh-100vh {
+    min-height: 100vh;
+    height: 100vh;
+}
+
+.max-w-360 {
+    max-width: 360px;
+}
+
+.app-logo-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+}
+
+.form-control-custom {
+    border-radius: 12px;
+    border: 1px solid #d1d5db;
+    padding: 0.65rem 0.9rem;
+    font-size: 0.95rem;
+    color: #374151;
+}
+
+.form-control-custom:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.btn-custom {
+    background-color: #4b8df8;
+    border: none;
+    border-radius: 12px;
+    padding: 0.7rem;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.btn-custom:hover {
+    background-color: #3b7dd8;
+}
+
+.fs-7 { font-size: 0.85rem; }
+.cursor-pointer { cursor: pointer; }
+
+.hero-bg {
+    background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1600&q=80');
+    background-size: cover;
+    background-position: center;
+}

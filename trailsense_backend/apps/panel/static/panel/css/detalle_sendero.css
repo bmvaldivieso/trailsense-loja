@@ -1,0 +1,55 @@
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background-color: #f4f6f9;
+}
+
+.sidebar { width: 250px; min-width: 250px; }
+.app-logo-small { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); }
+
+.nav-link { color: #6b7280; font-weight: 500; }
+.nav-link.active { color: #3b82f6 !important; background-color: #eff6ff; }
+
+.btn-logout { background-color: #c084fc; border: none; border-radius: 12px; }
+.btn-logout:hover { background-color: #a855f7; }
+
+.bg-search { background-color: #f0f2f5; }
+.avatar-img { width: 40px; height: 40px; object-fit: cover; }
+
+.hero-banner-sendero { height: 220px; }
+.btn-eliminar { background-color: #c084fc; color: white; border: none; }
+.btn-eliminar:hover { background-color: #a855f7; color: white; }
+
+.profile-sendero-img { width: 130px; height: 130px; object-fit: cover; }
+.edit-img-btn { width: 32px; height: 32px; border: 2px solid white; padding: 0 !important; display: flex; align-items: center; justify-content: center; line-height: 1; }
+
+.form-control-pill {
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+    background-color: #fafafa;
+}
+
+.btn-primary-soft { background-color: #4b8df8; color: white; border: none; }
+.btn-primary-custom { background-color: #3b82f6; color: white; border: none; }
+
+/* Contenedor del mapa de dibujo */
+.mapa-geometria-container {
+    height: 320px;
+    width: 100%;
+    border: 1px solid #e5e7eb;
+}
+
+/* Flatpickr - que combine con el resto del formulario */
+.flatpickr-input {
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+    background-color: #fafafa;
+}
+
+/* Desplaza el círculo de la imagen un poco a la derecha */
+.profile-sendero-wrapper {
+    margin-left: 70px;
+}

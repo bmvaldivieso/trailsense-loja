@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 from decouple import config
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -39,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.gis', # GeoDjango
+    'django.contrib.gis',
 
     'rest_framework',
     'rest_framework_simplejwt',
@@ -50,7 +51,13 @@ INSTALLED_APPS = [
     'apps.reportes',
     'apps.sesiones',
     'apps.notificaciones',
+    "apps.panel",
 ]
+
+# Configuración de autenticación por sesión para el panel
+LOGIN_URL = "panel:login"
+LOGIN_REDIRECT_URL = "panel:dashboard"
+LOGOUT_REDIRECT_URL = "panel:login"
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -117,10 +124,6 @@ SIMPLE_JWT = {
 CORS_ALLOWED_ORIGINS = []
 CORS_ALLOW_ALL_ORIGINS = True  # en dev; en prod restringir
 
-# Si GDAL/GEOS no se detectan automáticamente, descomenta y ajusta:
-GDAL_LIBRARY_PATH = r"C:\Users\valdi\AppData\Local\Programs\OSGeo4W\bin\gdal313.dll"
-GEOS_LIBRARY_PATH = r"C:\Users\valdi\AppData\Local\Programs\OSGeo4W\bin\geos_c.dll"
-
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -181,4 +184,22 @@ DEFAULT_FROM_EMAIL = config(
 )
 
 
+# ============================================================
+# GDAL / GEOS / PROJ - OSGeo4W
+# ============================================================
+
+OSGEO4W_ROOT = r"C:\Users\valdi\AppData\Local\Programs\OSGeo4W"
+OSGEO4W_BIN = os.path.join(OSGEO4W_ROOT, "bin")
+OSGEO4W_PROJ = os.path.join(OSGEO4W_ROOT, "share", "proj")
+
+GDAL_LIBRARY_PATH = os.path.join(OSGEO4W_BIN, "gdal313.dll")
+GEOS_LIBRARY_PATH = os.path.join(OSGEO4W_BIN, "geos_c.dll")
+
+os.environ["PATH"] = (
+    OSGEO4W_BIN
+    + os.pathsep
+    + os.environ["PATH"]
+)
+
+os.environ["PROJ_LIB"] = OSGEO4W_PROJ
 
