@@ -45,53 +45,135 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const iconColor = Color(0xFF3B82F6);
+
     return Drawer(
       backgroundColor: Colors.white,
       child: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            DrawerHeader(
-              decoration: const BoxDecoration(color: Color(0xFF3B82F6)),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Trail Sense Loja',
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 8.w),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 1. Mi perfil con Avatar de usuario
+              ListTile(
+                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+                leading: CircleAvatar(
+                  radius: 18.r,
+                  // Imagen de placeholder online
+                  backgroundImage: const NetworkImage('https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'),
+                  backgroundColor: Colors.grey.shade300,
+                ),
+                title: Text(
+                  'Mi perfil',
                   style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 22.sp,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF1F2937),
                   ),
                 ),
+                onTap: () {
+                  Navigator.pop(context);
+                  Get.toNamed('/perfil');
+                },
               ),
-            ),
-            ListTile(
-              leading: Icon(Icons.person_outline, size: 24.r),
-              title: Text('Perfil', style: TextStyle(fontSize: 16.sp)),
-              onTap: () {
-                Navigator.pop(context); // Cierra el drawer
-                Get.toNamed('/perfil'); // Navega a la pantalla de perfil
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.settings_outlined, size: 24.r),
-              title: Text('Configuración', style: TextStyle(fontSize: 16.sp)),
-              onTap: () => Navigator.pop(context),
-            ),
-            const Spacer(),
-            ListTile(
-              leading: Icon(Icons.logout, color: Colors.redAccent, size: 24.r),
-              title: Text(
-                'Cerrar Sesión',
-                style: TextStyle(color: Colors.redAccent, fontSize: 16.sp),
+
+              // 2. Historial Recorridos
+              ListTile(
+                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+                leading: Icon(Icons.sync_rounded, color: iconColor, size: 26.r),
+                title: Text(
+                  'Historial Recorridos',
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF1F2937),
+                  ),
+                ),
+                onTap: () => Navigator.pop(context),
               ),
-              onTap: () {
-                Navigator.pop(context);
-                _cerrarSesion();
-              },
-            ),
-            SizedBox(height: 12.h),
-          ],
+
+              // 3. Métricas Personales
+              ListTile(
+                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+                leading: Icon(Icons.insert_chart_outlined_rounded, color: iconColor, size: 26.r),
+                title: Text(
+                  'Métricas Personales',
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF1F2937),
+                  ),
+                ),
+                onTap: () => Navigator.pop(context),
+              ),
+
+              // 4. Notificaciones
+              ListTile(
+                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+                leading: Icon(Icons.notifications_none_rounded, color: iconColor, size: 26.r),
+                title: Text(
+                  'Notificaciones',
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF1F2937),
+                  ),
+                ),
+                onTap: () => Navigator.pop(context),
+              ),
+
+              // 5. Ayuda y soporte
+              ListTile(
+                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+                leading: Icon(Icons.help_outline_rounded, color: iconColor, size: 26.r),
+                title: Text(
+                  'Ayuda y soporte',
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF1F2937),
+                  ),
+                ),
+                onTap: () => Navigator.pop(context),
+              ),
+
+              // 6. Cerrar Sesión
+              ListTile(
+                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+                leading: Icon(Icons.logout_rounded, color: iconColor, size: 26.r),
+                title: Text(
+                  'Cerrar Sesión',
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF1F2937),
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _cerrarSesion();
+                },
+              ),
+
+              const Spacer(),
+
+              // 7. Ajustes / Configuración
+              ListTile(
+                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+                leading: Icon(Icons.settings_outlined, color: iconColor, size: 26.r),
+                title: Text(
+                  'Ajustes',
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF1F2937),
+                  ),
+                ),
+                onTap: () => Navigator.pop(context),
+              ),
+            ],
+          ),
         ),
       ),
     );

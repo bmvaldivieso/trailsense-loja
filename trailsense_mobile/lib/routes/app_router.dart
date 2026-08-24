@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+
 import '../features/splash/bindings/splash_binding.dart';
 import '../features/splash/presentation/screens/splash_screen.dart';
 import '../features/auth/bindings/login_binding.dart';
@@ -19,6 +20,11 @@ import '../features/auth/presentation/screens/password_reset_success_screen.dart
 import '../features/perfil/bindings/perfil_binding.dart';
 import '../features/perfil/presentation/screens/perfil_screen.dart';
 import '../features/perfil/presentation/screens/editar_perfil_screen.dart';
+
+import '../features/senderos/bindings/detalle_sendero_binding.dart';
+import '../features/senderos/bindings/senderos_binding.dart';
+import '../features/senderos/presentation/screens/detalle_sendero_screen.dart';
+import '../features/senderos/presentation/screens/senderos_screen.dart';
 
 class AppRoutes {
   static const splash = '/splash';
@@ -104,6 +110,20 @@ class AppRoutes {
     GetPage(
       name: '/editar-perfil',
       page: () => const EditarPerfilScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    // ==========================================
+    // SENDEROS
+    // ==========================================
+    GetPage(
+      name: '/senderos',
+      page: () => const SenderosScreen(),
+      binding: SenderosBinding(),
+    ),
+    GetPage(
+      name: '/detalle-sendero',
+      page: () => const DetalleSenderoScreen(),
+      binding: DetalleSenderoBinding(),
       transition: Transition.rightToLeft,
     ),
   ];

@@ -1,8 +1,11 @@
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
+from rest_framework_gis.fields import GeometryField
 from .models import Sendero
 
 
 class SenderoSerializer(GeoFeatureModelSerializer):
+    geometria = GeometryField() 
+
     class Meta:
         model = Sendero
         geo_field = "geometria"

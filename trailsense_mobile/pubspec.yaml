@@ -38,6 +38,15 @@ dependencies:
   # Selección de imágenes
   image_picker: ^1.2.1
 
+  # Mapas
+  flutter_map: ^7.0.2
+
+  # Geolocalización
+  latlong2: ^0.9.1
+
+  # Geolocalización adicional (para obtener ubicación actual)
+  geolocator: ^13.0.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

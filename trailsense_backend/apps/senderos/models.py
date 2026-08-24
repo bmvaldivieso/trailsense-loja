@@ -68,7 +68,8 @@ class Sendero(models.Model):
 
     # Núcleo geoespacial: WGS84
     geometria = models.LineStringField(
-        srid=4326
+        srid=4326,
+        geography=True
     )
 
     creado_en = models.DateTimeField(

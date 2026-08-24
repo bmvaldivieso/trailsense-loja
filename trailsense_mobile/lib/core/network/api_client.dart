@@ -8,11 +8,11 @@ class ApiClient {
   // Emulador Android
   // static const String baseUrl = 'http://10.0.2.2:8000/api';
 
-  // Dispositivo físico
-  // static const String baseUrl = 'http://192.168.100.42:8000/api';
+  // Dispositivo físico HTTP
+  static const String baseUrl = 'http://192.168.100.42:8000/api';
 
   // Dispositivo físico con HTTPS
-  static const String baseUrl = 'https://192.168.100.42:8000/api';
+  //static const String baseUrl = 'https://192.168.100.42:8000/api';
 
   final Dio dio = Dio(
     BaseOptions(
@@ -29,14 +29,29 @@ class ApiClient {
   }
 
   // Agrega el token JWT automáticamente a cada petición
-  void _configurarInterceptorToken() {
+    void _configurarInterceptorToken() {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
-          final token = TokenStorage().accessToken;
-          if (token != null && token.isNotEmpty) {
-            options.headers['Authorization'] = 'Bearer $token';
+          // Rutas públicas que nunca deben llevar Authorization
+          const rutasPublicas = [
+            '/auth/login/',
+            '/auth/register/',
+            '/auth/verify-code/',
+            '/auth/resend-code/',
+            '/auth/password-reset/request/',
+            '/auth/password-reset/confirm/',
+          ];
+
+          final esRutaPublica = rutasPublicas.any((ruta) => options.path.contains(ruta));
+
+          if (!esRutaPublica) {
+            final token = TokenStorage().accessToken;
+            if (token != null && token.isNotEmpty) {
+              options.headers['Authorization'] = 'Bearer $token';
+            }
           }
+
           return handler.next(options);
         },
       ),

@@ -101,7 +101,10 @@ class DetalleSenderoPanelView(PanelAccesoMixin, View):
 
         wkt = request.POST.get("geometria_wkt", "").strip()
         try:
-            geom = GEOSGeometry(wkt, srid=4326)
+            # Esta línea limpia automáticamente cualquier salto de línea o espacio oculto
+            wkt_limpio = " ".join(wkt.split())
+
+            geom = GEOSGeometry(wkt_limpio, srid=4326)
             if geom.geom_type != "LineString":
                 raise GEOSException("La geometría debe ser un LINESTRING.")
             sendero.geometria = geom
