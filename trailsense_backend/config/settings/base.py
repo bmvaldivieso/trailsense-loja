@@ -203,3 +203,8 @@ os.environ["PATH"] = (
 
 os.environ["PROJ_LIB"] = OSGEO4W_PROJ
 
+
+# ============================================================
+# CARTO BASEMAPS API KEY
+# ============================================================
+CARTO_BASEMAPS_API_KEY = config("CARTO_BASEMAPS_API_KEY", default="")

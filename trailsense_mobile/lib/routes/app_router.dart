@@ -26,6 +26,9 @@ import '../features/senderos/bindings/senderos_binding.dart';
 import '../features/senderos/presentation/screens/detalle_sendero_screen.dart';
 import '../features/senderos/presentation/screens/senderos_screen.dart';
 
+import '../features/sesiones/presentation/screens/sesiones_screen.dart';
+import '../features/sesiones/presentation/screens/nuevo_recorrido_screen.dart';
+
 class AppRoutes {
   static const splash = '/splash';
   static const welcome = '/welcome';
@@ -124,6 +127,19 @@ class AppRoutes {
       name: '/detalle-sendero',
       page: () => const DetalleSenderoScreen(),
       binding: DetalleSenderoBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    // ==========================================
+    // RECORRIDOS/SESIONES CAMINATA
+    // ==========================================
+    GetPage(
+      name: '/sesiones-caminata',
+      page: () => const SesionesScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: '/nuevo-recorrido',
+      page: () => const NuevoRecorridoScreen(),
       transition: Transition.rightToLeft,
     ),
   ];

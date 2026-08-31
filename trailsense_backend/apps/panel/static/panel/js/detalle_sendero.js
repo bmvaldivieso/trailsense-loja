@@ -12,7 +12,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const mapa = L.map('mapaGeometria').setView(centroDefault, 13);
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    const cartoKey = window.CARTO_API_KEY || '';
+    const cartoTileUrl = cartoKey
+        ? `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${cartoKey}`
+        : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';   // fallback si falta la key
+
+    L.tileLayer(cartoTileUrl, {
         attribution: '&copy; OpenStreetMap contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
         maxZoom: 19,
         subdomains: 'abcd',

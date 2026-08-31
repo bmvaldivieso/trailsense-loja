@@ -139,6 +139,9 @@
 
 {% block extra_js %}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    window.CARTO_API_KEY = "{{ carto_api_key }}";
+</script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="{% static 'panel/js/detalle_sendero.js' %}"></script>
 {% endblock %}

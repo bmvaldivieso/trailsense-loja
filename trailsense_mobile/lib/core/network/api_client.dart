@@ -9,10 +9,10 @@ class ApiClient {
   // static const String baseUrl = 'http://10.0.2.2:8000/api';
 
   // Dispositivo físico HTTP
-  static const String baseUrl = 'http://192.168.100.42:8000/api';
+  //static const String baseUrl = 'http://192.168.100.42:8000/api';
 
   // Dispositivo físico con HTTPS
-  //static const String baseUrl = 'https://192.168.100.42:8000/api';
+  static const String baseUrl = 'https://192.168.100.42:8000/api';
 
   final Dio dio = Dio(
     BaseOptions(

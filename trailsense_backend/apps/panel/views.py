@@ -9,6 +9,8 @@ from django.views.generic import TemplateView
 from core.mixins.panel_mixins import PanelAccesoMixin
 from apps.senderos.models import Sendero
 
+from django.conf import settings
+
 
 class PanelLoginView(View):
     """
@@ -85,6 +87,7 @@ class DetalleSenderoPanelView(PanelAccesoMixin, View):
             "active_page": "senderos",
             "page_title": f"Editar {sendero.nombre}" if sendero else "Nuevo Sendero",
             "sendero": sendero,
+            "carto_api_key": settings.CARTO_BASEMAPS_API_KEY,
         })
 
     def post(self, request, pk=None):
@@ -117,6 +120,7 @@ class DetalleSenderoPanelView(PanelAccesoMixin, View):
                 "active_page": "senderos",
                 "page_title": "Nuevo Sendero" if pk is None else f"Editar {sendero.nombre}",
                 "sendero": sendero if pk else None,
+                "carto_api_key": settings.CARTO_BASEMAPS_API_KEY,
             })
 
         if "imagen_portada" in request.FILES:
