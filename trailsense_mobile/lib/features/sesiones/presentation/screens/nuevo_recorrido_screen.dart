@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-class NuevoRecorridoScreen extends StatelessWidget {
-  const NuevoRecorridoScreen({Key? key}) : super(key: key);
+import '../controllers/nuevo_recorrido_controller.dart';
+
+class NuevoRecorridoScreen extends GetView<NuevoRecorridoController> {
+  const NuevoRecorridoScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -11,10 +13,17 @@ class NuevoRecorridoScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black87),
-          onPressed: () => Get.back(),
+          onPressed: () {
+            if (controller.estado.value == 'inicial' || controller.estado.value == 'finalizada') {
+              Get.back();
+            } else {
+              Get.snackbar('Recorrido en curso', 'Detén el recorrido antes de salir.');
+            }
+          },
         ),
       ),
       body: SafeArea(
@@ -22,155 +31,66 @@ class NuevoRecorridoScreen extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 24.w),
           child: Column(
             children: [
-              // Icono superior circular gradient
-              Container(
-                width: 50.w,
-                height: 50.h,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF6A11CB), Color(0xFF2575FC)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+              ClipOval(
+                child: Image.asset(
+                  'assets/images/logo_trailsense.png',
+                  width: 50.w,
+                  height: 50.h,
+                  fit: BoxFit.cover,
                 ),
-                child: Icon(Icons.route, color: Colors.white, size: 26.sp),
               ),
               SizedBox(height: 16.h),
-
-              // Título "Nuevo Recorrido"
-              Text(
-                'Nuevo Recorrido',
-                style: TextStyle(
-                  fontSize: 22.sp,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF2D3142),
-                ),
-              ),
+              Text('Nuevo Recorrido', style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold, color: const Color(0xFF2D3142))),
+              SizedBox(height: 8.h),
+              Obx(() => _buildEstadoBadge(controller.estado.value)),
               SizedBox(height: 20.h),
-
-              // Ilustración central
-              SizedBox(
-                height: 100.h,
-                child: Icon(
-                  Icons.map_rounded,
-                  size: 90.sp,
-                  color: const Color(0xFF5391F5),
+              Container(
+                width: 90.w,
+                height: 90.h,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0xFFEBF3FE),
                 ),
-              ),
-              SizedBox(height: 12.h),
-
-              // Estrellas de valoración
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  5,
-                  (index) => Icon(
-                    Icons.star,
-                    size: 22.sp,
-                    color: index < 4 ? Colors.amber : Colors.grey[300],
+                child: ClipOval(
+                  child: Padding(
+                    padding: EdgeInsets.all(14.w),
+                    child: Image.asset(
+                      'assets/images/ruta.png',
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
               ),
-              SizedBox(height: 30.h),
-
-              // Lista de Métricas
+              SizedBox(height: 20.h),
               Expanded(
-                child: ListView(
-                  children: [
-                    _buildStatRow('Calorias', '130 cal'),
-                    _buildStatRow('KM', '0.3 km'),
-                    _buildStatRow('Ritmo Cardiaco', '25 lpm'),
-                    _buildStatRow('Velocidad', '10 km/h'),
-                    _buildStatRow('Temperatura', '24 Grados'),
-                    _buildStatusRow('Estado', 'Bien'),
-                  ],
-                ),
-              ),
-
-              // Controles de grabación (Stop, Pause, Play)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Botón Stop
-                  GestureDetector(
-                    onTap: () {},
-                    child: Container(
-                      width: 56.w,
-                      height: 56.h,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFFF0033),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(Icons.stop_rounded, color: Colors.white, size: 28.sp),
-                    ),
-                  ),
-                  SizedBox(width: 20.w),
-
-                  // Botón Pausa
-                  GestureDetector(
-                    onTap: () {},
-                    child: Container(
-                      width: 56.w,
-                      height: 56.h,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEBF3FE),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFFD0E2FF)),
-                      ),
-                      child: Icon(Icons.pause, color: const Color(0xFF2D3142), size: 28.sp),
-                    ),
-                  ),
-                  SizedBox(width: 20.w),
-
-                  // Botón Play
-                  GestureDetector(
-                    onTap: () {},
-                    child: Container(
-                      width: 56.w,
-                      height: 56.h,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF0066FF),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(Icons.play_arrow_rounded, color: Colors.white, size: 28.sp),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 20.h),
-
-              // Botón Terminar Recorrido
-              SizedBox(
-                width: double.infinity,
-                height: 50.h,
-                child: ElevatedButton(
-                  onPressed: () => Get.back(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B82F6),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.r),
-                    ),
-                  ),
-                  child: Text(
-                    'Terminar Recorrido',
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                child: Obx(
+                  () => ListView(
+                    children: [
+                      _buildStatRow('Distancia', '${controller.distanciaKm.value.toStringAsFixed(2)} km'),
+                      _buildStatRow('Duración', controller.duracionFormateada),
+                      _buildStatRow('Velocidad promedio', '${controller.velocidadPromedioKmh.value.toStringAsFixed(1)} km/h'),
+                      _buildStatRow('Pasos', '${controller.pasos.value}'),
+                    ],
                   ),
                 ),
               ),
-              SizedBox(height: 12.h),
-
-              // Bottom Navigation Bar integrador
-              _buildBottomNavigationBar(),
+              Obx(() => _buildControles()),
+              SizedBox(height: 140.h),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildEstadoBadge(String estado) {
+    final colores = {'inicial': Colors.grey, 'grabando': const Color(0xFF138A72), 'pausada': Colors.orange, 'finalizada': const Color(0xFF3B82F6)};
+    final etiquetas = {'inicial': 'Listo para iniciar', 'grabando': 'Grabando', 'pausada': 'Pausado', 'finalizada': 'Finalizado'};
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+      decoration: BoxDecoration(color: colores[estado] ?? Colors.grey, borderRadius: BorderRadius.circular(4.r)),
+      child: Text(etiquetas[estado] ?? estado, style: TextStyle(fontSize: 13.sp, color: Colors.white, fontWeight: FontWeight.bold)),
     );
   }
 
@@ -180,73 +100,59 @@ class NuevoRecorridoScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 15.sp,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF2D3142),
-            ),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 15.sp,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF2D3142),
-            ),
-          ),
+          Text(label, style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600, color: const Color(0xFF2D3142))),
+          Text(value, style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold, color: const Color(0xFF2D3142))),
         ],
       ),
     );
   }
 
-  Widget _buildStatusRow(String label, String statusText) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 15.sp,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF2D3142),
-            ),
+  Widget _buildControles() {
+    switch (controller.estado.value) {
+      case 'inicial':
+        return _botonCircular(icono: Icons.play_arrow_rounded, color: const Color(0xFF0066FF), onTap: controller.iniciarRecorrido);
+
+      case 'grabando':
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _botonCircular(icono: Icons.pause, color: const Color(0xFFEBF3FE), iconColor: const Color(0xFF2D3142), bordeColor: const Color(0xFFD0E2FF), onTap: controller.pausarRecorrido),
+            SizedBox(width: 20.w),
+            _botonCircular(icono: Icons.stop_rounded, color: const Color(0xFFFF0033), onTap: controller.finalizarRecorrido),
+          ],
+        );
+
+      case 'pausada':
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _botonCircular(icono: Icons.play_arrow_rounded, color: const Color(0xFF0066FF), onTap: controller.reanudarRecorrido),
+            SizedBox(width: 20.w),
+            _botonCircular(icono: Icons.stop_rounded, color: const Color(0xFFFF0033), onTap: controller.finalizarRecorrido),
+          ],
+        );
+
+      default:
+        return SizedBox(
+          width: double.infinity,
+          height: 50.h,
+          child: ElevatedButton(
+            onPressed: () => Get.back(),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF3B82F6), elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r))),
+            child: Text('Volver', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: Colors.white)),
           ),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
-            decoration: BoxDecoration(
-              color: const Color(0xFF138A72),
-              borderRadius: BorderRadius.circular(4.r),
-            ),
-            child: Text(
-              statusText,
-              style: TextStyle(
-                fontSize: 13.sp,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+        );
+    }
   }
 
-  Widget _buildBottomNavigationBar() {
-    return Padding(
-      padding: EdgeInsets.only(top: 8.h, bottom: 8.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          IconButton(icon: Icon(Icons.home_outlined, size: 26.sp, color: const Color(0xFF4C84F6)), onPressed: () {}),
-          IconButton(icon: Icon(Icons.map_outlined, size: 26.sp, color: const Color(0xFF4C84F6)), onPressed: () {}),
-          IconButton(icon: Icon(Icons.location_on_outlined, size: 26.sp, color: Colors.black87), onPressed: () {}),
-          IconButton(icon: Icon(Icons.campaign_outlined, size: 26.sp, color: const Color(0xFF4C84F6)), onPressed: () {}),
-          IconButton(icon: Icon(Icons.notifications_none_outlined, size: 26.sp, color: const Color(0xFF4C84F6)), onPressed: () {}),
-        ],
+  Widget _botonCircular({required IconData icono, required Color color, Color iconColor = Colors.white, Color? bordeColor, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 56.w,
+        height: 56.h,
+        decoration: BoxDecoration(color: color, shape: BoxShape.circle, border: bordeColor != null ? Border.all(color: bordeColor) : null),
+        child: Icon(icono, color: iconColor, size: 28.sp),
       ),
     );
   }

@@ -27,7 +27,12 @@ import '../features/senderos/presentation/screens/detalle_sendero_screen.dart';
 import '../features/senderos/presentation/screens/senderos_screen.dart';
 
 import '../features/sesiones/presentation/screens/sesiones_screen.dart';
+import '../features/sesiones/presentation/screens/detalle_recorrido_screen.dart';
 import '../features/sesiones/presentation/screens/nuevo_recorrido_screen.dart';
+import '../features/sesiones/bindings/detalle_recorrido_binding.dart';
+import '../features/sesiones/bindings/nuevo_recorrido_binding.dart';
+import '../features/sesiones/bindings/sesiones_binding.dart';
+
 
 class AppRoutes {
   static const splash = '/splash';
@@ -133,13 +138,20 @@ class AppRoutes {
     // RECORRIDOS/SESIONES CAMINATA
     // ==========================================
     GetPage(
-      name: '/sesiones-caminata',
+      name: '/sesiones',
       page: () => const SesionesScreen(),
-      transition: Transition.rightToLeft,
+      binding: SesionesBinding(),
     ),
     GetPage(
       name: '/nuevo-recorrido',
       page: () => const NuevoRecorridoScreen(),
+      binding: NuevoRecorridoBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: '/detalle-recorrido',
+      page: () => const DetalleRecorridoScreen(),
+      binding: DetalleRecorridoBinding(),
       transition: Transition.rightToLeft,
     ),
   ];
