@@ -43,6 +43,15 @@ class NuevoRecorridoScreen extends GetView<NuevoRecorridoController> {
               Text('Nuevo Recorrido', style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold, color: const Color(0xFF2D3142))),
               SizedBox(height: 8.h),
               Obx(() => _buildEstadoBadge(controller.estado.value)),
+              // Nombre del sendero detectado, si lo hay
+              Obx(() {
+                final nombre = controller.sesion.value?.senderoNombre;
+                if (nombre == null) return const SizedBox.shrink();
+                return Padding(
+                  padding: EdgeInsets.only(top: 6.h),
+                  child: Text('Recorriendo: $nombre', style: TextStyle(fontSize: 13.sp, color: Colors.grey[600])),
+                );
+              }),
               SizedBox(height: 20.h),
               Container(
                 width: 90.w,

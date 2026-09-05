@@ -7,6 +7,8 @@ import 'package:trailsense_mobile/features/sesiones/presentation/controllers/ses
 
 import '../controllers/detalle_recorrido_controller.dart';
 
+import 'package:marquee/marquee.dart';
+
 class DetalleRecorridoScreen extends GetView<DetalleRecorridoController> {
   const DetalleRecorridoScreen({super.key});
 
@@ -63,7 +65,30 @@ class DetalleRecorridoScreen extends GetView<DetalleRecorridoController> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(sesion.senderoNombre ?? 'Recorrido libre', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22.sp)),
+                        Expanded(
+                          child: SizedBox(
+                            height: 24.h, // altura fija acorde al tamaño de fuente
+                            child: sesion.nombreMostrable.length > 22
+                                ? Marquee(
+                                    text: sesion.nombreMostrable,
+                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.sp),
+                                    velocity: 30.0,
+                                    blankSpace: 40.0,
+                                    pauseAfterRound: const Duration(seconds: 1),
+                                    startPadding: 0,
+                                    accelerationDuration: const Duration(seconds: 1),
+                                    accelerationCurve: Curves.linear,
+                                    decelerationDuration: const Duration(milliseconds: 500),
+                                    decelerationCurve: Curves.easeOut,
+                                  )
+                                : Text(
+                                    sesion.nombreMostrable,
+                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.sp),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                          ),
+                        ),
                         IconButton(icon: Icon(Icons.cancel, color: Colors.grey.shade400, size: 24.r), onPressed: () => Get.back()),
                       ],
                     ),

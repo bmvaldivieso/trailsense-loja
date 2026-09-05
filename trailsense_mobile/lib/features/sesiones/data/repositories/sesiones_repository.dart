@@ -16,9 +16,11 @@ class SesionesRepository {
     return SesionModel.fromJson(response.data);
   }
 
-  Future<SesionModel> iniciarSesion({int? senderoId}) async {
+  Future<SesionModel> iniciarSesion({int? senderoId, double? lat, double? lon}) async {
     final response = await _apiClient.dio.post('/sesiones/iniciar/', data: {
       if (senderoId != null) 'sendero': senderoId,
+      if (lat != null) 'lat': lat,
+      if (lon != null) 'lon': lon,
     });
     return SesionModel.fromJson(response.data);
   }

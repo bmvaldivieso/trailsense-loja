@@ -59,7 +59,19 @@ class NuevoRecorridoController extends GetxController {
         return;
       }
 
-      final nuevaSesion = await _repository.iniciarSesion(senderoId: senderoId);
+      // Posición actual para la detección automática de sendero
+      Position? posicionInicial;
+      try {
+        posicionInicial = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
+      } catch (_) {
+        // si falla, simplemente se inicia sin detección — no bloquea el flujo
+      }
+
+      final nuevaSesion = await _repository.iniciarSesion(
+        senderoId: senderoId,
+        lat: posicionInicial?.latitude,
+        lon: posicionInicial?.longitude,
+      );
       sesion.value = nuevaSesion;
       estado.value = 'grabando';
 

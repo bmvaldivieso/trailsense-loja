@@ -8,6 +8,14 @@ from .models import Sendero
 from .serializers import SenderoSerializer
 from core.permissions.roles import EsAdminOSuperusuario
 
+from django.shortcuts import get_object_or_404
+from django.db.models import Count, Sum
+from apps.sesiones.models import SesionCaminata
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
 
 class SenderoViewSet(viewsets.ModelViewSet):
     serializer_class = SenderoSerializer
@@ -50,3 +58,29 @@ class SenderoViewSet(viewsets.ModelViewSet):
             qs = qs.order_by('distancia')
 
         return qs
+
+
+class SenderoEstadisticasView(APIView):
+    """
+    GET /api/senderos/<id>/estadisticas/
+
+    Indicadores de uso de un sendero (Sprint 9): cuántos recorridos
+    finalizados tuvo, distancia total caminada en él y cuántos
+    senderistas distintos lo han recorrido.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, pk):
+        sendero = get_object_or_404(Sendero, pk=pk)
+        stats = SesionCaminata.objects.filter(sendero=sendero, estado='finalizada').aggregate(
+            total_recorridos=Count('id'),
+            distancia_total_km=Sum('distancia_km'),
+            senderistas_unicos=Count('usuario', distinct=True),
+        )
+        return Response({
+            "sendero_id": sendero.id,
+            "sendero_nombre": sendero.nombre,
+            "total_recorridos": stats['total_recorridos'] or 0,
+            "distancia_total_km": round(stats['distancia_total_km'] or 0, 2),
+            "senderistas_unicos": stats['senderistas_unicos'] or 0,
+        })        

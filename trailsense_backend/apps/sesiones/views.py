@@ -15,6 +15,9 @@ from .serializers import (
     PuntoGPSInputSerializer,
 )
 
+from django.db.models import Count, Sum 
+from .matching import detectar_sendero_cercano, detectar_sendero_para_sesion
+
 
 class SesionesListView(generics.ListAPIView):
     """GET /api/sesiones/ -> mis sesiones."""
@@ -41,9 +44,17 @@ class IniciarSesionView(APIView):
         serializer = IniciarSesionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        sendero = serializer.validated_data.get('sendero')
+        lat = serializer.validated_data.get('lat')
+        lon = serializer.validated_data.get('lon')
+
+        # Si no se especificó sendero pero sí ubicación, detecta el más cercano
+        if sendero is None and lat is not None and lon is not None:
+            sendero = detectar_sendero_cercano(Point(lon, lat, srid=4326))
+
         sesion = SesionCaminata.objects.create(
             usuario=request.user,
-            sendero=serializer.validated_data.get('sendero'),
+            sendero=sendero,
             estado='en_curso',
         )
         return Response(SesionDetailSerializer(sesion).data, status=status.HTTP_201_CREATED)
@@ -146,6 +157,9 @@ class FinalizarSesionView(APIView):
             coords = [(p.ubicacion.x, p.ubicacion.y) for p in puntos]
             sesion.traza = LineString(coords, srid=4326)
 
+        # Vinculación autoritativa sendero-recorrido (Sprint 9)
+        sesion.sendero = detectar_sendero_para_sesion(sesion)
+
         sesion.finalizado_en = timezone.now()
         sesion.tiempo_pausado_segundos = tiempo_pausado
         sesion.pasos = pasos
@@ -167,5 +181,10 @@ class FinalizarSesionView(APIView):
                     sesion.distancia_km / (sesion.duracion_segundos / 3600), 2
                 )
             sesion.save(update_fields=['distancia_km', 'velocidad_promedio_kmh'])
+
+        # Alimenta el perfil del senderista (Sprint 9)
+        usuario = sesion.usuario
+        usuario.kilometros_recorridos = (usuario.kilometros_recorridos or 0) + sesion.distancia_km
+        usuario.save(update_fields=['kilometros_recorridos'])
 
         return Response(SesionDetailSerializer(sesion).data)

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -34,10 +35,29 @@ class SesionesController extends GetxController {
     }
   }
 
-  void seleccionarSesion(SesionModel sesion) {
-    sesionSeleccionada.value = sesion;
-    if (sesion.puntoInicio != null) {
-      mapController.move(sesion.puntoInicio!, 15);
+  Future<void> seleccionarSesion(SesionModel sesionResumen) async {
+    try {
+      // Trae el detalle completo, que incluye la traza
+      final sesionCompleta = await _repository.obtenerSesion(sesionResumen.id);
+      sesionSeleccionada.value = sesionCompleta;
+
+      final destino = sesionCompleta.puntoInicio ??
+          (sesionCompleta.traza.isNotEmpty ? sesionCompleta.traza.first : null);
+
+      if (destino == null) {
+        Get.snackbar('Aviso', 'Este recorrido no tiene ubicación registrada.');
+        return;
+      }
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        try {
+          mapController.move(destino, 15);
+        } catch (e) {
+          debugPrint('Error moviendo el mapa: $e');
+        }
+      });
+    } catch (e) {
+      Get.snackbar('Error', 'No se pudo cargar el recorrido seleccionado.');
     }
   }
 }

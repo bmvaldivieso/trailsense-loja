@@ -24,10 +24,15 @@ class SesionesScreen extends GetView<SesionesController> {
                   userAgentPackageName: 'com.trailsenseloja.trailsense_mobile',
                 ),
                 PolylineLayer(
-                  polylines: controller.sesiones
-                      .where((s) => s.traza.length > 1)
-                      .map((s) => Polyline(points: s.traza, strokeWidth: 4.0, color: const Color(0xFF3B82F6)))
-                      .toList(),
+                  polylines: <Polyline>[
+                    if (controller.sesionSeleccionada.value != null &&
+                        controller.sesionSeleccionada.value!.traza.length > 1)
+                      Polyline(
+                        points: controller.sesionSeleccionada.value!.traza,
+                        strokeWidth: 4.0,
+                        color: const Color(0xFF3B82F6),
+                      ),
+                  ],
                 ),
               ],
             ),
@@ -130,14 +135,16 @@ class SesionesScreen extends GetView<SesionesController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(sesion.senderoNombre ?? 'Recorrido libre',
-                      style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold, color: const Color(0xFF2D3142))),
+                  Text(
+                    sesion.nombreMostrable,
+                    style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold, color: const Color(0xFF2D3142)),
+                  ),
                   SizedBox(height: 2.h),
                   Text(fecha, style: TextStyle(fontSize: 12.sp, color: Colors.grey[500])),
                   SizedBox(height: 6.h),
                   Row(
                     children: [
-                      _buildMetricItem('Distancia', '${sesion.distanciaKm.toStringAsFixed(1)} km'),
+                      _buildMetricItem('Distancia', '${sesion.distanciaKm.toStringAsFixed(2)} km'),
                       SizedBox(width: 16.w),
                       _buildMetricItem('Duración', _formatearDuracion(sesion.duracionSegundos)),
                     ],

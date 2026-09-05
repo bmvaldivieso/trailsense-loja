@@ -14,6 +14,8 @@ class SesionModel {
   final LatLng? puntoInicio;
   final List<LatLng> traza;
 
+  String get nombreMostrable => senderoNombre != null ? '$senderoNombre - Recorrido $id' : 'Recorrido Libre $id';
+
   SesionModel({
     required this.id,
     this.senderoId,

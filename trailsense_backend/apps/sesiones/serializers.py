@@ -7,6 +7,8 @@ class IniciarSesionSerializer(serializers.Serializer):
     sendero = serializers.PrimaryKeyRelatedField(
         queryset=Sendero.objects.all(), required=False, allow_null=True
     )
+    lat = serializers.FloatField(required=False, allow_null=True)
+    lon = serializers.FloatField(required=False, allow_null=True)
 
 
 class PuntoGPSInputSerializer(serializers.Serializer):

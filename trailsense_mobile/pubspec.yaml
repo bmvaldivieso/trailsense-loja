@@ -56,6 +56,9 @@ dependencies:
   # Manejo de permisos
   permission_handler: ^11.3.1
 
+  # Desplazamiento en bucle de manera horizontal si el texto no cabe en el espacio disponible
+  marquee: ^2.3.0
+
 
 
 dev_dependencies:

@@ -51,7 +51,7 @@ class PuntoGPS(models.Model):
     la sesión está en curso. Se envían en lotes desde la app.
     """
     sesion = models.ForeignKey(SesionCaminata, on_delete=models.CASCADE, related_name='puntos')
-    ubicacion = models.PointField(srid=4326)
+    ubicacion = models.PointField(srid=4326, geography=True)
     capturado_en = models.DateTimeField()
     precision_m = models.FloatField(null=True, blank=True)
     altitud_m = models.FloatField(null=True, blank=True)
