@@ -33,6 +33,14 @@ import '../features/sesiones/bindings/detalle_recorrido_binding.dart';
 import '../features/sesiones/bindings/nuevo_recorrido_binding.dart';
 import '../features/sesiones/bindings/sesiones_binding.dart';
 
+import '../features/reportes/bindings/crear_reporte_binding.dart';
+import '../features/reportes/bindings/detalle_reporte_binding.dart';
+import '../features/reportes/bindings/mis_reportes_binding.dart';
+import '../features/reportes/presentation/screens/crear_reporte_screen.dart';
+import '../features/reportes/presentation/screens/detalle_reporte_screen.dart';
+import '../features/reportes/presentation/screens/mis_reportes_screen.dart';
+import '../features/reportes/presentation/screens/reporte_success_screen.dart';
+
 
 class AppRoutes {
   static const splash = '/splash';
@@ -152,6 +160,32 @@ class AppRoutes {
       name: '/detalle-recorrido',
       page: () => const DetalleRecorridoScreen(),
       binding: DetalleRecorridoBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    // ==========================================
+    // REPORTES
+    // ==========================================
+    GetPage(
+      name: '/mis-reportes',
+      page: () => const MisReportesScreen(),
+      binding: MisReportesBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: '/detalle-reporte',
+      page: () => const DetalleReporteScreen(),
+      binding: DetalleReporteBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: '/crear-reporte',
+      page: () => const CrearReporteScreen(),
+      binding: CrearReporteBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: '/reporte-enviado',
+      page: () => const ReporteSuccessScreen(),
       transition: Transition.rightToLeft,
     ),
   ];

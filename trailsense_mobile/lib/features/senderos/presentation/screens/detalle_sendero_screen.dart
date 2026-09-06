@@ -109,9 +109,10 @@ class DetalleSenderoScreen extends GetView<DetalleSenderoController> {
                         ),
                       ],
                     ),
+
                     SizedBox(height: 4.h),
 
-                    // Botón "Crear Incidencia" — solo visual, sin lógica todavía
+                    // Botón "Crear Incidencia"
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -120,14 +121,15 @@ class DetalleSenderoScreen extends GetView<DetalleSenderoController> {
                           padding: EdgeInsets.symmetric(vertical: 14.h),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
                         ),
-                        onPressed: () {},
-                        child: Text(
-                          'Crear Incidencia',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16.sp),
-                        ),
+                        onPressed: () => Get.toNamed('/crear-reporte', arguments: {
+                          'senderoId': sendero.id,
+                          'senderoNombre': sendero.nombre,
+                        }),
+                        child: Text('Crear Incidencia', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16.sp)),
                       ),
                     ),
-                    SizedBox(height: 16.h),
+                    
+                    SizedBox(height: 10.h),
 
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,

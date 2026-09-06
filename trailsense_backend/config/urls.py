@@ -17,6 +17,8 @@ urlpatterns = [
 
     path('api/', include('apps.sesiones.urls')),
 
+    path('api/', include('apps.reportes.urls')),
+
     # path('api/usuarios/', include('apps.usuarios.urls')),
     # path('api/senderos/', include('apps.senderos.urls')),
     # path('api/reportes/', include('apps.reportes.urls')),

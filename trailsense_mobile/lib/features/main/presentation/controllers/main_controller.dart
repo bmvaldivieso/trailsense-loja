@@ -12,6 +12,15 @@ class MainController extends GetxController {
     'Notificaciones',
   ];
 
+  @override
+  void onInit() {
+    super.onInit();
+    final args = Get.arguments;
+    if (args is int && args >= 0 && args < titles.length) {
+      currentIndex.value = args;
+    }
+  }
+
   void changePage(int index) {
     currentIndex.value = index;
   }
