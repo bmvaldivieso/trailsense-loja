@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -7,6 +8,9 @@ import 'package:geolocator/geolocator.dart';
 import '../../data/repositories/reportes_repository.dart';
 import '../../../senderos/data/models/sendero_model.dart';
 import '../../../senderos/data/repositories/senderos_repository.dart';
+
+import 'package:dio/dio.dart';
+
 
 class CrearReporteController extends GetxController {
   final ReportesRepository _repository = ReportesRepository();
@@ -30,6 +34,12 @@ class CrearReporteController extends GetxController {
   static const int maxCaracteres = 500;
   static const int maxFotos = 5;
 
+  // Configuración de precisión
+  static const double _precisionDeseadaM = 9;          // Umbral aceptable en metros
+  static const Duration _tiempoMaximoGps = Duration(seconds: 15); // Tope de espera
+
+  final RxString estadoUbicacion = ''.obs; // Para mostrar feedback en la UI
+
   @override
   void onInit() {
     super.onInit();
@@ -45,6 +55,60 @@ class CrearReporteController extends GetxController {
     descripcionCtrl.addListener(() {
       caracteresRestantes.value = maxCaracteres - descripcionCtrl.text.length;
     });
+  }
+
+  // Obtiene la mejor ubicación posible dentro de un tiempo límite
+  Future<Position> _obtenerUbicacionPrecisa() async {
+    final permiso = await Geolocator.checkPermission();
+    if (permiso == LocationPermission.denied) {
+      final solicitado = await Geolocator.requestPermission();
+      if (solicitado == LocationPermission.denied || solicitado == LocationPermission.deniedForever) {
+        throw Exception('Permiso de ubicación denegado');
+      }
+    }
+    if (permiso == LocationPermission.deniedForever) {
+      throw Exception('Permiso de ubicación denegado permanentemente');
+    }
+
+    final servicioActivo = await Geolocator.isLocationServiceEnabled();
+    if (!servicioActivo) {
+      throw Exception('El GPS del dispositivo está desactivado');
+    }
+
+    Position? mejorLectura;
+    final completer = Completer<Position>();
+    late StreamSubscription<Position> subscripcion;
+
+    final timer = Timer(_tiempoMaximoGps, () {
+      subscripcion.cancel();
+      if (!completer.isCompleted) {
+        if (mejorLectura != null) {
+          completer.complete(mejorLectura);
+        } else {
+          completer.completeError(Exception('No se pudo obtener la ubicación'));
+        }
+      }
+    });
+
+    subscripcion = Geolocator.getPositionStream(
+      locationSettings: const LocationSettings(accuracy: LocationAccuracy.best, distanceFilter: 0),
+    ).listen((posicion) {
+      if (mejorLectura == null || posicion.accuracy < mejorLectura!.accuracy) {
+        mejorLectura = posicion;
+        estadoUbicacion.value = 'Precisión actual: ${posicion.accuracy.toStringAsFixed(0)} m';
+      }
+
+      if (posicion.accuracy <= _precisionDeseadaM) {
+        timer.cancel();
+        subscripcion.cancel();
+        if (!completer.isCompleted) completer.complete(posicion);
+      }
+    }, onError: (e) {
+      timer.cancel();
+      if (!completer.isCompleted) completer.completeError(e);
+    });
+
+    return completer.future;
   }
 
   Future<void> _cargarSenderosDisponibles() async {
@@ -97,8 +161,9 @@ class CrearReporteController extends GetxController {
 
     try {
       isLoading.value = true;
+      estadoUbicacion.value = 'Obteniendo ubicación precisa...';
 
-      final posicion = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      final posicion = await _obtenerUbicacionPrecisa();
 
       await _repository.crearReporte(
         senderoId: senderoId,
@@ -111,11 +176,19 @@ class CrearReporteController extends GetxController {
       );
 
       Get.offNamed('/reporte-enviado');
-    } catch (e) {
-      Get.snackbar('Error', 'No se pudo enviar el reporte. Intenta nuevamente.');
-    } finally {
-      isLoading.value = false;
-    }
+      } catch (e) {
+        if (e is DioException) {
+          final data = e.response?.data;
+          if (data is Map<String, dynamic> && data['message'] != null) {
+            Get.snackbar('No se pudo enviar el reporte', data['message']);
+            return;
+          }
+        }
+        Get.snackbar('Error', 'No se pudo enviar el reporte. Intenta nuevamente.');
+      } finally {
+        isLoading.value = false;
+        estadoUbicacion.value = '';
+      }
   }
 
   @override

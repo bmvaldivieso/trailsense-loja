@@ -7,6 +7,8 @@ import 'package:geolocator/geolocator.dart';
 import '../../data/models/sendero_model.dart';
 import '../../data/repositories/senderos_repository.dart';
 
+import '../../../main/presentation/controllers/main_controller.dart';
+
 class SenderosController extends GetxController {
 
   static const LatLng _centroLoja = LatLng(-3.9973, -79.2005);
@@ -30,6 +32,15 @@ class SenderosController extends GetxController {
     super.onInit();
     cargarSenderos();
     _inicializarUbicacion();
+
+    // Recarga cada vez que el usuario entra al tab de Senderos
+    if (Get.isRegistered<MainController>()) {
+      ever<int>(Get.find<MainController>().currentIndex, (index) {
+        if (index == 1) { // índice del tab "Senderos" en el bottom nav
+          cargarSenderos();
+        }
+      });
+    }
   }
 
   List<SenderoModel> get senderosFiltrados {
@@ -92,8 +103,8 @@ class SenderosController extends GetxController {
   }
 
   void aplicarFiltro({String? dificultad, String? estado}) {
-    filtroDificultad.value = dificultad ?? '';
-    filtroEstado.value = estado ?? '';
+    if (dificultad != null) filtroDificultad.value = dificultad;
+    if (estado != null) filtroEstado.value = estado;
     cargarSenderos();
   }
 

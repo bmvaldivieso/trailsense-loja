@@ -161,7 +161,17 @@ class CrearReporteScreen extends GetView<CrearReporteController> {
                     onPressed: controller.isLoading.value ? null : controller.enviarReporte,
                     style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6292F0), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r))),
                     child: controller.isLoading.value
-                        ? const CircularProgressIndicator(color: Colors.white)
+                        ? Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const SizedBox(height: 4, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)),
+                              SizedBox(height: 6.h),
+                              Obx(() => Text(
+                                    controller.estadoUbicacion.value.isEmpty ? 'Enviando...' : controller.estadoUbicacion.value,
+                                    style: TextStyle(color: Colors.white, fontSize: 11.sp),
+                                  )),
+                            ],
+                          )
                         : Text('Crear', style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: Colors.white)),
                   ),
                 )),

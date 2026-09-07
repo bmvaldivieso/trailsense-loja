@@ -58,6 +58,12 @@ class DetalleReporteScreen extends GetView<DetalleReporteController> {
                   urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                   userAgentPackageName: 'com.trailsenseloja.trailsense_mobile',
                 ),
+                if (controller.senderoAsociado.value != null)
+                  PolylineLayer(
+                    polylines: [
+                      Polyline(points: controller.senderoAsociado.value!.puntos, strokeWidth: 4.0, color: const Color(0xFF3B82F6)),
+                    ],
+                  ),
                 MarkerLayer(
                   markers: [
                     Marker(

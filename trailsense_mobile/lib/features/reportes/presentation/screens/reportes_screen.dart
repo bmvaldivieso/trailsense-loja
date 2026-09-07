@@ -27,6 +27,11 @@ class ReportesScreen extends GetView<ReportesController> {
                   urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                   userAgentPackageName: 'com.trailsenseloja.trailsense_mobile',
                 ),
+                PolylineLayer(
+                  polylines: controller.senderosParaDibujar.map((s) {
+                    return Polyline(points: s.puntos, strokeWidth: 3.0, color: Colors.blue);
+                  }).toList(),
+                ),
                 MarkerLayer(
                   markers: controller.reportesFiltrados.map((r) {
                     final cat = categoriaPorValor(r.categoria);

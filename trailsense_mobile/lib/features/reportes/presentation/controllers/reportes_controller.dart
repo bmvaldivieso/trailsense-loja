@@ -5,6 +5,9 @@ import 'package:flutter_map/flutter_map.dart';
 import '../../data/models/reporte_model.dart';
 import '../../data/repositories/reportes_repository.dart';
 
+import '../../../senderos/presentation/controllers/senderos_controller.dart';
+import '../../../senderos/data/models/sendero_model.dart';
+
 class ReportesController extends GetxController {
   final ReportesRepository _repository = ReportesRepository();
 
@@ -57,5 +60,12 @@ class ReportesController extends GetxController {
 
   void seleccionarReporte(ReporteModel reporte) {
     mapController.move(LatLng(reporte.lat, reporte.lon), 16);
+  }
+
+  List<SenderoModel> get senderosParaDibujar {
+    if (Get.isRegistered<SenderosController>()) {
+      return Get.find<SenderosController>().senderos;
+    }
+    return [];
   }
 }
