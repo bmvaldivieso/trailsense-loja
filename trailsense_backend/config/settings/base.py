@@ -52,6 +52,8 @@ INSTALLED_APPS = [
     'apps.sesiones',
     'apps.notificaciones',
     "apps.panel",
+
+    "storages",
 ]
 
 # Configuración de autenticación por sesión para el panel
@@ -167,6 +169,49 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# ============================================================
+# ALMACENAMIENTO DE ARCHIVOS (Sprint 12)
+# ============================================================
+
+# Las credenciales se leen siempre, sin importar el modo activo —
+# así el comando de migración puede usarlas aunque USE_S3 esté en False.
+AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY_ID", default="")
+AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY", default="")
+AWS_STORAGE_BUCKET_NAME = config("AWS_STORAGE_BUCKET_NAME", default="")
+AWS_S3_REGION_NAME = config("AWS_S3_REGION_NAME", default="us-east-2")
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
+
+AWS_DEFAULT_ACL = None            # el acceso público ya lo controla el Bucket Policy
+AWS_QUERYSTRING_AUTH = False      # URLs limpias, sin firma temporal (coherente con bucket público de lectura)
+AWS_S3_FILE_OVERWRITE = False     # evita que dos archivos con el mismo nombre se pisen
+AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
+
+USE_S3 = config("USE_S3", default=False, cast=bool)
+
+if USE_S3:
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3.S3Storage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
+else:
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
+    MEDIA_URL = "/media/"
+    MEDIA_ROOT = BASE_DIR / "media"
+
 
 
 # ============================================================

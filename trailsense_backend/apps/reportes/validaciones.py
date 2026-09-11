@@ -6,14 +6,14 @@ from django.contrib.gis.measure import D
 from .models import Reporte
 
 # --- Proximidad al sendero ---
-UMBRAL_PROXIMIDAD_SENDERO_M = 50
+UMBRAL_PROXIMIDAD_SENDERO_M = 50 #50
 
 # --- Anti-duplicado (mismo usuario, mismo lugar, poco tiempo) ---
-VENTANA_DUPLICADO_MINUTOS = 10
-RADIO_DUPLICADO_M = 0.005
+VENTANA_DUPLICADO_MINUTOS = 10 #10
+RADIO_DUPLICADO_M = 30 #30
 
 # --- Límite general de reportes por usuario (resguardo anti-flood) ---
-LIMITE_REPORTES_POR_DIA = 10
+LIMITE_REPORTES_POR_DIA = 10 #10
 
 
 class ValidacionReporteError(Exception):

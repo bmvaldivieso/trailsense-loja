@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 import '../storage/token_storage.dart';
 import '../../features/auth/presentation/controllers/login_controller.dart';
 
+import '../../features/perfil/presentation/controllers/perfil_controller.dart';
+
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
 
@@ -56,27 +58,34 @@ class AppDrawer extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 1. Mi perfil con Avatar de usuario
-              ListTile(
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
-                leading: CircleAvatar(
-                  radius: 18.r,
-                  // Imagen de placeholder online
-                  backgroundImage: const NetworkImage('https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'),
-                  backgroundColor: Colors.grey.shade300,
-                ),
-                title: Text(
-                  'Mi perfil',
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF1F2937),
+              Obx(() {
+                final perfilCtrl = Get.find<PerfilController>();
+                final url = perfilCtrl.usuario.value?.fotoPerfilUrl;
+                final tieneFoto = url != null && url.isNotEmpty;
+
+                return ListTile(
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+                  leading: CircleAvatar(
+                    radius: 18.r,
+                    backgroundColor: Colors.grey.shade300,
+                    backgroundImage: tieneFoto
+                        ? NetworkImage(url)
+                        : const NetworkImage('https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'),
                   ),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  Get.toNamed('/perfil');
-                },
-              ),
+                  title: Text(
+                    'Mi perfil',
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF1F2937),
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Get.toNamed('/perfil');
+                  },
+                );
+              }),
 
               // 2. Historial Recorridos
               ListTile(

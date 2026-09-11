@@ -119,15 +119,15 @@ class NuevoRecorridoScreen extends GetView<NuevoRecorridoController> {
   Widget _buildControles() {
     switch (controller.estado.value) {
       case 'inicial':
-        return _botonCircular(icono: Icons.play_arrow_rounded, color: const Color(0xFF0066FF), onTap: controller.iniciarRecorrido);
+        return _BotonObturador(detener: false, onTap: controller.iniciarRecorrido);
 
       case 'grabando':
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _botonCircular(icono: Icons.pause, color: const Color(0xFFEBF3FE), iconColor: const Color(0xFF2D3142), bordeColor: const Color(0xFFD0E2FF), onTap: controller.pausarRecorrido),
-            SizedBox(width: 20.w),
-            _botonCircular(icono: Icons.stop_rounded, color: const Color(0xFFFF0033), onTap: controller.finalizarRecorrido),
+            _BotonSecundario(icono: Icons.pause_rounded, onTap: controller.pausarRecorrido),
+            SizedBox(width: 28.w),
+            _BotonObturador(detener: true, onTap: controller.finalizarRecorrido),
           ],
         );
 
@@ -135,9 +135,9 @@ class NuevoRecorridoScreen extends GetView<NuevoRecorridoController> {
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _botonCircular(icono: Icons.play_arrow_rounded, color: const Color(0xFF0066FF), onTap: controller.reanudarRecorrido),
-            SizedBox(width: 20.w),
-            _botonCircular(icono: Icons.stop_rounded, color: const Color(0xFFFF0033), onTap: controller.finalizarRecorrido),
+            _BotonSecundario(icono: Icons.play_arrow_rounded, onTap: controller.reanudarRecorrido),
+            SizedBox(width: 28.w),
+            _BotonObturador(detener: true, onTap: controller.finalizarRecorrido),
           ],
         );
 
@@ -153,15 +153,112 @@ class NuevoRecorridoScreen extends GetView<NuevoRecorridoController> {
         );
     }
   }
+}
 
-  Widget _botonCircular({required IconData icono, required Color color, Color iconColor = Colors.white, Color? bordeColor, required VoidCallback onTap}) {
+
+/// Botón principal estilo "obturador de cámara": aro blanco con una
+/// forma roja interior que cambia entre círculo (iniciar) y cuadrado
+/// redondeado (detener), con animación de escala al presionar.
+class _BotonObturador extends StatefulWidget {
+  final bool detener;
+  final VoidCallback onTap;
+
+  const _BotonObturador({required this.detener, required this.onTap});
+
+  @override
+  State<_BotonObturador> createState() => _BotonObturadorState();
+}
+
+class _BotonObturadorState extends State<_BotonObturador> with SingleTickerProviderStateMixin {
+  late final AnimationController _controllerAnim;
+  late final Animation<double> _escala;
+
+  @override
+  void initState() {
+    super.initState();
+    _controllerAnim = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 120),
+    );
+    _escala = Tween<double>(begin: 1.0, end: 0.88).animate(
+      CurvedAnimation(parent: _controllerAnim, curve: Curves.easeOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controllerAnim.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => _controllerAnim.forward(),
+      onTapUp: (_) {
+        _controllerAnim.reverse();
+        widget.onTap();
+      },
+      onTapCancel: () => _controllerAnim.reverse(),
+      child: AnimatedBuilder(
+        animation: _escala,
+        builder: (context, child) => Transform.scale(scale: _escala.value, child: child),
+        child: Container(
+          width: 76.w,
+          height: 76.h,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.black.withOpacity(0.06),
+            border: Border.all(color: Colors.white, width: 4.w),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 8, offset: const Offset(0, 2)),
+            ],
+          ),
+          child: Center(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeInOut,
+              width: widget.detener ? 30.w : 54.w,
+              height: widget.detener ? 30.h : 54.h,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF3B30),
+                borderRadius: BorderRadius.circular(widget.detener ? 8.r : 27.r),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Botón secundario circular (pausar / reanudar), con aro claro y
+/// transición animada entre íconos.
+class _BotonSecundario extends StatelessWidget {
+  final IconData icono;
+  final VoidCallback onTap;
+
+  const _BotonSecundario({required this.icono, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: 56.w,
         height: 56.h,
-        decoration: BoxDecoration(color: color, shape: BoxShape.circle, border: bordeColor != null ? Border.all(color: bordeColor) : null),
-        child: Icon(icono, color: iconColor, size: 28.sp),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: const Color(0xFFEBF3FE),
+          border: Border.all(color: const Color(0xFFD0E2FF), width: 2.w),
+        ),
+        child: Center(
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            transitionBuilder: (child, animation) => ScaleTransition(scale: animation, child: child),
+            child: Icon(icono, key: ValueKey(icono), color: const Color(0xFF2D3142), size: 26.sp),
+          ),
+        ),
       ),
     );
   }
