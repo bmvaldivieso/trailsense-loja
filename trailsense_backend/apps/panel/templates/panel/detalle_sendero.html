@@ -114,16 +114,31 @@
 
                         <div id="mapaGeometria" class="mapa-geometria-container rounded-4 mb-2"></div>
 
-                        <button type="button" id="btnLimpiarDibujo" class="btn btn-sm btn-outline-secondary rounded-pill mb-2">
-                            <i class="bi bi-eraser"></i> Limpiar dibujo
-                        </button>
+                        <div class="d-flex gap-2 mb-2">
+                            <button type="button" id="btnLimpiarDibujo" class="btn btn-sm btn-outline-secondary rounded-pill">
+                                <i class="bi bi-eraser"></i> Limpiar dibujo
+                            </button>
+                            <button type="button" id="btnFijarUbicacion" class="btn btn-sm btn-outline-primary rounded-pill">
+                                <i class="bi bi-geo-alt"></i> Fijar ubicación
+                            </button>
 
-                        <label class="form-label text-dark fw-semibold small">
+                            <div class="dropup">
+                                <button class="btn btn-sm btn-outline-dark rounded-pill dropdown-toggle" type="button"
+                                        id="btnCantones" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-map"></i> Cantones
+                                </button>
+                                <ul class="dropdown-menu" id="listaCantones" aria-labelledby="btnCantones">
+                                    <!-- Se llena dinámicamente desde JS -->
+                                </ul>
+                            </div>
+                        </div>
+
+                        <label class="form-label text-dark fw-semibold small d-block">
                             Geometria (WKT)
                             <span class="text-muted fw-normal">— LINESTRING(lon lat, lon lat, ...)</span>
                         </label>
                         <textarea id="geometriaWktInput" name="geometria_wkt" class="form-control form-control-pill text-muted small" rows="3"
-                                  placeholder="LINESTRING(-79.2005 -3.9973, -79.199 -3.998)">{% if sendero %}{{ sendero.geometria.wkt }}{% endif %}</textarea>
+                                placeholder="LINESTRING(-79.2005 -3.9973, -79.199 -3.998)">{% if sendero %}{{ sendero.geometria.wkt }}{% endif %}</textarea>
                     </div>
 
                     <div class="d-flex justify-content-end gap-3 mt-4">
@@ -143,5 +158,5 @@
     window.CARTO_API_KEY = "{{ carto_api_key }}";
 </script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="{% static 'panel/js/detalle_sendero.js' %}"></script>
+<script src="{% static 'panel/js/detalle_sendero.js' %}?v={% now 'U' %}"></script>
 {% endblock %}

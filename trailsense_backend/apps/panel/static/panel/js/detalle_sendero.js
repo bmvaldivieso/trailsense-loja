@@ -4,10 +4,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const mapaDiv = document.getElementById('mapaGeometria');
     const wktInput = document.getElementById('geometriaWktInput');
     const btnLimpiar = document.getElementById('btnLimpiarDibujo');
+    const btnUbicacion = document.getElementById('btnFijarUbicacion');
+    const selectEstado = document.querySelector('select[name="estado"]');
 
     if (!mapaDiv || !wktInput) return;
 
-    // Centro por defecto: Loja, Ecuador
     const centroDefault = [-3.9973, -79.2005];
 
     const mapa = L.map('mapaGeometria').setView(centroDefault, 13);
@@ -15,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const cartoKey = window.CARTO_API_KEY || '';
     const cartoTileUrl = cartoKey
         ? `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${cartoKey}`
-        : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';   // fallback si falta la key
+        : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
     L.tileLayer(cartoTileUrl, {
         attribution: '&copy; OpenStreetMap contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
@@ -23,47 +24,47 @@ document.addEventListener('DOMContentLoaded', function () {
         subdomains: 'abcd',
     }).addTo(mapa);
 
-    // Recalcula el tamaño del contenedor (evita mapa en blanco dentro de columnas Bootstrap)
-    setTimeout(function () {
-        mapa.invalidateSize();
-    }, 100);
+    setTimeout(function () { mapa.invalidateSize(); }, 100);
 
-    let puntos = [];       // array de [lat, lon] mientras se dibuja
-    let polyline = null;   // capa activa dibujada en el mapa
-    let dibujando = false;
-    let sincronizandoDesdeMapa = false;   // evita loops entre mapa <-> textarea
+    let puntos = [];
+    let polyline = null;
+    let sincronizandoDesdeMapa = false;
 
     // --------------------------------------------------------
-    // WKT -> array de puntos [lat, lon]
+    // Color de la línea según el estado del sendero
     // --------------------------------------------------------
+    const coloresPorEstado = {
+        bueno: '#3b82f6',     // azul
+        alerta: '#f59e0b',    // naranja
+        critico: '#dc2626',   // rojo
+    };
+
+    function colorSegunEstado() {
+        const valor = selectEstado ? selectEstado.value : 'bueno';
+        return coloresPorEstado[valor] || coloresPorEstado.bueno;
+    }
+
     function parsearWkt(wkt) {
         const match = wkt.trim().match(/LINESTRING\s*\(([^)]+)\)/i);
         if (!match) return null;
-
         const coordenadasTexto = match[1].trim();
         if (!coordenadasTexto) return null;
-
         try {
             return coordenadasTexto.split(',').map(function (par) {
                 const partes = par.trim().split(/\s+/).map(Number);
                 const lon = partes[0];
                 const lat = partes[1];
                 if (isNaN(lon) || isNaN(lat)) throw new Error('coordenada inválida');
-                return [lat, lon];   // Leaflet usa [lat, lon]
+                return [lat, lon];
             });
         } catch (e) {
             return null;
         }
     }
 
-    // --------------------------------------------------------
-    // array de puntos [lat, lon] -> WKT
-    // --------------------------------------------------------
     function puntosAWkt(listaPuntos) {
         if (!listaPuntos.length) return '';
-        const coords = listaPuntos
-            .map(function (p) { return p[1] + ' ' + p[0]; })   // lon lat
-            .join(', ');
+        const coords = listaPuntos.map(function (p) { return p[1] + ' ' + p[0]; }).join(', ');
         return 'LINESTRING(' + coords + ')';
     }
 
@@ -73,14 +74,11 @@ document.addEventListener('DOMContentLoaded', function () {
             polyline = null;
         }
         if (listaPuntos && listaPuntos.length > 1) {
-            polyline = L.polyline(listaPuntos, { color: '#3b82f6', weight: 4 }).addTo(mapa);
+            polyline = L.polyline(listaPuntos, { color: colorSegunEstado(), weight: 4 }).addTo(mapa);
             mapa.fitBounds(polyline.getBounds(), { padding: [30, 30] });
         }
     }
 
-    // --------------------------------------------------------
-    // Carga inicial: si ya hay un WKT (modo edición), lo dibuja
-    // --------------------------------------------------------
     const wktInicial = wktInput.value.trim();
     if (wktInicial) {
         const puntosIniciales = parsearWkt(wktInicial);
@@ -90,24 +88,16 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // --------------------------------------------------------
-    // Dibujo manual con clics sobre el mapa
-    // --------------------------------------------------------
     mapa.on('click', function (e) {
         puntos.push([e.latlng.lat, e.latlng.lng]);
         dibujarEnMapa(puntos);
-
         sincronizandoDesdeMapa = true;
         wktInput.value = puntosAWkt(puntos);
         sincronizandoDesdeMapa = false;
     });
 
-    // --------------------------------------------------------
-    // Escribir manualmente en el textarea -> redibuja el mapa
-    // --------------------------------------------------------
     wktInput.addEventListener('input', function () {
-        if (sincronizandoDesdeMapa) return;   // evita loop si el cambio vino del mapa
-
+        if (sincronizandoDesdeMapa) return;
         const nuevosPuntos = parsearWkt(wktInput.value);
         if (nuevosPuntos) {
             puntos = nuevosPuntos;
@@ -115,9 +105,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // --------------------------------------------------------
-    // Botón "Limpiar dibujo"
-    // --------------------------------------------------------
     if (btnLimpiar) {
         btnLimpiar.addEventListener('click', function () {
             puntos = [];
@@ -126,19 +113,95 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // --------------------------------------------------------
-    // Selector de hora con reloj visual y AM/PM (Flatpickr)
-    // --------------------------------------------------------
-    if (typeof flatpickr !== 'undefined') {
-        const configHora = {
-            enableTime: true,
-            noCalendar: true,
-            dateFormat: 'H:i',     // valor real que se envía al servidor (24h, lo que Django espera)
-            altInput: true,
-            altFormat: 'h:i K',    // lo que ve el usuario (12h con AM/PM)
-            time_24hr: false,
-        };
+    // Si el admin cambia el estado en el <select>, la línea se recolorea al instante
+    if (selectEstado) {
+        selectEstado.addEventListener('change', function () {
+            dibujarEnMapa(puntos);
+        });
+    }
 
+    // --------------------------------------------------------
+    // Botón "Fijar ubicación" — geolocalización del navegador
+    // --------------------------------------------------------
+    if (btnUbicacion) {
+        btnUbicacion.addEventListener('click', function () {
+            if (!navigator.geolocation) {
+                mapa.setView(centroDefault, 13);
+                return;
+            }
+
+            btnUbicacion.disabled = true;
+            const textoOriginal = btnUbicacion.innerHTML;
+            btnUbicacion.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Ubicando...';
+
+            function intentarUbicacion(opciones, esReintento) {
+                navigator.geolocation.getCurrentPosition(
+                    function (posicion) {
+                        mapa.setView([posicion.coords.latitude, posicion.coords.longitude], 15);
+                        btnUbicacion.disabled = false;
+                        btnUbicacion.innerHTML = textoOriginal;
+                    },
+                    function (error) {
+                        // Si fue timeout en el primer intento, reintenta una vez con menos exigencia
+                        if (error.code === 3 && !esReintento) {
+                            intentarUbicacion({ enableHighAccuracy: false, timeout: 15000 }, true);
+                            return;
+                        }
+
+                        mapa.setView(centroDefault, 13);
+                        btnUbicacion.disabled = false;
+                        btnUbicacion.innerHTML = textoOriginal;
+                    },
+                    opciones
+                );
+            }
+
+            intentarUbicacion({ enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }, false);
+        });
+    }
+
+    // --------------------------------------------------------
+    // Selector de cantones de Loja — respaldo cuando el GPS falla
+    // --------------------------------------------------------
+    const cantonesLoja = [
+        { nombre: 'Loja',         lat: -3.9931, lon: -79.2042 }, // Ciudad de Loja
+        { nombre: 'Catamayo',     lat: -3.9841, lon: -79.3515 }, // Centro de Catamayo
+        { nombre: 'Calvas',       lat: -4.3249, lon: -79.5539 }, // Cariamanga (Cabecera)
+        { nombre: 'Célica',       lat: -4.1031, lon: -79.9548 }, // Celica ciudad
+        { nombre: 'Chaguarpamba', lat: -3.8906, lon: -79.6444 }, // Chaguarpamba ciudad
+        { nombre: 'Espíndola',    lat: -4.5878, lon: -79.4328 }, // Amaluza (Cabecera)
+        { nombre: 'Gonzanamá',    lat: -4.2312, lon: -79.4344 }, // Gonzanamá ciudad
+        { nombre: 'Macará',       lat: -4.3820, lon: -79.9439 }, // Macará ciudad
+        { nombre: 'Olmedo',       lat: -3.9351, lon: -79.6469 }, // Parque Central de Olmedo, Loja
+        { nombre: 'Paltas',       lat: -4.0411, lon: -79.6540 }, // Catacocha (Cabecera)
+        { nombre: 'Pindal',       lat: -4.1161, lon: -80.1114 }, // Pindal ciudad
+        { nombre: 'Puyango',      lat: -4.0195, lon: -80.0094 }, // Alamor (Cabecera)
+        { nombre: 'Quilanga',     lat: -4.2989, lon: -79.4042 }, // Quilanga ciudad
+        { nombre: 'Saraguro',     lat: -3.6214, lon: -79.2381 }, // Saraguro ciudad
+        { nombre: 'Sozoranga',    lat: -4.3292, lon: -79.7914 }, // Sozoranga ciudad
+        { nombre: 'Zapotillo',    lat: -4.3831, lon: -80.2436 }  // Zapotillo ciudad
+    ];
+
+    const listaCantones = document.getElementById('listaCantones');
+
+    if (listaCantones) {
+        cantonesLoja.forEach(function (canton) {
+            const item = document.createElement('li');
+            const link = document.createElement('a');
+            link.className = 'dropdown-item';
+            link.href = '#';
+            link.textContent = canton.nombre;
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                mapa.setView([canton.lat, canton.lon], 13);
+            });
+            item.appendChild(link);
+            listaCantones.appendChild(item);
+        });
+    }
+
+    if (typeof flatpickr !== 'undefined') {
+        const configHora = { enableTime: true, noCalendar: true, dateFormat: 'H:i', altInput: true, altFormat: 'h:i K', time_24hr: false };
         flatpickr('#horarioApertura', configHora);
         flatpickr('#horarioCierre', configHora);
     }

@@ -7,6 +7,8 @@ import 'package:latlong2/latlong.dart';
 import '../controllers/senderos_controller.dart';
 import '../../data/models/sendero_model.dart';
 
+import '../widgets/filtros_senderos_sheet.dart';
+
 class SenderosScreen extends GetView<SenderosController> {
   const SenderosScreen({super.key});
 
@@ -184,7 +186,7 @@ class SenderosScreen extends GetView<SenderosController> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         GestureDetector(
-                          onTap: () => _mostrarFiltros(context),
+                          onTap: () => mostrarFiltrosSenderos(context, controller),
                           child: const Row(
                             children: [
                               Text('Filtros', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -263,63 +265,5 @@ class SenderosScreen extends GetView<SenderosController> {
       ),
     );
   }
-
-  void _mostrarFiltros(BuildContext context) {
-    Get.bottomSheet(
-      Container(
-        padding: EdgeInsets.all(20.r),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Filtrar senderos', style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
-            SizedBox(height: 16.h),
-            Text('Dificultad', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14.sp)),
-            SizedBox(height: 8.h),
-            Wrap(
-              spacing: 8.w,
-              children: ['baja', 'media', 'alta'].map((d) {
-                final seleccionado = controller.filtroDificultad.value == d;
-                return ChoiceChip(
-                  label: Text(d),
-                  selected: seleccionado,
-                  selectedColor: const Color(0xFF3B82F6),
-                  labelStyle: TextStyle(color: seleccionado ? Colors.white : Colors.black87),
-                  backgroundColor: const Color(0xFFF0F2F5),
-                  onSelected: (_) {
-                    controller.aplicarFiltro(dificultad: d);
-                    Get.back();
-                  },
-                );
-              }).toList(),
-            ),
-            SizedBox(height: 16.h),
-            Text('Estado', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14.sp)),
-            SizedBox(height: 8.h),
-            Wrap(
-              spacing: 8.w,
-              children: ['bueno', 'alerta', 'critico'].map((e) {
-                final seleccionado = controller.filtroEstado.value == e;
-                return ChoiceChip(
-                  label: Text(e),
-                  selected: seleccionado,
-                  selectedColor: const Color(0xFF3B82F6),
-                  labelStyle: TextStyle(color: seleccionado ? Colors.white : Colors.black87),
-                  backgroundColor: const Color(0xFFF0F2F5),
-                  onSelected: (_) {
-                    controller.aplicarFiltro(estado: e);
-                    Get.back();
-                  },
-                );
-              }).toList(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  
 }
