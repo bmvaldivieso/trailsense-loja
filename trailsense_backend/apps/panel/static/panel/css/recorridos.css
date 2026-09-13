@@ -1,0 +1,159 @@
+.usuario-card {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    padding: 20px;
+}
+
+.usuario-header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 8px;
+    min-width: 200px;
+    align-self: stretch;
+}
+
+.usuario-header img {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #eee;
+}
+
+.buscador-usuario {
+    max-width: 220px;
+}
+
+/* Grid de 2 filas con scroll horizontal, en vez de una sola fila flex */
+.recorridos-scroll {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: repeat(2, auto);
+    gap: 16px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+}
+
+.recorrido-card {
+    width: 220px;
+    background: #f8f9fb;
+    border-radius: 14px;
+    padding: 10px;
+}
+
+.badge-recorrido-numero {
+    background-color: #eef2ff;
+    color: #3b82f6;
+    font-weight: 700;
+    font-size: 0.75rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+}
+
+/* Botón "Detalle" flotando sobre la esquina inferior derecha de la imagen */
+.recorrido-card-img-wrapper {
+    position: relative;
+}
+
+.recorrido-card-img-wrapper img {
+    width: 100%;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.btn-detalle-recorrido {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+}
+
+/* Sidebar derecho deslizante */
+.sidebar-detalle {
+    position: fixed;
+    top: 0;
+    right: -420px;
+    width: 400px;
+    max-width: 90vw;
+    height: 100vh;
+    background: #fff;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+    transition: right 0.3s ease;
+    z-index: 1050;
+    overflow-y: auto;
+    border-top-left-radius: 14px;
+    border-bottom-left-radius: 14px;
+}
+
+.sidebar-detalle.abierto {
+    right: 0;
+}
+
+.overlay-detalle {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 1040;
+}
+
+/* Acento azul centrado bajo el título */
+.detalle-header-accent {
+    width: 70px;
+    height: 4px;
+    background-color: #3b82f6;
+    border-radius: 4px;
+}
+
+/* Mapa más alto (antes 220px) */
+.mapa-detalle-recorrido {
+    height: 340px;
+    width: 100%;
+}
+
+/* Grid 2x2 de métricas, más grandes y centradas */
+.stats-grid-detalle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    text-align: center;
+    margin: 20px 0;
+}
+
+.stats-grid-detalle .stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 8px auto;
+}
+
+.stats-grid-detalle .stat-valor {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #1e2a44;
+}
+
+.btn-cerrar-detalle-recorrido {
+    border-radius: 10px;
+}
+
+/* Etiqueta visual para recorridos no finalizados */
+.badge-estado-invalido {
+    display: inline-block;
+    background-color: #fef3c7;
+    color: #92400e;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+}
+
+.btn-toggle-invalidos {
+    align-self: flex-start;
+}

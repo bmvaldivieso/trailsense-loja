@@ -1,0 +1,33 @@
+{% extends "panel/base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="{% static 'panel/css/recorridos.css' %}">
+{% endblock %}
+
+{% block content %}
+<h4 class="fw-bold text-dark mb-4 fs-4">Lista de Senderistas con sus Recorridos</h4>
+
+<div id="listaUsuarios" class="d-flex flex-column gap-3"></div>
+
+<div id="mensajeVacio" class="alert alert-info d-none">Aún no hay recorridos registrados.</div>
+
+<div id="overlayDetalle" class="overlay-detalle d-none"></div>
+
+<aside id="sidebarDetalle" class="sidebar-detalle">
+    <div class="detalle-header text-center py-3 border-bottom">
+        <span class="text-primary fw-semibold">Detalle Recorrido</span>
+        <div class="detalle-header-accent mx-auto mt-2"></div>
+    </div>
+    <div id="contenidoDetalle" class="p-3">
+        <div class="text-center text-muted py-5">Selecciona un recorrido para ver el detalle.</div>
+    </div>
+</aside>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>window.CARTO_API_KEY = "{{ carto_api_key }}";</script>
+<script src="{% static 'panel/js/recorridos.js' %}"></script>
+{% endblock %}

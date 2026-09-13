@@ -18,6 +18,9 @@ from .serializers import (
 from django.db.models import Count, Sum 
 from .matching import detectar_sendero_cercano, detectar_sendero_para_sesion
 
+from rest_framework.authentication import SessionAuthentication
+from core.permissions.roles import EsAdminOSuperusuario
+
 
 class SesionesListView(generics.ListAPIView):
     """GET /api/sesiones/ -> mis sesiones."""
@@ -188,3 +191,62 @@ class FinalizarSesionView(APIView):
         usuario.save(update_fields=['kilometros_recorridos'])
 
         return Response(SesionDetailSerializer(sesion).data)
+
+
+
+
+class RecorridosPorUsuarioView(APIView):
+    """
+    GET /api/sesiones/panel/  (solo administrador/superusuario)
+
+    Devuelve todos los recorridos finalizados, agrupados por senderista,
+    para el listado de recorridos del panel web (Sprint 14).
+    """
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated, EsAdminOSuperusuario]
+
+    def get(self, request):
+        usuarios_con_sesiones = {}
+        # Se traen todos los recorridosy cada recorrido lleva su propio campo "estado" para que el panel decida qué mostrar
+        sesiones = SesionCaminata.objects.select_related('usuario', 'sendero').order_by('-iniciado_en')
+
+        for s in sesiones:
+            uid = s.usuario_id
+            if uid not in usuarios_con_sesiones:
+                usuarios_con_sesiones[uid] = {
+                    "usuario_id": uid,
+                    "usuario_nombre": f"{s.usuario.first_name} {s.usuario.last_name}".strip() or s.usuario.email,
+                    "usuario_foto": request.build_absolute_uri(s.usuario.foto_perfil.url) if s.usuario.foto_perfil else None,
+                    "recorridos": [],
+                }
+            usuarios_con_sesiones[uid]["recorridos"].append({
+                "id": s.id,
+                "fecha": s.iniciado_en.strftime("%d.%m.%Y %I:%M %p"),
+                "distancia_km": s.distancia_km,
+                "sendero_nombre": s.sendero.nombre if s.sendero else None,
+                "estado": s.estado,   # NUEVO
+            })
+
+        return Response(list(usuarios_con_sesiones.values()))
+
+
+class RecorridoDetalleAdminView(APIView):
+    """
+    GET /api/sesiones/panel/<id>/  (solo administrador/superusuario)
+
+    Detalle completo de un recorrido, reutilizando SesionDetailSerializer
+    (ya incluye traza, distancia, duración, velocidad promedio y pasos).
+    """
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated, EsAdminOSuperusuario]
+
+    def get(self, request, pk):
+        try:
+            sesion = SesionCaminata.objects.select_related('usuario', 'sendero').get(pk=pk)
+        except SesionCaminata.DoesNotExist:
+            return Response({"detail": "Recorrido no encontrado."}, status=404)
+
+        data = SesionDetailSerializer(sesion, context={'request': request}).data
+        data['usuario_nombre'] = f"{sesion.usuario.first_name} {sesion.usuario.last_name}".strip() or sesion.usuario.email
+        data['usuario_foto'] = request.build_absolute_uri(sesion.usuario.foto_perfil.url) if sesion.usuario.foto_perfil else None
+        return Response(data)

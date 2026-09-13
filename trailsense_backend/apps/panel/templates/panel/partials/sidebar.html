@@ -24,8 +24,9 @@
             <a class="nav-link text-muted d-flex align-items-center gap-3 px-3 py-2 rounded-3" href="#">
                 <i class="bi bi-globe fs-5"></i><span>Mapa Interactivo</span>
             </a>
-            <a class="nav-link text-muted d-flex align-items-center gap-3 px-3 py-2 rounded-3" href="#">
-                <i class="bi bi-geo fs-5"></i><span>Recorridos</span>
+            <a class="nav-link {% if active_page == 'recorridos' %}active{% else %}text-muted{% endif %} d-flex align-items-center gap-3 px-3 py-2 rounded-3"
+               href="{% url 'panel:recorridos' %}">
+                <i class="bi bi-geo{% if active_page == 'recorridos' %}-fill{% endif %} fs-5"></i><span>Recorridos</span>
             </a>
             <a class="nav-link text-muted d-flex align-items-center gap-3 px-3 py-2 rounded-3" href="#">
                 <i class="bi bi-arrow-counterclockwise fs-5"></i><span>Historial de actividad</span>

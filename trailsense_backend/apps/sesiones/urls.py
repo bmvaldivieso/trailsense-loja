@@ -2,6 +2,7 @@ from django.urls import path
 from .views import (
     SesionesListView, SesionDetailView, IniciarSesionView,
     EnviarPuntosView, PausarSesionView, ReanudarSesionView, FinalizarSesionView,
+    RecorridosPorUsuarioView, RecorridoDetalleAdminView,
 )
 
 urlpatterns = [
@@ -12,4 +13,7 @@ urlpatterns = [
     path('sesiones/<int:pk>/pausar/', PausarSesionView.as_view(), name='sesion-pausar'),
     path('sesiones/<int:pk>/reanudar/', ReanudarSesionView.as_view(), name='sesion-reanudar'),
     path('sesiones/<int:pk>/finalizar/', FinalizarSesionView.as_view(), name='sesion-finalizar'),
+
+    path('sesiones/panel/', RecorridosPorUsuarioView.as_view(), name='sesiones-panel-list'),
+    path('sesiones/panel/<int:pk>/', RecorridoDetalleAdminView.as_view(), name='sesiones-panel-detail'),
 ]

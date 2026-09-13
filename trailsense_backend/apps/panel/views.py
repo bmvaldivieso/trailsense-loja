@@ -137,3 +137,18 @@ class EliminarSenderoPanelView(PanelAccesoMixin, View):
         sendero.delete()
         messages.success(request, "Sendero eliminado correctamente.")
         return redirect("panel:senderos")
+
+
+
+
+
+
+class RecorridosPanelView(PanelAccesoMixin, View):
+    template_name = "panel/recorridos.html"
+
+    def get(self, request):
+        return render(request, self.template_name, {
+            "active_page": "recorridos",
+            "page_title": "Recorridos",
+            "carto_api_key": settings.CARTO_BASEMAPS_API_KEY,
+        })        
