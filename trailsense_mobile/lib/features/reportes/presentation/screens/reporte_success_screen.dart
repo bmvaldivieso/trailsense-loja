@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import '../../../main/presentation/controllers/main_controller.dart';
+
 class ReporteSuccessScreen extends StatelessWidget {
   const ReporteSuccessScreen({super.key});
 
@@ -42,7 +44,11 @@ class ReporteSuccessScreen extends StatelessWidget {
               SizedBox(
                 width: double.infinity, height: 54.h,
                 child: ElevatedButton(
-                  onPressed: () => Get.offAllNamed('/mis-reportes'),
+                  onPressed: () {
+                    Get.until((route) => route.settings.name == '/main');
+                    Get.find<MainController>().changePage(3);
+                    Get.toNamed('/mis-reportes');
+                  },
                   style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF5F7FA), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r))),
                   child: Text('Volver al listado de reportes', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: const Color(0xFF3B82F6))),
                 ),

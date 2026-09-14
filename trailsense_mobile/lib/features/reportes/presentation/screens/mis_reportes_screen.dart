@@ -146,10 +146,17 @@ class MisReportesScreen extends GetView<MisReportesController> {
                                 height: 14.h,
                                 umbral: 30,
                               ),
-                              if (reporte.validado)
+                              if (reporte.estado != 'pendiente')
                                 Padding(
                                   padding: EdgeInsets.only(top: 4.h),
-                                  child: Text('✓ Validado', style: TextStyle(fontSize: 11.sp, color: Colors.green[700], fontWeight: FontWeight.bold)),
+                                  child: Text(
+                                    reporte.estado == 'aprobado' ? '✓ Aprobado' : '✗ Rechazado',
+                                    style: TextStyle(
+                                      fontSize: 11.sp,
+                                      fontWeight: FontWeight.bold,
+                                      color: reporte.estado == 'aprobado' ? Colors.green[700] : Colors.red[700],
+                                    ),
+                                  ),
                                 ),
                             ],
                           ),

@@ -10,8 +10,8 @@ class FotoReporteInline(admin.TabularInline):
 
 @admin.register(Reporte)
 class ReporteAdmin(GISModelAdmin):
-    list_display = ('id', 'usuario', 'sendero', 'categoria', 'validado', 'votos_confirmacion', 'fecha_creacion')
-    list_filter = ('categoria', 'validado', 'sendero')
+    list_display = ('id', 'usuario', 'sendero', 'categoria', 'estado', 'votos_confirmacion', 'fecha_creacion')
+    list_filter = ('categoria', 'estado', 'sendero')
     search_fields = ('usuario__email', 'descripcion')
     inlines = [FotoReporteInline]
     default_lon = -79.2005

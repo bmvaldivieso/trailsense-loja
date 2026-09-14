@@ -30,7 +30,7 @@ class ReporteListSerializer(serializers.ModelSerializer):
         model = Reporte
         fields = [
             'id', 'sendero', 'sendero_nombre', 'usuario_email', 'categoria',
-            'descripcion', 'validado', 'votos_confirmacion', 'fecha_creacion',
+            'descripcion', 'estado', 'votos_confirmacion', 'fecha_creacion',
             'foto_portada', 'lat', 'lon',
         ]
         read_only_fields = fields
@@ -53,5 +53,5 @@ class ReporteDetailSerializer(ReporteListSerializer):
     fotos = FotoReporteSerializer(many=True, read_only=True)
 
     class Meta(ReporteListSerializer.Meta):
-        fields = ReporteListSerializer.Meta.fields + ['fotos', 'altitud']
+        fields = ReporteListSerializer.Meta.fields + ['fotos', 'altitud', 'comentario_admin', 'distancia_sendero_m']
         read_only_fields = fields

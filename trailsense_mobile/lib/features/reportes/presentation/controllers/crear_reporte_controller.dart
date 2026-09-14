@@ -11,6 +11,9 @@ import '../../../senderos/data/repositories/senderos_repository.dart';
 
 import 'package:dio/dio.dart';
 
+import '../../../reportes/presentation/controllers/mis_reportes_controller.dart';
+import '../../../reportes/presentation/controllers/reportes_controller.dart';
+
 
 class CrearReporteController extends GetxController {
   final ReportesRepository _repository = ReportesRepository();
@@ -174,6 +177,14 @@ class CrearReporteController extends GetxController {
         descripcion: descripcionCtrl.text.trim(),
         fotos: fotos,
       );
+
+      // Refresca ambos listados de reportes, igual que ya se hace con SesionesController
+      if (Get.isRegistered<MisReportesController>()) {
+        Get.find<MisReportesController>().cargarMisReportes();
+      }
+      if (Get.isRegistered<ReportesController>()) {
+        Get.find<ReportesController>().cargarReportes();
+      }
 
       Get.offNamed('/reporte-enviado');
       } catch (e) {

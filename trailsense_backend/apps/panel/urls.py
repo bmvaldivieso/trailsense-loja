@@ -13,4 +13,7 @@ urlpatterns = [
     path("senderos/<int:pk>/eliminar/", views.EliminarSenderoPanelView.as_view(), name="sendero-eliminar"),
 
     path("recorridos/", views.RecorridosPanelView.as_view(), name="recorridos"),
+
+    path("incidencias/", views.IncidenciasPanelView.as_view(), name="incidencias"),
+    path("incidencias/<int:pk>/", views.DetalleIncidenciaPanelView.as_view(), name="detalle-incidencia"),
 ]

@@ -17,6 +17,13 @@ from .validaciones import (
 )
 from .reputacion import actualizar_reputacion, PUNTOS_POR_REPORTE_CREADO
 
+from django.shortcuts import get_object_or_404
+from rest_framework.authentication import SessionAuthentication
+
+from core.permissions.roles import EsAdminOSuperusuario
+from apps.senderos.serializers import SenderoSerializer
+from .reputacion import actualizar_reputacion, PUNTOS_POR_REPORTE_VALIDADO, PUNTOS_POR_REPORTE_RECHAZADO
+
 
 class ReporteViewSet(viewsets.ReadOnlyModelViewSet):
     """
@@ -112,3 +119,77 @@ class CrearReporteView(APIView):
             ReporteDetailSerializer(reporte, context={'request': request}).data,
             status=status.HTTP_201_CREATED,
         )
+
+
+
+class ReportesPanelListView(APIView):
+    """GET /api/reportes/panel/ — listado completo + indicadores, para el panel (DataTables)."""
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated, EsAdminOSuperusuario]
+
+    def get(self, request):
+        reportes = Reporte.objects.select_related('usuario', 'sendero').order_by('-fecha_creacion')
+
+        data = [{
+            "id": r.id,
+            "usuario_nombre": f"{r.usuario.first_name} {r.usuario.last_name}".strip() or r.usuario.email,
+            "sendero_nombre": r.sendero.nombre if r.sendero else '',
+            "categoria": r.get_categoria_display(),
+            "estado": r.estado,
+            "fecha_creacion": r.fecha_creacion.strftime("%d-%m-%Y"),
+        } for r in reportes]
+
+        contadores = {
+            "total": reportes.count(),
+            "pendientes": reportes.filter(estado='pendiente').count(),
+            "aprobados": reportes.filter(estado='aprobado').count(),
+            "rechazados": reportes.filter(estado='rechazado').count(),
+        }
+        return Response({"reportes": data, "contadores": contadores})
+
+
+class SenderosCercanosPanelView(APIView):
+    """GET /api/reportes/panel/senderos-geojson/ — senderos en GeoJSON, para dibujarlos de referencia en el mapa de detalle."""
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated, EsAdminOSuperusuario]
+
+    def get(self, request):
+        senderos = Sendero.objects.all()
+        return Response(SenderoSerializer(senderos, many=True, context={'request': request}).data)
+
+
+class ReporteDetalleAdminView(APIView):
+    """GET/POST /api/reportes/panel/<id>/ — detalle y revisión (aprobar/rechazar) de un reporte."""
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated, EsAdminOSuperusuario]
+
+    def get(self, request, pk):
+        reporte = get_object_or_404(
+            Reporte.objects.select_related('usuario', 'sendero').prefetch_related('fotos'), pk=pk
+        )
+        return Response(ReporteDetailSerializer(reporte, context={'request': request}).data)
+
+    def post(self, request, pk):
+        reporte = get_object_or_404(Reporte, pk=pk)
+        nuevo_estado = request.data.get('estado')
+        comentario = request.data.get('comentario_admin', '').strip()
+
+        if nuevo_estado not in ('pendiente', 'aprobado', 'rechazado'):
+            return Response({"error": "estado_invalido", "message": "Estado no válido."}, status=400)
+
+        if nuevo_estado == 'rechazado' and not comentario:
+            return Response({"error": "comentario_requerido", "message": "El comentario es obligatorio al rechazar un reporte."}, status=400)
+
+        estado_anterior = reporte.estado
+        reporte.estado = nuevo_estado
+        reporte.comentario_admin = comentario
+        reporte.save(update_fields=['estado', 'comentario_admin'])
+
+        # Aplica la reputación preparada desde el Sprint 11
+        if estado_anterior != nuevo_estado:
+            if nuevo_estado == 'aprobado':
+                actualizar_reputacion(reporte.usuario, PUNTOS_POR_REPORTE_VALIDADO)
+            elif nuevo_estado == 'rechazado':
+                actualizar_reputacion(reporte.usuario, -PUNTOS_POR_REPORTE_RECHAZADO)
+
+        return Response(ReporteDetailSerializer(reporte, context={'request': request}).data)

@@ -59,6 +59,8 @@ class NuevoRecorridoController extends GetxController {
         return;
       }
 
+      await _cerrarRecorridosHuerfanos();
+
       // Posición actual para la detección automática de sendero
       Position? posicionInicial;
       try {
@@ -237,6 +239,12 @@ class NuevoRecorridoController extends GetxController {
   Future<void> finalizarRecorrido() async {
     if (sesion.value == null) return;
 
+    // Si se finaliza estando en pausa, contabiliza también ese último tramo
+    if (_momentoPausa != null) {
+      _segundosPausados += DateTime.now().difference(_momentoPausa!).inSeconds;
+      _momentoPausa = null;
+    }
+
     await _enviarLoteActual();
     _detenerStreams();
     await WakelockPlus.disable();
@@ -278,5 +286,22 @@ class NuevoRecorridoController extends GetxController {
     final m = (d.inMinutes % 60).toString().padLeft(2, '0');
     final s = (d.inSeconds % 60).toString().padLeft(2, '0');
     return h == '00' ? '$m:$s' : '$h:$m:$s';
+  }
+
+  /// Evita que se acumulen sesiones nunca finalizadas en la base de datos
+  Future<void> _cerrarRecorridosHuerfanos() async {
+    try {
+      final sesiones = await _repository.listarSesiones();
+      final huerfanas = sesiones.where((s) => s.estado != 'finalizada');
+      for (final s in huerfanas) {
+        try {
+          await _repository.finalizarSesion(s.id, tiempoPausadoSegundos: 0, pasos: 0);
+        } catch (_) {
+          // si falla una, continúa con las demás sin bloquear el nuevo recorrido
+        }
+      }
+    } catch (_) {
+      // si no se puede consultar, tampoco bloquea el inicio del nuevo recorrido
+    }
   }
 }

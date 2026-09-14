@@ -235,15 +235,21 @@ class DetalleReporteScreen extends GetView<DetalleReporteController> {
                                   ),
                                   SizedBox(height: 8.h),
                                   _MetricItem(
-                                    icon: reporte.validado
+                                    icon: reporte.estado == 'aprobado'
                                         ? Icons.verified
-                                        : Icons.hourglass_empty,
-                                    text: reporte.validado
-                                        ? 'Validado'
-                                        : 'Pendiente de validación',
-                                    iconColor: reporte.validado
+                                        : reporte.estado == 'rechazado'
+                                            ? Icons.cancel
+                                            : Icons.hourglass_empty,
+                                    text: reporte.estado == 'aprobado'
+                                        ? 'Aprobado'
+                                        : reporte.estado == 'rechazado'
+                                            ? 'Rechazado'
+                                            : 'Pendiente de validación',
+                                    iconColor: reporte.estado == 'aprobado'
                                         ? Colors.green.shade600
-                                        : Colors.amber.shade700,
+                                        : reporte.estado == 'rechazado'
+                                            ? Colors.red.shade600
+                                            : Colors.amber.shade700,
                                   ),
                                 ],
                               ),

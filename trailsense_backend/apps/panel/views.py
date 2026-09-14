@@ -152,3 +152,26 @@ class RecorridosPanelView(PanelAccesoMixin, View):
             "page_title": "Recorridos",
             "carto_api_key": settings.CARTO_BASEMAPS_API_KEY,
         })        
+
+
+
+
+
+
+class IncidenciasPanelView(PanelAccesoMixin, View):
+    template_name = "panel/incidencias.html"
+
+    def get(self, request):
+        return render(request, self.template_name, {"active_page": "incidencias", "page_title": "Incidencias"})
+
+
+class DetalleIncidenciaPanelView(PanelAccesoMixin, View):
+    template_name = "panel/detalle_incidencia.html"
+
+    def get(self, request, pk):
+        return render(request, self.template_name, {
+            "active_page": "incidencias",
+            "page_title": "Detalle de Incidencia",
+            "reporte_id": pk,
+            "carto_api_key": settings.CARTO_BASEMAPS_API_KEY,
+        })

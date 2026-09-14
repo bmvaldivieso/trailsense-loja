@@ -1,0 +1,87 @@
+{% extends "panel/base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="{% static 'panel/css/detalle_incidencia.css' %}">
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+
+<div class="row g-3 mb-3">
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 rounded-4 shadow-sm p-3 h-100 d-flex flex-column">
+            <h6 class="fw-bold text-dark mb-3">Detalles</h6>
+            <p id="detalleDescripcion" class="text-primary small"></p>
+
+            <div class="row g-2 mb-2">
+                <div class="col-6">
+                    <label class="form-label small text-muted">Latitud</label>
+                    <input type="text" id="detalleLat" class="form-control form-control-sm" readonly>
+                </div>
+                <div class="col-6">
+                    <label class="form-label small text-muted">Longitud</label>
+                    <input type="text" id="detalleLon" class="form-control form-control-sm" readonly>
+                </div>
+            </div>
+
+            <label class="form-label small text-muted">Sendero</label>
+            <input type="text" id="detalleSendero" class="form-control form-control-sm mb-2" readonly>
+
+            <label class="form-label small text-muted">Distancia al sendero</label>
+            <input type="text" id="detalleDistanciaSendero" class="form-control form-control-sm mb-2" readonly>
+
+            <label class="form-label small text-muted">Comentario del administrador</label>
+            <textarea id="detalleComentario" class="form-control form-control-sm mb-3" rows="3" placeholder="Escriba algo......"></textarea>
+
+            <div class="d-flex gap-2 mt-auto">
+                <button type="button" class="btn btn-primary btn-sm flex-fill" id="btnVerMapa">Mapa</button>
+                <button type="button" class="btn btn-primary btn-sm flex-fill" id="btnGuardarEstado">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 rounded-4 shadow-sm p-3 h-100">
+            <h6 class="fw-bold text-dark mb-3">Estado</h6>
+            <div class="opcion-estado" data-estado="pendiente">
+                <div class="opcion-icono bg-warning bg-opacity-10 text-warning"><i class="bi bi-hourglass-split"></i></div>
+                <div><div class="fw-semibold">Pendiente</div><div class="small text-muted">Clic para Seleccionar</div></div>
+            </div>
+            <div class="opcion-estado" data-estado="rechazado">
+                <div class="opcion-icono bg-danger bg-opacity-10 text-danger"><i class="bi bi-x-circle"></i></div>
+                <div><div class="fw-semibold">Rechazar</div><div class="small text-muted">Clic para Seleccionar</div></div>
+            </div>
+            <div class="opcion-estado" data-estado="aprobado">
+                <div class="opcion-icono bg-success bg-opacity-10 text-success"><i class="bi bi-shield-check"></i></div>
+                <div><div class="fw-semibold">Aprobar</div><div class="small text-muted">Clic para Seleccionar</div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 rounded-4 shadow-sm p-3 h-100">
+            <h6 class="fw-bold text-dark mb-3">Fotos</h6>
+            <div id="grillaFotos" class="grilla-fotos"></div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 rounded-4 shadow-sm overflow-hidden">
+    <div id="mapaDetalleIncidencia" class="mapa-detalle-incidencia"></div>
+</div>
+
+<div id="lightboxOverlay" class="lightbox-overlay d-none">
+    <img id="lightboxImagen" src="" alt="Foto ampliada">
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    window.CARTO_API_KEY = "{{ carto_api_key }}";
+    window.REPORTE_ID = parseInt("{{ reporte_id }}", 10);
+</script>
+<script src="{% static 'panel/js/detalle_incidencia.js' %}"></script>
+{% endblock %}

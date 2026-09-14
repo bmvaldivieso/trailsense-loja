@@ -1,0 +1,54 @@
+{% extends "panel/base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="{% static 'panel/css/incidencias.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card border-0 rounded-4 shadow-sm p-3 d-flex flex-row align-items-center gap-3">
+            <div class="indicador-icono bg-primary bg-opacity-10 text-primary"><i class="bi bi-clipboard-data"></i></div>
+            <div><div class="text-muted small">Total</div><div class="fs-4 fw-bold" id="indTotal">0</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card border-0 rounded-4 shadow-sm p-3 d-flex flex-row align-items-center gap-3">
+            <div class="indicador-icono bg-warning bg-opacity-10 text-warning"><i class="bi bi-hourglass-split"></i></div>
+            <div><div class="text-muted small">Pendientes</div><div class="fs-4 fw-bold" id="indPendientes">0</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card border-0 rounded-4 shadow-sm p-3 d-flex flex-row align-items-center gap-3">
+            <div class="indicador-icono bg-danger bg-opacity-10 text-danger"><i class="bi bi-x-circle"></i></div>
+            <div><div class="text-muted small">Rechazadas</div><div class="fs-4 fw-bold" id="indRechazadas">0</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card border-0 rounded-4 shadow-sm p-3 d-flex flex-row align-items-center gap-3">
+            <div class="indicador-icono bg-success bg-opacity-10 text-success"><i class="bi bi-shield-check"></i></div>
+            <div><div class="text-muted small">Aprobadas</div><div class="fs-4 fw-bold" id="indAprobadas">0</div></div>
+        </div>
+    </div>
+</div>
+
+<h4 class="fw-bold text-dark mb-3 fs-5">Listado de Incidencias</h4>
+
+<div class="card border-0 rounded-4 shadow-sm p-3">
+    <table id="tablaIncidencias" class="table table-hover align-middle w-100">
+        <thead>
+            <tr><th>ID</th><th>Usuario</th><th>Sendero</th><th>Categoria</th><th>Estado</th><th>Fecha Creacion</th><th>Opciones</th></tr>
+        </thead>
+        <tbody id="cuerpoTablaIncidencias"></tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script src="{% static 'panel/js/incidencias.js' %}"></script>
+{% endblock %}

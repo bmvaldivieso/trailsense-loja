@@ -12,6 +12,12 @@ class Reporte(models.Model):
         ('seguridad', 'Riesgo de seguridad'),
     )
 
+    ESTADO_CHOICES = (
+        ('pendiente', 'Pendiente'),
+        ('aprobado', 'Aprobado'),
+        ('rechazado', 'Rechazado'),
+    )
+
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reportes')
     sendero = models.ForeignKey(Sendero, on_delete=models.CASCADE, related_name='reportes')
 
@@ -21,7 +27,9 @@ class Reporte(models.Model):
     categoria = models.CharField(max_length=20, choices=CATEGORIA_CHOICES)
     descripcion = models.TextField()
 
-    validado = models.BooleanField(default=False)
+    estado = models.CharField(max_length=15, choices=ESTADO_CHOICES, default='pendiente')
+    comentario_admin = models.TextField(blank=True, default='')
+
     votos_confirmacion = models.PositiveIntegerField(default=0)
 
     # Preparación Sprint 11 — se calcula al crear, no bloquea nada aún

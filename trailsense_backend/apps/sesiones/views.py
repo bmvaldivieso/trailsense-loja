@@ -224,7 +224,7 @@ class RecorridosPorUsuarioView(APIView):
                 "fecha": s.iniciado_en.strftime("%d.%m.%Y %I:%M %p"),
                 "distancia_km": s.distancia_km,
                 "sendero_nombre": s.sendero.nombre if s.sendero else None,
-                "estado": s.estado,   # NUEVO
+                "estado": s.estado,
             })
 
         return Response(list(usuarios_con_sesiones.values()))

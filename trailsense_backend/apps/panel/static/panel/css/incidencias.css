@@ -1,0 +1,11 @@
+.indicador-icono {
+    width: 48px; height: 48px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+}
+
+.btn-gps-visual {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+}

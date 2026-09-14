@@ -17,7 +17,7 @@ class ReporteModel {
   final String usuarioEmail;
   final String categoria;
   final String descripcion;
-  final bool validado;
+  final String estado; 
   final int votosConfirmacion;
   final DateTime fechaCreacion;
   final String? fotoPortadaUrl;
@@ -33,7 +33,7 @@ class ReporteModel {
     required this.usuarioEmail,
     required this.categoria,
     required this.descripcion,
-    required this.validado,
+    required this.estado,
     required this.votosConfirmacion,
     required this.fechaCreacion,
     this.fotoPortadaUrl,
@@ -51,7 +51,7 @@ class ReporteModel {
       usuarioEmail: json['usuario_email'] ?? '',
       categoria: json['categoria'] ?? '',
       descripcion: json['descripcion'] ?? '',
-      validado: json['validado'] ?? false,
+      estado: json['estado'] ?? 'pendiente',
       votosConfirmacion: json['votos_confirmacion'] ?? 0,
       fechaCreacion: DateTime.parse(json['fecha_creacion']),
       fotoPortadaUrl: json['foto_portada'],
