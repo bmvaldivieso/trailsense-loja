@@ -106,15 +106,11 @@ class AppDrawer extends StatelessWidget {
               ListTile(
                 contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
                 leading: Icon(Icons.insert_chart_outlined_rounded, color: iconColor, size: 26.r),
-                title: Text(
-                  'Métricas Personales',
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF1F2937),
-                  ),
-                ),
-                onTap: () => Navigator.pop(context),
+                title: Text('Métricas Personales', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w500, color: const Color(0xFF1F2937))),
+                onTap: () {
+                  Navigator.pop(context);
+                  Get.toNamed('/metricas-personales');
+                },
               ),
 
               // 4. Notificaciones

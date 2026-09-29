@@ -59,6 +59,12 @@ dependencies:
   # Desplazamiento en bucle de manera horizontal si el texto no cabe en el espacio disponible
   marquee: ^2.3.0
 
+  fl_chart: ^0.69.0
+
+  share_plus: ^10.1.4
+  
+  path_provider: ^2.1.4
+
 
 
 dev_dependencies:

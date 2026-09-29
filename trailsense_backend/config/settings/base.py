@@ -57,6 +57,8 @@ INSTALLED_APPS = [
     "storages",
 
     'apps.actividad',
+
+    'apps.estadisticas',
 ]
 
 # Configuración de autenticación por sesión para el panel

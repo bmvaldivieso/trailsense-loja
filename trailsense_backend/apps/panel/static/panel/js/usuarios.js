@@ -14,6 +14,27 @@ document.addEventListener('DOMContentLoaded', function () {
         return match ? match[1] : '';
     }
 
+    const tabla = $('#tablaAdmins').DataTable({
+        language: {
+            search: "Buscar:",
+            lengthMenu: "Mostrar _MENU_ registros",
+            info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+            paginate: { previous: "Anterior", next: "Siguiente" },
+            zeroRecords: "No se encontraron administradores",
+        },
+        columns: [
+            { data: 'foto', render: foto => `<img src="${foto || IMG_PLACEHOLDER}" class="foto-tabla">` },
+            { data: 'nombre' },
+            { data: 'total_notificaciones' },
+            { data: 'total_senderos' },
+            { data: 'email' },
+            {
+                data: 'id',
+                render: id => `<button type="button" class="btn btn-outline-primary btn-sm rounded-pill btn-editar-admin" data-id="${id}">Editar</button>`,
+            },
+        ],
+    });
+
     function cargarListado() {
         fetch('/api/auth/panel/admins/listado/', { credentials: 'same-origin' })
             .then(r => r.json())
@@ -22,32 +43,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById('indTotalNotificaciones').textContent = 0;
                 document.getElementById('indTotalSenderos').textContent = data.reduce((acc, a) => acc + a.total_senderos, 0);
 
-                const tbody = document.getElementById('cuerpoTablaAdmins');
-                tbody.innerHTML = '';
-                data.forEach(a => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td><img src="${a.foto || IMG_PLACEHOLDER}" class="foto-tabla"></td>
-                        <td>${a.nombre}</td>
-                        <td>${a.total_notificaciones}</td>
-                        <td>${a.total_senderos}</td>
-                        <td>${a.email}</td>
-                        <td><button type="button" class="btn btn-outline-primary btn-sm rounded-pill btn-editar-admin" data-id="${a.id}">Editar</button></td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-
-                if ($.fn.DataTable.isDataTable('#tablaAdmins')) $('#tablaAdmins').DataTable().destroy();
-                $('#tablaAdmins').DataTable({
-                    language: { search: "Buscar:", lengthMenu: "Mostrar _MENU_ registros", info: "Mostrando _START_ a _END_ de _TOTAL_", paginate: { previous: "Anterior", next: "Siguiente" }, zeroRecords: "Sin resultados" },
-                });
+                tabla.clear();
+                tabla.rows.add(data);
+                tabla.draw();
             });
     }
 
-    document.getElementById('cuerpoTablaAdmins').addEventListener('click', function (e) {
-        const btn = e.target.closest('.btn-editar-admin');
-        if (btn) abrirDetalle(parseInt(btn.dataset.id, 10));
+    $('#tablaAdmins tbody').on('click', '.btn-editar-admin', function () {
+        abrirDetalle(parseInt($(this).data('id'), 10));
     });
+
     document.getElementById('btnNuevoAdmin').addEventListener('click', () => abrirDetalle(null));
 
     function abrirDetalle(id) {
