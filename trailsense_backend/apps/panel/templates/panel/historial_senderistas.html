@@ -1,0 +1,36 @@
+{% extends "panel/base.html" %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'panel/css/historial.css' %}">{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h4 class="fw-bold text-dark mb-0 fs-5">Historial de Actividad — Senderistas</h4>
+    <div class="d-flex align-items-center gap-2">
+        <input type="date" id="filtroDesde" class="form-control form-control-sm">
+        <span class="text-muted small">a</span>
+        <input type="date" id="filtroHasta" class="form-control form-control-sm">
+        <a href="#" id="btnDescargarPdf" class="btn btn-primary rounded-pill px-4 text-nowrap d-inline-flex align-items-center gap-2">
+            <i class="bi bi-file-earmark-pdf"></i> Descargar PDF
+        </a>
+    </div>
+</div>
+<div class="card border-0 rounded-4 shadow-sm p-3">
+    <table class="table table-hover align-middle w-100">
+        <thead><tr><th></th><th>Tipo de actividad</th><th>Fecha y hora</th><th>Senderista</th><th>Ver</th></tr></thead>
+        <tbody id="cuerpoTablaHistorial"></tbody>
+    </table>
+</div>
+<div id="overlayHistorial" class="overlay-detalle d-none"></div>
+<div id="tarjetaHistorial" class="tarjeta-historial-flotante d-none"></div>
+
+<div class="historial-search-floating">
+    <div class="position-relative">
+        <i class="bi bi-search position-absolute start-0 top-50 translate-middle-y ms-3 text-muted"></i>
+        <input type="text" id="buscarActividadInput" class="form-control rounded-pill bg-white ps-5 pe-3 shadow" placeholder="Buscar actividad...">
+    </div>
+</div>
+
+{% endblock %}
+{% block extra_js %}
+<script>window.HISTORIAL_API = '/api/actividad/senderistas/'; window.HISTORIAL_PDF = '/api/actividad/senderistas/pdf/';</script>
+<script src="{% static 'panel/js/historial.js' %}"></script>
+{% endblock %}

@@ -7,7 +7,7 @@ class MainController extends GetxController {
   final List<String> titles = const [
     'Trail Sense Loja',
     'Senderos',
-    'Iniciar Recorrido',
+    'Recorridos',
     'Reportes',
     'Notificaciones',
   ];

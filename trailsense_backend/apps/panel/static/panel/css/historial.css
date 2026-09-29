@@ -1,0 +1,15 @@
+.tarjeta-historial-flotante {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: #fff; border-radius: 20px; padding: 24px; width: 420px; max-width: 90vw;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2); z-index: 1060;
+}
+.overlay-detalle { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 1050; }
+
+.historial-search-floating {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 280px;
+    z-index: 1030;
+}
+.historial-search-floating input { border: none; }

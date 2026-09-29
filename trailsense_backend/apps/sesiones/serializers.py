@@ -28,7 +28,7 @@ class SesionListSerializer(serializers.ModelSerializer):
     class Meta:
         model = SesionCaminata
         fields = [
-            'id', 'sendero', 'sendero_nombre', 'estado',
+            'id', 'numero_usuario', 'sendero', 'sendero_nombre', 'estado',
             'iniciado_en', 'finalizado_en',
             'distancia_km', 'duracion_segundos', 'velocidad_promedio_kmh', 'pasos',
             'punto_inicio',

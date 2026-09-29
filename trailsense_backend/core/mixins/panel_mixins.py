@@ -25,3 +25,28 @@ class PanelAccesoMixin(LoginRequiredMixin, UserPassesTestMixin):
             logout(self.request)
 
         return redirect("panel:login")
+
+
+class SuperusuarioAccesoMixin(LoginRequiredMixin, UserPassesTestMixin):
+    login_url = "panel:login"
+
+    def test_func(self):
+        return self.request.user.rol == "superusuario"
+
+    def handle_no_permission(self):
+        from django.contrib.auth import logout
+        from django.shortcuts import redirect
+        from django.contrib import messages
+
+        if self.request.user.is_authenticated:
+            messages.error(self.request, "Solo el superusuario puede acceder a esta sección.")
+            logout(self.request)
+        return redirect("panel:login")
+
+
+class PermisoSenderosMixin(PanelAccesoMixin):
+    """Exige, además del acceso general al panel, el permiso explícito de senderos (is_staff)."""
+    def test_func(self):
+        if not super().test_func():
+            return False
+        return self.request.user.rol == "superusuario" or self.request.user.is_staff        

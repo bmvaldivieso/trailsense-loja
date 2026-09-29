@@ -1,4 +1,5 @@
 from django.contrib.gis.db import models
+from django.conf import settings
 
 
 class Sendero(models.Model):
@@ -78,6 +79,11 @@ class Sendero(models.Model):
 
     actualizado_en = models.DateTimeField(
         auto_now=True
+    )
+
+    creado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='senderos_creados'
     )
 
     class Meta:

@@ -1,5 +1,9 @@
 from django.urls import path
 from .views import LoginView, RegisterView, VerifyCodeView, ResendCodeView, RequestPasswordResetView, ResetPasswordView, PerfilView, CambiarPasswordView, PanelAdminTestView
+from .views import (
+    AdminsPanelListView, AdminDetalleAPIView,
+    SenderistasPanelListView, SenderistaDetalleAPIView,
+)
 
 urlpatterns = [
     path('login/', LoginView.as_view(), name='login'),
@@ -16,4 +20,10 @@ urlpatterns = [
 
     #Test
     path('panel-admin-test/', PanelAdminTestView.as_view(), name='panel-admin-test'),
+
+    path('panel/admins/listado/', AdminsPanelListView.as_view(), name='panel-admins-list'),
+    path('panel/admins/', AdminDetalleAPIView.as_view(), name='panel-admin-crear'),
+    path('panel/admins/<int:pk>/', AdminDetalleAPIView.as_view(), name='panel-admin-detalle'),
+    path('panel/senderistas/', SenderistasPanelListView.as_view(), name='panel-senderistas-list'),
+    path('panel/senderistas/<int:pk>/', SenderistaDetalleAPIView.as_view(), name='panel-senderista-detalle'),
 ]

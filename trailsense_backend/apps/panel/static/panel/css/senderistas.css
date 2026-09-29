@@ -1,0 +1,72 @@
+/* Indicadores superiores (Total Senderistas, Total Incidencias, Total Recorridos) */
+.indicador-icono {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+}
+
+/* Fotos de perfil en la tabla de DataTables */
+.foto-tabla {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Estilos de la barra lateral derecha (Detalle de Senderista) */
+.sidebar-detalle {
+    position: fixed;
+    top: 0;
+    right: -420px;
+    width: 400px;
+    max-width: 90vw;
+    height: 100vh;
+    background: #ffffff;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+    transition: right 0.3s ease;
+    z-index: 1050;
+    overflow-y: auto;
+    border-top-left-radius: 14px;
+    border-bottom-left-radius: 14px;
+}
+
+.sidebar-detalle.abierto {
+    right: 0;
+}
+
+/* Capa oscura de fondo al abrir el detalle */
+.overlay-detalle {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 1040;
+}
+
+/* Foto principal en el detalle */
+.foto-perfil-detalle {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Campos de lectura del detalle */
+.form-control-pill {
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    padding: 0.5rem 0.9rem;
+    font-size: 0.9rem;
+    background-color: #fafafa;
+}
+
+.detalle-header-accent {
+    width: 70px;
+    height: 4px;
+    background-color: #3b82f6;
+    border-radius: 4px;
+    margin: 0 auto;
+}

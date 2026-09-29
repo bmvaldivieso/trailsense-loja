@@ -2,6 +2,7 @@ import 'package:latlong2/latlong.dart';
 
 class SesionModel {
   final int id;
+  final int? numeroUsuario;
   final int? senderoId;
   final String? senderoNombre;
   final String estado;
@@ -14,10 +15,16 @@ class SesionModel {
   final LatLng? puntoInicio;
   final List<LatLng> traza;
 
-  String get nombreMostrable => senderoNombre != null ? '$senderoNombre - Recorrido $id' : 'Recorrido Libre $id';
+  String get nombreMostrable {
+    final sufijo = numeroUsuario != null ? '$numeroUsuario' : '(sin finalizar)';
+    return senderoNombre != null
+        ? '$senderoNombre - Recorrido $sufijo'
+        : 'Recorrido Libre $sufijo';
+  }
 
   SesionModel({
     required this.id,
+    this.numeroUsuario,
     this.senderoId,
     this.senderoNombre,
     required this.estado,
@@ -49,6 +56,7 @@ class SesionModel {
 
     return SesionModel(
       id: json['id'],
+      numeroUsuario: json['numero_usuario'],
       senderoId: json['sendero'],
       senderoNombre: json['sendero_nombre'],
       estado: json['estado'] ?? 'en_curso',

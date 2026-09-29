@@ -15,11 +15,13 @@ from .serializers import (
     PuntoGPSInputSerializer,
 )
 
-from django.db.models import Count, Sum 
+from django.db.models import Count, Sum, Max 
 from .matching import detectar_sendero_cercano, detectar_sendero_para_sesion
 
 from rest_framework.authentication import SessionAuthentication
 from core.permissions.roles import EsAdminOSuperusuario
+
+from apps.actividad.utils import registrar_actividad
 
 
 class SesionesListView(generics.ListAPIView):
@@ -163,6 +165,13 @@ class FinalizarSesionView(APIView):
         # Vinculación autoritativa sendero-recorrido (Sprint 9)
         sesion.sendero = detectar_sendero_para_sesion(sesion)
 
+        # Número correlativo propio del senderista
+        if sesion.numero_usuario is None:
+            ultimo = SesionCaminata.objects.filter(usuario=sesion.usuario).aggregate(
+                m=Max('numero_usuario')
+            )['m'] or 0
+            sesion.numero_usuario = ultimo + 1
+
         sesion.finalizado_en = timezone.now()
         sesion.tiempo_pausado_segundos = tiempo_pausado
         sesion.pasos = pasos
@@ -190,7 +199,8 @@ class FinalizarSesionView(APIView):
         usuario.kilometros_recorridos = (usuario.kilometros_recorridos or 0) + sesion.distancia_km
         usuario.save(update_fields=['kilometros_recorridos'])
 
-        return Response(SesionDetailSerializer(sesion).data)
+        registrar_actividad(sesion.usuario, 'recorrido_finalizado', f"Distancia: {sesion.distancia_km} km")
+        return Response(SesionDetailSerializer(sesion, context={'request': request}).data)
 
 
 
@@ -221,6 +231,7 @@ class RecorridosPorUsuarioView(APIView):
                 }
             usuarios_con_sesiones[uid]["recorridos"].append({
                 "id": s.id,
+                "numero_usuario": s.numero_usuario,
                 "fecha": s.iniciado_en.strftime("%d.%m.%Y %I:%M %p"),
                 "distancia_km": s.distancia_km,
                 "sendero_nombre": s.sendero.nombre if s.sendero else None,

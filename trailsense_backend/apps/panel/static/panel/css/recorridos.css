@@ -157,3 +157,16 @@
 .btn-toggle-invalidos {
     align-self: flex-start;
 }
+
+/* Buscador flotante de senderistas */
+.recorridos-search-floating {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 280px;
+    z-index: 1030;   /* debajo del overlay (1040) y del sidebar de detalle (1050) */
+}
+
+.recorridos-search-floating input {
+    border: none;
+}

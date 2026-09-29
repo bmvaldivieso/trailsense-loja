@@ -1,0 +1,55 @@
+{% extends "panel/base_superusuario.html" %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="{% static 'panel/css/usuarios.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-4">
+        <div class="card border-0 rounded-4 shadow-sm p-3 d-flex flex-row align-items-center gap-3">
+            <div class="indicador-icono bg-primary bg-opacity-10 text-primary"><i class="bi bi-person"></i></div>
+            <div><div class="text-muted small">Total Admins</div><div class="fs-4 fw-bold" id="indTotalAdmins">0</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-4">
+        <div class="card border-0 rounded-4 shadow-sm p-3 d-flex flex-row align-items-center gap-3">
+            <div class="indicador-icono bg-danger bg-opacity-10 text-danger"><i class="bi bi-bar-chart"></i></div>
+            <div><div class="text-muted small">Total Notificaciones</div><div class="fs-4 fw-bold" id="indTotalNotificaciones">0</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-4">
+        <div class="card border-0 rounded-4 shadow-sm p-3 d-flex flex-row align-items-center gap-3">
+            <div class="indicador-icono bg-success bg-opacity-10 text-success"><i class="bi bi-geo-alt"></i></div>
+            <div><div class="text-muted small">Total Senderos</div><div class="fs-4 fw-bold" id="indTotalSenderos">0</div></div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="fw-bold text-dark mb-0 fs-5">Lista de Administradores Activos</h4>
+    <button type="button" id="btnNuevoAdmin" class="btn btn-primary rounded-pill px-4"><i class="bi bi-plus-circle"></i> Nuevo</button>
+</div>
+
+<div class="card border-0 rounded-4 shadow-sm p-3">
+    <table id="tablaAdmins" class="table table-hover align-middle w-100">
+        <thead><tr><th>Foto</th><th>Nombre</th><th>Total Notificaciones</th><th>Total Senderos</th><th>Correo</th><th>Opciones</th></tr></thead>
+        <tbody id="cuerpoTablaAdmins"></tbody>
+    </table>
+</div>
+
+<div id="overlayDetalleAdmin" class="overlay-detalle d-none"></div>
+<aside id="sidebarDetalleAdmin" class="sidebar-detalle">
+    <div class="detalle-header text-center py-3 border-bottom">
+        <span class="text-primary fw-semibold">Perfil</span>
+        <div class="detalle-header-accent mt-2"></div>
+    </div>
+    <div id="contenidoDetalleAdmin" class="p-3"></div>
+</aside>
+{% endblock %}
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script src="{% static 'panel/js/usuarios.js' %}"></script>
+{% endblock %}

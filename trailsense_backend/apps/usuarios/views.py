@@ -8,6 +8,7 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.authentication import SessionAuthentication
 
 # Simple JWT (Tokens)
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -36,7 +37,17 @@ from .emails import enviar_correo_verificacion, enviar_correo_recuperacion
 from rest_framework.permissions import IsAuthenticated
 from .serializers import EditarPerfilSerializer, CambiarPasswordSerializer
 
-from core.permissions.roles import EsAdminOSuperusuario
+from core.permissions.roles import EsAdminOSuperusuario, EsSuperusuario
+
+from apps.sesiones.models import SesionCaminata
+from apps.reportes.models import Reporte
+from apps.senderos.models import Sendero  
+
+from apps.actividad.utils import registrar_actividad
+
+from django.shortcuts import get_object_or_404
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -501,6 +512,7 @@ class PerfilView(APIView):
         serializer = EditarPerfilSerializer(request.user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         usuario = serializer.save()
+        registrar_actividad(request.user, 'perfil_actualizado')
         return Response(UsuarioSerializer(usuario, context={"request": request}).data)
 
 
@@ -531,3 +543,134 @@ class PanelAdminTestView(APIView):
 
     def get(self, request):
         return Response({"detail": f"Acceso concedido para rol: {request.user.rol}"})
+
+
+
+
+
+class AdminsPanelListView(APIView):
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated, EsSuperusuario]
+
+    def get(self, request):
+        admins = Usuario.objects.filter(rol='administrador').order_by('-date_joined')
+        data = [{
+            "id": a.id,
+            "nombre": f"{a.first_name} {a.last_name}".strip() or a.email,
+            "foto": request.build_absolute_uri(a.foto_perfil.url) if a.foto_perfil else None,
+            "total_notificaciones": 0,   # estático — Sprint futuro
+            "total_senderos": Sendero.objects.filter(creado_por=a).count(),
+            "email": a.email,
+        } for a in admins]
+        return Response(data)
+
+
+def _admin_a_dict(usuario, request):
+    return {
+        "id": usuario.id,
+        "first_name": usuario.first_name,
+        "last_name": usuario.last_name,
+        "email": usuario.email,
+        "fecha_registro": usuario.date_joined.strftime('%d %B %Y'),
+        "is_active": usuario.is_active,
+        "is_staff": usuario.is_staff,
+        "cedula": usuario.cedula,
+        "reputacion_score": usuario.reputacion_score,
+        "foto": request.build_absolute_uri(usuario.foto_perfil.url) if usuario.foto_perfil else None,
+    }
+
+class AdminDetalleAPIView(APIView):
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated, EsSuperusuario]
+
+    def get(self, request, pk=None):
+        if pk is None:
+            return Response({})
+        usuario = get_object_or_404(Usuario, pk=pk, rol='administrador')
+        return Response(_admin_a_dict(usuario, request))
+
+    def post(self, request, pk=None):
+        def a_bool(v):
+            return str(v).lower() in ('true', '1', 'on')
+
+        if pk is None:
+            email = request.data.get('email', '').strip().lower()
+            password = request.data.get('password', '')
+            if not email or not password:
+                return Response({"error": "faltan_datos", "message": "Correo y contraseña son obligatorios."}, status=400)
+            if len(password) < 8:
+                return Response({"error": "password_corta", "message": "La contraseña debe tener al menos 8 caracteres."}, status=400)
+            if Usuario.objects.filter(email__iexact=email).exists():
+                return Response({"error": "correo_existente", "message": "Ese correo ya está registrado."}, status=400)
+
+            usuario = Usuario.objects.create_user(
+                username=email, email=email, password=password,
+                first_name=request.data.get('first_name', ''),
+                last_name=request.data.get('last_name', ''),
+                cedula=request.data.get('cedula', ''),
+                rol='administrador',   # NUNCA se toma del payload del cliente
+                is_active=a_bool(request.data.get('is_active', 'true')),
+                is_verified=True,
+                is_staff=a_bool(request.data.get('is_staff', 'false')),
+            )
+            if 'foto_perfil' in request.FILES:
+                usuario.foto_perfil = request.FILES['foto_perfil']
+                usuario.save(update_fields=['foto_perfil'])
+
+            return Response(_admin_a_dict(usuario, request), status=201)
+
+        usuario = get_object_or_404(Usuario, pk=pk, rol='administrador')
+        usuario.first_name = request.data.get('first_name', usuario.first_name)
+        usuario.last_name = request.data.get('last_name', usuario.last_name)
+        usuario.cedula = request.data.get('cedula', usuario.cedula)
+        if 'is_active' in request.data:
+            usuario.is_active = a_bool(request.data.get('is_active'))
+        if 'is_staff' in request.data:
+            usuario.is_staff = a_bool(request.data.get('is_staff'))
+        if 'foto_perfil' in request.FILES:
+            usuario.foto_perfil = request.FILES['foto_perfil']
+        usuario.save()
+        return Response(_admin_a_dict(usuario, request))
+
+    def delete(self, request, pk):
+        usuario = get_object_or_404(Usuario, pk=pk, rol='administrador')
+        usuario.delete()
+        return Response(status=204)
+
+class SenderistasPanelListView(APIView):
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated, EsAdminOSuperusuario]
+
+    def get(self, request):
+        senderistas = Usuario.objects.filter(rol='ciudadano').order_by('-date_joined')
+        data = [{
+            "id": u.id,
+            "nombre": f"{u.first_name} {u.last_name}".strip() or u.email,
+            "foto": request.build_absolute_uri(u.foto_perfil.url) if u.foto_perfil else None,
+            "total_reportes": u.total_reportes,
+            "total_recorridos": SesionCaminata.objects.filter(usuario=u, estado='finalizada').count(),
+            "email": u.email,
+        } for u in senderistas]
+
+        return Response({
+            "senderistas": data,
+            "total_senderistas": senderistas.count(),
+            "total_incidencias": Reporte.objects.count(),
+            "total_recorridos": SesionCaminata.objects.filter(estado='finalizada').count(),
+        })
+
+
+class SenderistaDetalleAPIView(APIView):
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated, EsAdminOSuperusuario]
+
+    def get(self, request, pk):
+        usuario = get_object_or_404(Usuario, pk=pk, rol='ciudadano')
+        return Response({
+            "id": usuario.id, "nombre": usuario.first_name, "apellido": usuario.last_name,
+            "email": usuario.email, "cedula": usuario.cedula,
+            "fecha_registro": usuario.date_joined.strftime('%d %B %Y'),
+            "is_active": usuario.is_active, "reputacion_score": usuario.reputacion_score,
+            "kilometros_recorridos": usuario.kilometros_recorridos,
+            "foto": request.build_absolute_uri(usuario.foto_perfil.url) if usuario.foto_perfil else None,
+        })

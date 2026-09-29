@@ -16,4 +16,10 @@ urlpatterns = [
 
     path("incidencias/", views.IncidenciasPanelView.as_view(), name="incidencias"),
     path("incidencias/<int:pk>/", views.DetalleIncidenciaPanelView.as_view(), name="detalle-incidencia"),
+
+    path("superusuario/dashboard/", views.DashboardSuperusuarioPanelView.as_view(), name="superusuario-dashboard"),
+    path("superusuario/usuarios/", views.AdminsPanelView.as_view(), name="superusuario-usuarios"),
+    path("superusuario/historial/", views.HistorialAdminsPanelView.as_view(), name="superusuario-historial"),
+    path("senderistas/", views.SenderistasPanelView.as_view(), name="senderistas"),
+    path("historial/", views.HistorialSenderistasPanelView.as_view(), name="historial"),
 ]

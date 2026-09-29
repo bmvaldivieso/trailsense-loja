@@ -34,6 +34,8 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 INSTALLED_APPS = [
+    "apps.panel",
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -51,9 +53,10 @@ INSTALLED_APPS = [
     'apps.reportes',
     'apps.sesiones',
     'apps.notificaciones',
-    "apps.panel",
 
     "storages",
+
+    'apps.actividad',
 ]
 
 # Configuración de autenticación por sesión para el panel
@@ -84,6 +87,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'core.context_processors.carto_api_key',
             ],
         },
     },

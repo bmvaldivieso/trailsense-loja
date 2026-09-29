@@ -6,10 +6,12 @@ from django.contrib import messages
 from django.views import View
 from django.views.generic import TemplateView
 
-from core.mixins.panel_mixins import PanelAccesoMixin
+from core.mixins.panel_mixins import PanelAccesoMixin, SuperusuarioAccesoMixin, PermisoSenderosMixin
 from apps.senderos.models import Sendero
 
 from django.conf import settings
+
+from apps.actividad.utils import registrar_actividad 
 
 
 class PanelLoginView(View):
@@ -20,8 +22,11 @@ class PanelLoginView(View):
     template_name = "panel/login.html"
 
     def get(self, request):
-        if request.user.is_authenticated and request.user.rol in ("administrador", "superusuario"):
-            return redirect("panel:dashboard")
+        if request.user.is_authenticated:
+            if request.user.rol == "superusuario":
+                return redirect("panel:superusuario-dashboard")
+            if request.user.rol == "administrador":
+                return redirect("panel:dashboard")
         return render(request, self.template_name)
 
     def post(self, request):
@@ -43,6 +48,9 @@ class PanelLoginView(View):
             return render(request, self.template_name)
 
         login(request, usuario)
+
+        if usuario.rol == "superusuario":
+            return redirect("panel:superusuario-dashboard")
         return redirect("panel:dashboard")
 
 
@@ -66,7 +74,7 @@ class DashboardView(PanelAccesoMixin, TemplateView):
         return context
 
 
-class SenderosPanelView(PanelAccesoMixin, View):
+class SenderosPanelView(PermisoSenderosMixin, View):
     template_name = "panel/senderos.html"
 
     def get(self, request):
@@ -78,7 +86,7 @@ class SenderosPanelView(PanelAccesoMixin, View):
         })
 
 
-class DetalleSenderoPanelView(PanelAccesoMixin, View):
+class DetalleSenderoPanelView(PermisoSenderosMixin, View):
     template_name = "panel/detalle_sendero.html"
 
     def get(self, request, pk=None):
@@ -91,6 +99,7 @@ class DetalleSenderoPanelView(PanelAccesoMixin, View):
         })
 
     def post(self, request, pk=None):
+        es_creacion = pk is None
         sendero = get_object_or_404(Sendero, pk=pk) if pk else Sendero()
 
         sendero.nombre = request.POST.get("nombre", "").strip()
@@ -126,15 +135,27 @@ class DetalleSenderoPanelView(PanelAccesoMixin, View):
         if "imagen_portada" in request.FILES:
             sendero.imagen_portada = request.FILES["imagen_portada"]
 
+        if es_creacion:
+            sendero.creado_por = request.user    
+
         sendero.save()
+
+        registrar_actividad(
+            request.user,
+            'sendero_creado' if es_creacion else 'sendero_actualizado',
+            f"Sendero: {sendero.nombre}"
+        )
+
         messages.success(request, "Sendero guardado correctamente.")
         return redirect("panel:senderos")
 
 
-class EliminarSenderoPanelView(PanelAccesoMixin, View):
+class EliminarSenderoPanelView(PermisoSenderosMixin, View):
     def post(self, request, pk):
         sendero = get_object_or_404(Sendero, pk=pk)
+        nombre = sendero.nombre
         sendero.delete()
+        registrar_actividad(request.user, 'sendero_eliminado', f"Sendero: {nombre}")
         messages.success(request, "Sendero eliminado correctamente.")
         return redirect("panel:senderos")
 
@@ -175,3 +196,37 @@ class DetalleIncidenciaPanelView(PanelAccesoMixin, View):
             "reporte_id": pk,
             "carto_api_key": settings.CARTO_BASEMAPS_API_KEY,
         })
+
+
+
+
+
+
+class DashboardSuperusuarioPanelView(SuperusuarioAccesoMixin, TemplateView):
+    template_name = "panel/dashboard_superusuario.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["active_page"] = "superusuario-dashboard"
+        context["page_title"] = "Dashboard"
+        return context
+
+
+class AdminsPanelView(SuperusuarioAccesoMixin, View):
+    def get(self, request):
+        return render(request, "panel/usuarios.html", {"active_page": "superusuario-usuarios", "page_title": "Usuarios"})
+
+
+class SenderistasPanelView(PanelAccesoMixin, View):
+    def get(self, request):
+        return render(request, "panel/senderistas.html", {"active_page": "senderistas", "page_title": "Senderistas"})
+
+
+class HistorialSenderistasPanelView(PanelAccesoMixin, View):
+    def get(self, request):
+        return render(request, "panel/historial_senderistas.html", {"active_page": "historial", "page_title": "Historial de actividad"})
+
+
+class HistorialAdminsPanelView(SuperusuarioAccesoMixin, View):
+    def get(self, request):
+        return render(request, "panel/historial_admins.html", {"active_page": "superusuario-historial", "page_title": "Historial de actividad"})

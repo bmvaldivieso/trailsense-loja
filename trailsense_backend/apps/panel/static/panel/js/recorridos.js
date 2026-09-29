@@ -12,6 +12,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const IMG_GENERICA = 'https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=300&q=80';
     const IMG_AVATAR_DEFAULT = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
 
+    const inputBuscarSenderista = document.getElementById('buscarSenderistaInput');
+
     let mapaDetalle = null;
     let idsRenderizados = new Set();
 
@@ -38,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         div.innerHTML = `
             <div class="d-flex justify-content-between align-items-center small text-muted mb-1">
-                <span class="badge-recorrido-numero">#${recorrido.id}</span>
+                <span class="badge-recorrido-numero">#${recorrido.numero_usuario ?? '—'}</span>
                 <span>${recorrido.fecha}</span>
             </div>
             <div class="fw-semibold text-primary small mb-1">${recorrido.distancia_km ?? 0} km</div>
@@ -56,6 +58,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function crearTarjetaUsuario(usuario) {
         const div = document.createElement('div');
         div.className = 'usuario-card d-flex flex-column flex-md-row align-items-center gap-3';
+        div.dataset.nombre = usuario.usuario_nombre.toLowerCase(); 
 
         const scrollDiv = document.createElement('div');
         scrollDiv.className = 'recorridos-scroll flex-grow-1';
@@ -107,6 +110,19 @@ document.addEventListener('DOMContentLoaded', function () {
         return div;
     }
 
+    // Filtra las tarjetas GRANDES de senderistas por nombre.
+    // Se usa d-none (no style.display) porque d-flex de Bootstrap lleva !important
+    // y ganaría sobre un estilo en línea.
+    function aplicarFiltroSenderista() {
+        const filtro = inputBuscarSenderista.value.trim().toLowerCase();
+        listaUsuarios.querySelectorAll('.usuario-card').forEach(card => {
+            const coincide = (card.dataset.nombre || '').includes(filtro);
+            card.classList.toggle('d-none', !coincide);
+        });
+    }
+
+    inputBuscarSenderista.addEventListener('input', aplicarFiltroSenderista);
+
     async function cargarListado() {
         try {
             const resp = await fetch(URL_LISTA, { credentials: 'same-origin' });
@@ -133,6 +149,7 @@ document.addEventListener('DOMContentLoaded', function () {
             idsRenderizados = idsActuales;
             listaUsuarios.innerHTML = '';
             usuarios.forEach(u => listaUsuarios.appendChild(crearTarjetaUsuario(u)));
+            aplicarFiltroSenderista();
         } catch (e) {
             console.error('Error cargando recorridos:', e);
         }
@@ -167,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
 
             <div class="text-center mb-1">
-                <span class="badge-recorrido-numero">Recorrido #${data.id}</span>
+                <span class="badge-recorrido-numero">Recorrido #${data.numero_usuario ?? '—'}</span>
             </div>
             <h5 class="fw-bold text-dark text-center mb-3">${nombreSendero}</h5>
 

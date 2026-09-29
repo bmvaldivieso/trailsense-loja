@@ -23,6 +23,10 @@ class SesionCaminata(models.Model):
 
     estado = models.CharField(max_length=15, choices=ESTADO_CHOICES, default='en_curso')
 
+    # Número correlativo propio de cada senderista (1, 2, 3...).
+    # Se asigna al finalizar.
+    numero_usuario = models.PositiveIntegerField(null=True, blank=True)
+
     iniciado_en = models.DateTimeField(auto_now_add=True)
     finalizado_en = models.DateTimeField(null=True, blank=True)
     tiempo_pausado_segundos = models.PositiveIntegerField(default=0)
