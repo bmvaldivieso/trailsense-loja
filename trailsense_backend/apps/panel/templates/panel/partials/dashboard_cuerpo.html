@@ -1,0 +1,133 @@
+{% url 'panel:senderos' as url_senderos %}
+{% url 'panel:senderistas' as url_senderistas %}
+{% url 'panel:superusuario-usuarios' as url_admins %}
+
+<!-- KPIs (los genera el JS según el rol) -->
+<div class="row g-3 mb-4" id="kpisDashboard"></div>
+
+<!-- Sensado oportunista vs participativo + indicadores de comunidad -->
+<div class="row g-3 mb-4">
+    <div class="col-12 col-lg-7">
+        <div class="card-dash h-100">
+            <h6 class="titulo-seccion">Aportes de los Senderistas</h6>
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <div class="bloque-sensado">
+                        <div class="fw-semibold"><i class="bi bi-geo-alt-fill text-primary"></i> Recorridos Registrados</div>
+                        <div class="small text-muted mb-2">Datos que la aplicación guarda sola mientras los senderistas caminan.</div>
+                        <div id="sensadoOportunista"></div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="bloque-sensado">
+                        <div class="fw-semibold"><i class="bi bi-camera-fill text-danger"></i> Reportes Enviados</div>
+                        <div class="small text-muted mb-2">Problemas en los senderos que los senderistas deciden avisar.</div>
+                        <div id="sensadoParticipativo"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-5">
+        <div class="card-dash h-100">
+            <h6 class="titulo-seccion">Indicadores de la Comunidad</h6>
+            <div id="listaComunidad"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Fila destacada: depende del rol -->
+<div class="row g-3 mb-4">
+    <div class="col-12 col-lg-8 d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            {% if es_superusuario %}
+            <h6 class="titulo-seccion mb-0">Incidencias</h6>
+            {% else %}
+            <h6 class="titulo-seccion mb-0">Senderos</h6>
+            <a href="{{ url_senderos }}" class="small fw-semibold text-dark text-decoration-none">Ver Todo</a>
+            {% endif %}
+        </div>
+        <div class="row g-3 flex-grow-1" id="{% if es_superusuario %}listaIncidenciasRecientes{% else %}listaSenderosDestacados{% endif %}"></div>
+    </div>
+    <div class="col-12 col-lg-4">
+        <h6 class="titulo-seccion">{% if es_superusuario %}Actividad Reciente Admins{% else %}Actividad Reciente{% endif %}</h6>
+        <div class="card-dash" id="listaActividad"></div>
+    </div>
+</div>
+
+<!-- Actividad semanal + categorías -->
+<div class="row g-3 mb-4">
+    <div class="col-12 col-lg-8">
+        <h6 class="titulo-seccion">Actividad Semanal</h6>
+        <div class="card-dash"><div class="grafico-contenedor"><canvas id="graficoSemanal"></canvas></div></div>
+    </div>
+    <div class="col-12 col-lg-4">
+        <h6 class="titulo-seccion">Estadísticas de Incidencias</h6>
+        <div class="card-dash"><div class="grafico-contenedor"><canvas id="graficoCategorias"></canvas></div></div>
+    </div>
+</div>
+
+<!-- Carrusel principal + balance mensual -->
+<div class="row g-3 mb-4">
+    <div class="col-12 col-lg-5">
+        {% if es_superusuario %}
+            {% include "panel/partials/dashboard_carrusel.html" with cid="carruselPrincipal" titulo="Administradores" ver_url=url_admins %}
+        {% else %}
+            {% include "panel/partials/dashboard_carrusel.html" with cid="carruselPrincipal" titulo="Senderistas" ver_url=url_senderistas %}
+        {% endif %}
+    </div>
+    <div class="col-12 col-lg-7">
+        <h6 class="titulo-seccion">Historial de balance de Incidencias</h6>
+        <div class="card-dash"><div class="grafico-contenedor"><canvas id="graficoBalance"></canvas></div></div>
+    </div>
+</div>
+
+{% if es_superusuario %}
+<!-- Solo superusuario: senderistas + su actividad reciente -->
+<div class="row g-3 mb-4">
+    <div class="col-12 col-lg-5">
+        {% include "panel/partials/dashboard_carrusel.html" with cid="carruselSenderistas" titulo="Senderistas" %}
+    </div>
+    <div class="col-12 col-lg-7">
+        <h6 class="titulo-seccion">Actividad Reciente Senderistas</h6>
+        <div class="card-dash" id="listaActividadSenderistas"></div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Tendencias de uso (indicador pedido por el director de tesis) -->
+<div class="row g-3 mb-4">
+    <div class="col-12 col-lg-6">
+        <h6 class="titulo-seccion">Nuevos Senderistas por Mes</h6>
+        <div class="card-dash"><div class="grafico-contenedor"><canvas id="graficoRegistros"></canvas></div></div>
+    </div>
+    <div class="col-12 col-lg-6">
+        <h6 class="titulo-seccion">Actividad de Senderismo por Mes</h6>
+        <div class="card-dash"><div class="grafico-contenedor"><canvas id="graficoRecorridos"></canvas></div></div>
+    </div>
+</div>
+
+<!-- Salud de senderos + sin actividad reciente -->
+<div class="row g-3 mb-4">
+    <div class="col-12 col-lg-4">
+        <h6 class="titulo-seccion">Estado de los Senderos</h6>
+        <div class="card-dash"><div class="grafico-contenedor"><canvas id="graficoSalud"></canvas></div></div>
+    </div>
+    <div class="col-12 col-lg-8">
+        <h6 class="titulo-seccion">Recorridos sin Señal GPS</h6>
+        <div class="card-dash">
+            <div class="small text-muted mb-2">
+                Recorridos en curso sin puntos GPS recibidos en los últimos <strong id="umbralSinActividad">30</strong> min.
+                Se muestra la última posición conocida; es un indicio, no una confirmación de emergencia.
+            </div>
+            <div id="listaSinActividad"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Mapa de calor -->
+<h6 class="titulo-seccion">Mapa de Calor de Incidencias</h6>
+<div class="small text-muted mb-2">Reportes no rechazados. Los puntos rojos son la última posición conocida de recorridos sin señal.</div>
+<div id="mapaCalor" class="mapa-calor mb-4"></div>
+
+{% include "panel/partials/dashboard_guia.html" %}

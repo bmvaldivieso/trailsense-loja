@@ -1,0 +1,85 @@
+<button type="button" class="btn-ayuda-flotante" data-bs-toggle="modal" data-bs-target="#modalGuiaDashboard"
+        aria-label="Guía del dashboard" title="Guía del dashboard">
+    <i class="bi bi-question-lg"></i>
+</button>
+
+<div class="modal fade" id="modalGuiaDashboard" tabindex="-1" aria-labelledby="tituloGuiaDashboard" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+        <div class="modal-content rounded-4 border-0">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="tituloGuiaDashboard">
+                    Guía del Dashboard {% if es_superusuario %}del Superusuario{% else %}del Administrador{% endif %}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+
+            <div class="modal-body guia-dashboard">
+                <p>Este tablero resume la información que los senderistas generan desde la aplicación móvil: los recorridos que la aplicación registra automáticamente mientras ellos caminan y los reportes que ellos deciden enviar cuando encuentran un problema en un sendero. Todas las cifras provienen de los datos reales registrados en TrailSense Loja.</p>
+
+                <h6>Indicadores superiores</h6>
+                {% if es_superusuario %}
+                <p><strong>Administradores</strong> es el total de cuentas con rol administrador. <strong>Senderistas</strong> es el total de cuentas de senderistas. <strong>Senderos</strong> es la cantidad de senderos del catálogo. <strong>Reportes del sistema</strong> es el total de reportes registrados, sin importar su estado. <strong>Senderistas activos (7 días)</strong> cuenta a quienes iniciaron un recorrido o crearon un reporte durante la última semana.</p>
+                {% else %}
+                <p><strong>Senderistas</strong> es el total de cuentas de senderistas. <strong>Senderos</strong> es la cantidad de senderos del catálogo. <strong>Reportes pendientes</strong> son los reportes que aún no han sido aprobados ni rechazados. <strong>Riesgos de seguridad por revisar</strong> son los reportes pendientes de la categoría «Riesgo de seguridad», que conviene atender primero. <strong>Senderistas activos (7 días)</strong> cuenta a quienes iniciaron un recorrido o crearon un reporte durante la última semana.</p>
+                {% endif %}
+                <p>Si el título de una tarjeta es demasiado largo para su espacio, se desplaza solo para poder leerse completo.</p>
+
+                <h6>Aportes de los Senderistas</h6>
+<p>El bloque <strong>Recorridos Registrados</strong> muestra lo que la aplicación guarda sola mientras los senderistas caminan: cuántos recorridos se han completado, cuánta distancia suman y cuántas ubicaciones GPS se han recibido. El bloque <strong>Reportes Enviados</strong> muestra lo que los senderistas deciden avisar: cuántos reportes han creado, cuántas fotografías han adjuntado y cuántos reportes ya fueron validados por un administrador.</p>
+
+                <h6>Indicadores de la Comunidad</h6>
+                <p>Reúne las horas en movimiento, la velocidad promedio y los pasos totales de todos los recorridos finalizados. También indica qué porcentaje de senderistas ha realizado al menos un recorrido, qué porcentaje ha creado al menos un reporte y la tasa de aprobación, que compara los reportes aprobados con el total de reportes ya revisados (aprobados y rechazados).</p>
+
+                {% if es_superusuario %}
+                <h6>Incidencias</h6>
+                <p>Muestra los dos reportes más recientes del sistema, con su fotografía, el sendero afectado y la categoría. Son tarjetas informativas: la revisión, aprobación o rechazo de los reportes la realizan los administradores desde su panel.</p>
+
+                <h6>Actividad Reciente Admins</h6>
+                <p>Lista las acciones más recientes de administradores y superusuarios, como crear, editar o eliminar senderos y descargar historiales en PDF. El detalle completo está en «Historial de actividad».</p>
+                {% else %}
+                <h6>Senderos</h6>
+                <p>Muestra los dos senderos con más recorridos finalizados, con su longitud y su estado. El punto de color indica la condición: azul para bueno, naranja para con alertas menores y rojo para crítico. «Ver Todo» lleva a la gestión de senderos.</p>
+
+                <h6>Actividad Reciente</h6>
+                <p>Lista las acciones más recientes de los senderistas: reportes creados, recorridos finalizados y perfiles actualizados.</p>
+                {% endif %}
+
+                <h6>Actividad Semanal</h6>
+                <p>Barras con la cantidad de reportes creados (turquesa) y de recorridos finalizados (azul) en cada uno de los últimos siete días, incluido el de hoy.</p>
+
+                <h6>Estadísticas de Incidencias</h6>
+                <p>Gráfico circular con la distribución de los reportes por categoría: deterioro del camino, señalización deficiente, acumulación de residuos, obstáculo y riesgo de seguridad. No incluye los reportes rechazados. Al pasar el cursor sobre cada sector se ve la cantidad exacta.</p>
+
+                {% if es_superusuario %}
+                <h6>Administradores y Senderistas</h6>
+                <p>El carrusel de <strong>Administradores</strong> muestra a los diez más recientes; «Total» indica cuántos hay y «Ver» abre la gestión de usuarios. El carrusel de <strong>Senderistas</strong> muestra a los diez con mayor reputación, y junto a él aparece la actividad reciente de los senderistas.</p>
+                {% else %}
+                <h6>Senderistas</h6>
+                <p>Muestra a los diez senderistas con mayor reputación. La reputación sube cuando participan y cuando sus reportes son aprobados, y baja cuando son rechazados. «Total» indica cuántos senderistas hay y «Ver» abre el listado completo.</p>
+                {% endif %}
+
+                <h6>Historial de balance de Incidencias</h6>
+                <p>Cantidad de reportes creados en cada uno de los últimos doce meses. Permite ver si la participación crece o disminuye con el tiempo.</p>
+
+                <h6>Nuevos Senderistas por Mes y Actividad de Senderismo por Mes</h6>
+                <p>La primera gráfica muestra cuántas cuentas de senderistas se crearon cada mes. La segunda muestra cuántos recorridos se finalizaron cada mes. Ambas cubren los últimos doce meses. No incluyen descargas de la aplicación, porque ese dato lo registran las tiendas de aplicaciones y TrailSense aún no está publicada.</p>
+
+                <h6>Estado de los Senderos</h6>
+                <p>Gráfico de anillo con cuántos senderos están en estado bueno, con alertas menores o crítico. Sirve para priorizar el mantenimiento.</p>
+
+                <h6>Recorridos sin Señal GPS</h6>
+                <p>Lista los recorridos que siguen en curso pero que no envían puntos GPS desde hace más de 30 minutos, con la última posición conocida. Al hacer clic en uno, el mapa se acerca a ese punto. Es un indicio de pérdida de señal, no una confirmación de emergencia: el senderista puede estar descansando, haberse quedado sin batería o sin cobertura.</p>
+
+                <h6>Mapa de Calor de Incidencias</h6>
+                <p>Muestra dónde se concentran los reportes no rechazados. Las zonas azules tienen pocos reportes y las rojas, muchos. Los puntos rojos con borde oscuro son las últimas posiciones conocidas de los recorridos sin señal.</p>
+
+                <h6>Actualización de los datos</h6>
+                <p>Los indicadores superiores, la actividad reciente y la lista de recorridos sin señal se actualizan solos cada minuto. El resto se actualiza al recargar la página.</p>
+            </div>
+
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-primary rounded-pill px-4" data-bs-dismiss="modal">Entendido</button>
+            </div>
+        </div>
+    </div>
+</div>

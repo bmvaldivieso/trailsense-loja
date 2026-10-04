@@ -1,0 +1,9 @@
+<h6 class="titulo-seccion">{{ titulo }}</h6>
+<div class="card-dash">
+    <div class="carrusel-personas" id="{{ cid }}"></div>
+    <div class="d-flex align-items-center gap-2 mt-3">
+        <span class="text-muted">Total:</span>
+        <div class="total-pill"><span id="{{ cid|add:'Total' }}">0</span></div>
+        {% if ver_url %}<a href="{{ ver_url }}" class="btn btn-primary rounded-pill px-4">Ver <i class="bi bi-fast-forward-fill"></i></a>{% endif %}
+    </div>
+</div>

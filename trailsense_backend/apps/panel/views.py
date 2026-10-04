@@ -67,10 +67,18 @@ class PanelLogoutView(View):
 class DashboardView(PanelAccesoMixin, TemplateView):
     template_name = "panel/dashboard.html"
 
+    # El superusuario nunca debe ver el dashboard del administrador
+    def get(self, request, *args, **kwargs):
+        if request.user.rol == "superusuario":
+            return redirect("panel:superusuario-dashboard")
+        return super().get(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["active_page"] = "dashboard"
         context["page_title"] = "Descripción General"
+        context["carto_api_key"] = settings.CARTO_BASEMAPS_API_KEY
+        context["es_superusuario"] = False
         return context
 
 
@@ -208,7 +216,9 @@ class DashboardSuperusuarioPanelView(SuperusuarioAccesoMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["active_page"] = "superusuario-dashboard"
-        context["page_title"] = "Dashboard"
+        context["page_title"] = "Descripción General"
+        context["carto_api_key"] = settings.CARTO_BASEMAPS_API_KEY
+        context["es_superusuario"] = True
         return context
 
 

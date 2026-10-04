@@ -1,6 +1,22 @@
 {% extends "panel/base_superusuario.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="{% static 'panel/css/dashboard.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="d-flex align-items-center justify-content-center h-100">
-    <h4 class="text-muted fw-semibold">Próximamente...</h4>
-</div>
+{% include "panel/partials/dashboard_cuerpo.html" %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script>
+    window.CARTO_API_KEY = "{{ carto_api_key }}";
+    window.DASHBOARD_API = "{% url 'metricas-dashboard' %}";
+</script>
+<script src="{% static 'panel/js/dashboard.js' %}"></script>
 {% endblock %}
