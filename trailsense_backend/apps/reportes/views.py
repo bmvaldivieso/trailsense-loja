@@ -24,7 +24,11 @@ from core.permissions.roles import EsAdminOSuperusuario
 from apps.senderos.serializers import SenderoSerializer
 from .reputacion import actualizar_reputacion, PUNTOS_POR_REPORTE_VALIDADO, PUNTOS_POR_REPORTE_RECHAZADO
 
-from apps.actividad.utils import registrar_actividad 
+from apps.actividad.utils import registrar_actividad
+
+import logging
+from apps.notificaciones.servicios import evaluar_acumulacion
+logger = logging.getLogger(__name__)
 
 
 class ReporteViewSet(viewsets.ReadOnlyModelViewSet):
@@ -117,7 +121,12 @@ class CrearReporteView(APIView):
         request.user.total_reportes = (request.user.total_reportes or 0) + 1
         request.user.save(update_fields=['total_reportes'])
 
-        registrar_actividad(request.user, 'reporte_creado', f"Categoría: {reporte.get_categoria_display()}") 
+        registrar_actividad(request.user, 'reporte_creado', f"Categoría: {reporte.get_categoria_display()}")
+
+        try:
+            evaluar_acumulacion(reporte)
+        except Exception:
+            logger.exception("No se pudo evaluar la acumulación de reportes") 
 
         return Response(
             ReporteDetailSerializer(reporte, context={'request': request}).data,

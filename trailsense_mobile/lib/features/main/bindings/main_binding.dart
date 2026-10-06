@@ -7,6 +7,8 @@ import '../../reportes/presentation/controllers/reportes_controller.dart';
 
 import '../../perfil/presentation/controllers/perfil_controller.dart';
 
+import '../../notificaciones/presentation/controllers/notificaciones_controller.dart';
+
 class MainBinding extends Bindings {
   @override
   void dependencies() {
@@ -16,6 +18,8 @@ class MainBinding extends Bindings {
     Get.lazyPut<SesionesController>(() => SesionesController());
     Get.lazyPut<ReportesController>(() => ReportesController());
 
-    Get.lazyPut<PerfilController>(() => PerfilController(), fenix: true); 
+    Get.lazyPut<PerfilController>(() => PerfilController(), fenix: true);
+
+    Get.put<NotificacionesController>(NotificacionesController()); 
   }
 }

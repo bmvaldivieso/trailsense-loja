@@ -9,9 +9,12 @@ import '../../../senderos/presentation/screens/senderos_screen.dart';
 import '../../../sesiones/presentation/screens/sesiones_screen.dart';
 import '../../../reportes/presentation/screens/reportes_screen.dart';
 import '../../../notificaciones/presentation/screens/notificaciones_screen.dart';
+import '../../../notificaciones/presentation/controllers/notificaciones_controller.dart';
 
 class MainScreen extends GetView<MainController> {
   const MainScreen({super.key});
+
+  bool _hayPendientes() => Get.isRegistered<NotificacionesController>() && Get.find<NotificacionesController>().noLeidas.value > 0;
 
   static const List<Widget> _pages = [
     HomeScreen(),
@@ -37,6 +40,7 @@ class MainScreen extends GetView<MainController> {
         bottomNavigationBar: MainBottomNavBar(
           currentIndex: controller.currentIndex.value,
           onTap: controller.changePage,
+          notificacionesPendientes: _hayPendientes(),
         ),
       ),
     );

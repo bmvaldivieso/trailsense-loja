@@ -4,12 +4,31 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class MainBottomNavBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
+  final bool notificacionesPendientes;
 
   const MainBottomNavBar({
     super.key,
     required this.currentIndex,
     required this.onTap,
+    this.notificacionesPendientes = false,
   });
+
+  Widget _iconoConPunto(IconData icono, double size) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Icon(icono, size: size),
+        if (notificacionesPendientes)
+          Positioned(
+            right: -1, top: -1,
+            child: Container(
+              width: 11.r, height: 11.r,
+              decoration: BoxDecoration(color: const Color(0xFF1D4ED8), shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 1.5)),
+            ),
+          ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,8 +65,8 @@ class MainBottomNavBar extends StatelessWidget {
           label: 'Reportes',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.notifications_none, size: iconSize),
-          activeIcon: Icon(Icons.notifications, size: iconSize),
+          icon: _iconoConPunto(Icons.notifications_none, iconSize),
+          activeIcon: _iconoConPunto(Icons.notifications, iconSize),
           label: 'Notificaciones',
         ),
       ],

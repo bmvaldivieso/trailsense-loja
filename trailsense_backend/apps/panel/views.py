@@ -11,7 +11,9 @@ from apps.senderos.models import Sendero
 
 from django.conf import settings
 
-from apps.actividad.utils import registrar_actividad 
+from apps.actividad.utils import registrar_actividad
+
+from apps.notificaciones.servicios import notificar_cambio_estado
 
 
 class PanelLoginView(View):
@@ -109,6 +111,7 @@ class DetalleSenderoPanelView(PermisoSenderosMixin, View):
     def post(self, request, pk=None):
         es_creacion = pk is None
         sendero = get_object_or_404(Sendero, pk=pk) if pk else Sendero()
+        estado_anterior = sendero.estado 
 
         sendero.nombre = request.POST.get("nombre", "").strip()
         sendero.descripcion = request.POST.get("descripcion", "").strip()
@@ -147,6 +150,9 @@ class DetalleSenderoPanelView(PermisoSenderosMixin, View):
             sendero.creado_por = request.user    
 
         sendero.save()
+
+        if not es_creacion and estado_anterior != sendero.estado:
+            notificar_cambio_estado(sendero, estado_anterior)
 
         registrar_actividad(
             request.user,
@@ -240,3 +246,9 @@ class HistorialSenderistasPanelView(PanelAccesoMixin, View):
 class HistorialAdminsPanelView(SuperusuarioAccesoMixin, View):
     def get(self, request):
         return render(request, "panel/historial_admins.html", {"active_page": "superusuario-historial", "page_title": "Historial de actividad"})
+
+
+
+class NotificacionesPanelView(PanelAccesoMixin, View):
+    def get(self, request):
+        return render(request, "panel/notificaciones.html", {"active_page": "notificaciones", "page_title": "Notificaciones"})

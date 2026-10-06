@@ -12,6 +12,11 @@ import '../../data/repositories/sesiones_repository.dart';
 
 import 'package:permission_handler/permission_handler.dart';
 
+import 'package:flutter/services.dart';
+import '../../../notificaciones/data/repositories/notificaciones_repository.dart';
+import '../../../notificaciones/presentation/controllers/notificaciones_controller.dart';
+
+
 class NuevoRecorridoController extends GetxController {
   final SesionesRepository _repository = SesionesRepository();
 
@@ -35,6 +40,10 @@ class NuevoRecorridoController extends GetxController {
   DateTime? _momentoPausa;
 
   static const Duration intervaloEnvio = Duration(seconds: 15);
+
+  final NotificacionesRepository _notifRepository = NotificacionesRepository();
+  DateTime? _ultimaConsultaProximidad;
+  static const Duration intervaloProximidad = Duration(seconds: 60);
 
   @override
   void onClose() {
@@ -132,6 +141,8 @@ class NuevoRecorridoController extends GetxController {
         altitudM: posicion.altitude,
         velocidadMps: posicion.speed,
       ));
+
+      _verificarProximidad(posicion);
 
       if (_ultimaPosicion != null) {
         final distanciaTramo = Geolocator.distanceBetween(
@@ -302,6 +313,38 @@ class NuevoRecorridoController extends GetxController {
       }
     } catch (_) {
       // si no se puede consultar, tampoco bloquea el inicio del nuevo recorrido
+    }
+  }
+
+  // Consulta al servidor, como máximo 1 vez por minuto, si hay incidencias recientes cerca.
+  // El servidor decide si corresponde avisar (gravedad, 7 días, 30 min entre avisos).
+  Future<void> _verificarProximidad(Position p) async {
+    final ahora = DateTime.now();
+    if (_ultimaConsultaProximidad != null && ahora.difference(_ultimaConsultaProximidad!) < intervaloProximidad) return;
+    _ultimaConsultaProximidad = ahora;
+
+    try {
+      final n = await _notifRepository.verificarProximidad(p.latitude, p.longitude);
+      if (n == null) return;
+
+      HapticFeedback.heavyImpact();
+      Get.snackbar(
+        n.titulo, n.mensaje,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 10),
+        backgroundColor: const Color(0xFFFFF4E5),
+        colorText: const Color(0xFF7A3E00),
+        icon: const Icon(Icons.warning_amber_rounded, color: Color(0xFFF97316)),
+        margin: const EdgeInsets.all(12),
+        borderRadius: 12,
+        onTap: (_) => Get.toNamed('/detalle-notificacion', arguments: n.id),
+      );
+
+      if (Get.isRegistered<NotificacionesController>()) {
+        Get.find<NotificacionesController>().cargar(silencioso: true);
+      }
+    } catch (_) {
+      // un fallo de red no debe interrumpir la grabación del recorrido
     }
   }
 }

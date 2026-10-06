@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(r => r.json())
             .then(data => {
                 document.getElementById('indTotalAdmins').textContent = data.length;
-                document.getElementById('indTotalNotificaciones').textContent = 0;
+                document.getElementById('indTotalNotificaciones').textContent = data.reduce((acc, a) => acc + a.total_notificaciones, 0);
                 document.getElementById('indTotalSenderos').textContent = data.reduce((acc, a) => acc + a.total_senderos, 0);
 
                 tabla.clear();

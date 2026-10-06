@@ -44,6 +44,9 @@ import '../features/reportes/presentation/screens/reporte_success_screen.dart';
 import '../features/metricas/presentation/screens/metricas_personales_screen.dart';
 import '../features/metricas/bindings/metricas_binding.dart';
 
+import '../features/notificaciones/bindings/detalle_notificacion_binding.dart';
+import '../features/notificaciones/presentation/screens/detalle_notificacion_screen.dart';
+
 
 class AppRoutes {
   static const splash = '/splash';
@@ -199,5 +202,12 @@ class AppRoutes {
       page: () => const MetricasPersonalesScreen(),
       binding: MetricasBinding(),
     ),
+    // ==========================================
+    // NOTIFICACIONES
+    // ==========================================
+    GetPage(
+      name: '/detalle-notificacion', 
+      page: () => const DetalleNotificacionScreen(),
+      binding: DetalleNotificacionBinding()),
   ];
 }

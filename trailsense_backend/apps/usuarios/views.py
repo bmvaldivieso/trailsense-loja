@@ -47,6 +47,8 @@ from apps.actividad.utils import registrar_actividad
 
 from django.shortcuts import get_object_or_404
 
+from apps.notificaciones.models import Notificacion
+
 
 
 logger = logging.getLogger(__name__)
@@ -558,7 +560,7 @@ class AdminsPanelListView(APIView):
             "id": a.id,
             "nombre": f"{a.first_name} {a.last_name}".strip() or a.email,
             "foto": request.build_absolute_uri(a.foto_perfil.url) if a.foto_perfil else None,
-            "total_notificaciones": 0,   # estático — Sprint futuro
+            "total_notificaciones": Notificacion.objects.filter(creado_por=a, origen='manual').count(),
             "total_senderos": Sendero.objects.filter(creado_por=a).count(),
             "email": a.email,
         } for a in admins]

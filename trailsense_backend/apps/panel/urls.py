@@ -22,4 +22,6 @@ urlpatterns = [
     path("superusuario/historial/", views.HistorialAdminsPanelView.as_view(), name="superusuario-historial"),
     path("senderistas/", views.SenderistasPanelView.as_view(), name="senderistas"),
     path("historial/", views.HistorialSenderistasPanelView.as_view(), name="historial"),
+
+    path("notificaciones/", views.NotificacionesPanelView.as_view(), name="notificaciones"),
 ]

@@ -23,6 +23,8 @@ urlpatterns = [
 
     path('api/', include('apps.estadisticas.urls')),
 
+    path('api/', include('apps.notificaciones.urls')),
+
     # path('api/usuarios/', include('apps.usuarios.urls')),
     # path('api/senderos/', include('apps.senderos.urls')),
     # path('api/reportes/', include('apps.reportes.urls')),
