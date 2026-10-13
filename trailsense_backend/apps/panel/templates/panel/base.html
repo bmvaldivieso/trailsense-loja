@@ -16,7 +16,7 @@
 
         <main class="d-flex flex-column flex-grow-1 overflow-hidden">
 
-            <div class="px-4 pt-4">
+            <div class="px-4 pt-4 {% block cabecera_clases %}{% endblock %}">
                 {% include "panel/partials/topbar.html" %}
 
                 {% if messages %}
@@ -29,7 +29,7 @@
                 {% endif %}
             </div>
 
-            <div class="flex-grow-1 overflow-y-auto px-4 pb-4">
+            <div class="flex-grow-1 {% block contenedor_clases %}overflow-y-auto px-4 pb-4{% endblock %}">
                 {% block content %}{% endblock %}
             </div>
         </main>

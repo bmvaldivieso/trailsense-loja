@@ -49,4 +49,21 @@ class PermisoSenderosMixin(PanelAccesoMixin):
     def test_func(self):
         if not super().test_func():
             return False
-        return self.request.user.rol == "superusuario" or self.request.user.is_staff        
+        return self.request.user.rol == "superusuario" or self.request.user.is_staff  
+
+
+class SoloAdministradorMixin(PanelAccesoMixin):
+    """Pantallas exclusivas del administrador. El superusuario es redirigido a su propio dashboard."""
+
+    def test_func(self):
+        return self.request.user.rol == "administrador"
+
+    def handle_no_permission(self):
+        from django.contrib import messages
+        from django.shortcuts import redirect
+
+        user = self.request.user
+        if user.is_authenticated and user.rol == "superusuario":
+            messages.error(self.request, "El mapa interactivo es exclusivo del panel de administración.")
+            return redirect("panel:superusuario-dashboard")
+        return super().handle_no_permission()

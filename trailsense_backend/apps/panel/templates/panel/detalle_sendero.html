@@ -142,8 +142,11 @@
                     </div>
 
                     <div class="d-flex justify-content-end gap-3 mt-4">
-                        <button type="submit"
-                            class="btn btn-primary-custom rounded-pill px-4 py-2 fw-semibold">Guardar</button>
+                        {% if sendero %}
+                        <a href="{% url 'panel:mapa-interactivo' %}?sendero={{ sendero.pk }}" target="_blank" rel="noopener"
+                           class="btn btn-primary-soft rounded-pill px-4 py-2 fw-semibold">Ver Mapa</a>
+                        {% endif %}
+                        <button type="submit" class="btn btn-primary-custom rounded-pill px-4 py-2 fw-semibold">Guardar</button>
                     </div>
                 </div>
             </div>

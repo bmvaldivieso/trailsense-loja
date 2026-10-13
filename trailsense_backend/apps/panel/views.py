@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.views import View
 from django.views.generic import TemplateView
 
-from core.mixins.panel_mixins import PanelAccesoMixin, SuperusuarioAccesoMixin, PermisoSenderosMixin
+from core.mixins.panel_mixins import PanelAccesoMixin, SuperusuarioAccesoMixin, PermisoSenderosMixin, SoloAdministradorMixin
 from apps.senderos.models import Sendero
 
 from django.conf import settings
@@ -252,3 +252,13 @@ class HistorialAdminsPanelView(SuperusuarioAccesoMixin, View):
 class NotificacionesPanelView(PanelAccesoMixin, View):
     def get(self, request):
         return render(request, "panel/notificaciones.html", {"active_page": "notificaciones", "page_title": "Notificaciones"})
+
+
+
+class MapaInteractivoPanelView(SoloAdministradorMixin, View):
+    def get(self, request):
+        return render(request, "panel/mapa.html", {
+            "active_page": "mapa",
+            "page_title": "Mapa",
+            "carto_api_key": settings.CARTO_BASEMAPS_API_KEY,
+        })

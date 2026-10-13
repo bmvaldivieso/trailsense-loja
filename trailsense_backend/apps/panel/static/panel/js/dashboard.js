@@ -19,8 +19,8 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     const graficos = {};
-    let mapa = null, capaCalor = null, capaSinActividad = null;
-    let ultimaListaSinActividad = [], marcadores = [];
+    let mapa = null, capaCalor = null;
+    let ultimaListaSinActividad = [];
 
     const el = id => document.getElementById(id);
 
@@ -223,7 +223,6 @@ document.addEventListener('DOMContentLoaded', function () {
             ? `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${key}`
             : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
         L.tileLayer(url, { attribution: '&copy; OpenStreetMap contributors &copy; CARTO', maxZoom: 19, subdomains: 'abcd' }).addTo(mapa);
-        capaSinActividad = L.layerGroup().addTo(mapa);
         setTimeout(() => mapa.invalidateSize(), 200);
     }
 
@@ -239,42 +238,64 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function renderSinActividad(lista, umbral) {
         el('umbralSinActividad').textContent = umbral;
-        capaSinActividad.clearLayers();
-        marcadores = [];
         ultimaListaSinActividad = lista;
-
         const c = el('listaSinActividad');
         if (!lista.length) {
-            c.innerHTML = '<div class="text-success small py-2"><i class="bi bi-check-circle"></i> Ningún recorrido en curso presenta pérdida de señal GPS.</div>';
+            c.innerHTML = '<div class="text-success small py-2">Ningún recorrido en curso presenta pérdida de señal GPS.</div>';
             return;
         }
-
-        c.innerHTML = lista.map((s, i) => `
-            <div class="alerta-item" data-i="${i}">
-                <div>
-                    <div class="fw-semibold">${esc(s.usuario)}</div>
-                    <div class="small text-muted">${esc(s.sendero || 'Recorrido libre')} · última posición ${esc(s.ultima_hora)}</div>
-                </div>
-                <div class="text-end"><div class="fw-bold text-danger">hace ${hace(s.hace_minutos)}</div>
-                    <div class="small text-muted">${s.precision_m !== null ? '±' + s.precision_m + ' m' : ''}</div></div>
-            </div>`).join('');
-
-        lista.forEach(s => {
-            const m = L.circleMarker([s.lat, s.lon], { radius: 9, color: '#b91c1c', fillColor: '#ef4444', fillOpacity: 0.9, weight: 2 })
-                .bindPopup(`<strong>${esc(s.usuario)}</strong><br>${esc(s.sendero || 'Recorrido libre')}<br>Última posición: ${esc(s.ultima_hora)}`)
-                .addTo(capaSinActividad);
-            marcadores.push(m);
-        });
+        // Conserva aquí EXACTAMENTE tu plantilla actual de cada .alerta-item (con data-i="${i}")
+        c.innerHTML = lista.map((s, i) => `<div class="alerta-item" data-i="${i}">
+            <strong>${esc(s.usuario)}</strong> · ${esc(s.sendero)}<br>
+            <small>hace ${hace(s.hace_minutos)} · ±${s.precision_m} m</small></div>`).join('');
     }
+
+    // ---- Mapa propio del modal "sin señal" ----
+    let mapaSenal = null;
+    let sesionSenal = null;
+    const modalSenalEl = el('modalMapaSenal');
+    document.body.appendChild(modalSenalEl);           // evita problemas de z-index
+    const modalSenal = new bootstrap.Modal(modalSenalEl);
 
     el('listaSinActividad').addEventListener('click', function (e) {
         const item = e.target.closest('.alerta-item');
         if (!item) return;
-        const i = parseInt(item.dataset.i, 10);
-        const s = ultimaListaSinActividad[i];
-        mapa.setView([s.lat, s.lon], 16);
-        if (marcadores[i]) marcadores[i].openPopup();
-        el('mapaCalor').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        sesionSenal = ultimaListaSinActividad[parseInt(item.dataset.i, 10)];
+        if (!sesionSenal) return;
+        el('modalSenalTitulo').textContent = sesionSenal.usuario;
+        el('modalSenalSub').textContent = sesionSenal.sendero;
+        el('modalSenalDetalle').textContent =
+            'Última señal: ' + sesionSenal.ultima_hora + ' · hace ' + hace(sesionSenal.hace_minutos) +
+            ' · precisión ±' + sesionSenal.precision_m + ' m';
+        modalSenal.show();
+    });
+
+    modalSenalEl.addEventListener('shown.bs.modal', function () {
+        const s = sesionSenal;
+        if (!s) return;
+        mapaSenal = L.map('mapaSenal', { attributionControl: true }).setView([s.lat, s.lon], 16);
+        mapaSenal.attributionControl.setPosition('topright');
+
+        let capaBase = null;
+        mapa.eachLayer(function (l) {
+            if (!capaBase && l instanceof L.TileLayer) capaBase = l;
+        });
+        if (capaBase) L.tileLayer(capaBase._url, capaBase.options).addTo(mapaSenal);
+
+        if (s.precision_m) {
+            L.circle([s.lat, s.lon], { radius: s.precision_m, color: '#b91c1c', weight: 1, fillOpacity: 0.12 }).addTo(mapaSenal);
+        }
+        L.circleMarker([s.lat, s.lon], { radius: 9, color: '#b91c1c', fillColor: '#ef4444', fillOpacity: 0.9, weight: 2 })
+            .addTo(mapaSenal)
+            .bindPopup('<strong>' + esc(s.usuario) + '</strong><br>' + esc(s.sendero) +
+                    '<br>Última posición a las ' + esc(String(s.ultima_hora)) +
+                    '<br>Hace ' + hace(s.hace_minutos) + ' · ±' + s.precision_m + ' m')
+            .openPopup();
+        mapaSenal.invalidateSize();
+    });
+
+    modalSenalEl.addEventListener('hidden.bs.modal', function () {
+        if (mapaSenal) { mapaSenal.remove(); mapaSenal = null; }
     });
 
     // ------------------------------------------------------------------- carga

@@ -22,7 +22,7 @@
                 href="{% url 'panel:incidencias' %}">
                 <i class="bi bi-megaphone{% if active_page == 'incidencias' %}-fill{% endif %} fs-5"></i><span>Incidencias</span>
             </a>
-            <a class="nav-link text-muted d-flex align-items-center gap-3 px-3 py-2 rounded-3" href="#">
+            <a class="nav-link {% if active_page == 'mapa' %}active{% else %}text-muted{% endif %} d-flex align-items-center gap-3 px-3 py-2 rounded-3" href="{% url 'panel:mapa-interactivo' %}">
                 <i class="bi bi-globe fs-5"></i><span>Mapa Interactivo</span>
             </a>
             <a class="nav-link {% if active_page == 'recorridos' %}active{% else %}text-muted{% endif %} d-flex align-items-center gap-3 px-3 py-2 rounded-3"

@@ -73,3 +73,5 @@
 
 .guia-dashboard h6 { color: #1e2a44; font-weight: 700; margin-top: 18px; margin-bottom: 4px; }
 .guia-dashboard p { color: #475569; font-size: 0.93rem; line-height: 1.55; margin-bottom: 6px; }
+
+#mapaSenal { height: 60vh; min-height: 380px; width: 100%; }

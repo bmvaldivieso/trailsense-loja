@@ -51,7 +51,9 @@ html, body {
 .cursor-pointer { cursor: pointer; }
 
 .hero-bg {
-    background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1600&q=80');
+    background-image:
+        linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15)),
+        url('https://commons.wikimedia.org/wiki/Special:FilePath/Vista_a_la_ciudad_de_Loja_desde_UTPL_-_panoramio.jpg?width=1600');
     background-size: cover;
     background-position: center;
 }

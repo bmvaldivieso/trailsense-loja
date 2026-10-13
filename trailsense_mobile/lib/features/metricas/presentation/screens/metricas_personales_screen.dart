@@ -6,6 +6,9 @@ import 'package:get/get.dart';
 import '../controllers/metricas_controller.dart';
 import '../../data/models/metricas_model.dart';
 
+import '../widgets/grafico_km_mensual.dart';
+import '../screens/grafico_expandido_screen.dart';
+
 class MetricasPersonalesScreen extends GetView<MetricasController> {
   const MetricasPersonalesScreen({super.key});
 
@@ -173,10 +176,26 @@ class MetricasPersonalesScreen extends GetView<MetricasController> {
 
           Align(alignment: Alignment.centerLeft, child: Text('Estadísticas Mensuales', style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold))),
           SizedBox(height: 8.h),
-          Container(
-            width: double.infinity, height: 220.h, padding: EdgeInsets.all(16.w),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16.r)),
-            child: _buildGraficoLinea(m.mensuales),
+          GestureDetector(
+            onTap: () => Get.to(
+              () => GraficoExpandidoScreen(mensuales: m.mensuales),
+              fullscreenDialog: true,
+              transition: Transition.downToUp,
+            ),
+            child: Container(
+              height: 220.h,
+              padding: EdgeInsets.all(16.w),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16.r)),
+              child: Stack(
+                children: [
+                  GraficoKmMensual(mensuales: m.mensuales),
+                  const Positioned(
+                    top: 0, right: 0,
+                    child: Icon(Icons.open_in_full, size: 18, color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
           ),
 
           SizedBox(height: 20.h),
@@ -221,41 +240,6 @@ class MetricasPersonalesScreen extends GetView<MetricasController> {
           SizedBox(width: 12.w),
           Expanded(child: Text(label, style: TextStyle(fontSize: 13.sp, color: const Color(0xFF2D3142)))),
           Text(valor, style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold, color: color)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGraficoLinea(List<MesKm> mensuales) {
-    if (mensuales.isEmpty) return Center(child: Text('Sin datos aún', style: TextStyle(color: Colors.grey[500])));
-
-    final spots = mensuales.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.km)).toList();
-
-    return LineChart(
-      LineChartData(
-        gridData: const FlGridData(show: true, drawVerticalLine: false),
-        titlesData: FlTitlesData(
-          leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 36)),
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          bottomTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              getTitlesWidget: (value, meta) {
-                final i = value.toInt();
-                if (i < 0 || i >= mensuales.length) return const SizedBox.shrink();
-                return Padding(padding: const EdgeInsets.only(top: 6), child: Text(mensuales[i].mes, style: const TextStyle(fontSize: 10)));
-              },
-            ),
-          ),
-        ),
-        borderData: FlBorderData(show: false),
-        lineBarsData: [
-          LineChartBarData(
-            spots: spots, isCurved: true, color: const Color(0xFF2DD4BF), barWidth: 3,
-            dotData: const FlDotData(show: true),
-            belowBarData: BarAreaData(show: true, color: const Color(0xFF2DD4BF).withOpacity(0.1)),
-          ),
         ],
       ),
     );

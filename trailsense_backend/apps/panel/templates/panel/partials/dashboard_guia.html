@@ -25,7 +25,7 @@
                 <p>Si el título de una tarjeta es demasiado largo para su espacio, se desplaza solo para poder leerse completo.</p>
 
                 <h6>Aportes de los Senderistas</h6>
-<p>El bloque <strong>Recorridos Registrados</strong> muestra lo que la aplicación guarda sola mientras los senderistas caminan: cuántos recorridos se han completado, cuánta distancia suman y cuántas ubicaciones GPS se han recibido. El bloque <strong>Reportes Enviados</strong> muestra lo que los senderistas deciden avisar: cuántos reportes han creado, cuántas fotografías han adjuntado y cuántos reportes ya fueron validados por un administrador.</p>
+                <p>El bloque <strong>Recorridos Registrados</strong> muestra lo que la aplicación guarda sola mientras los senderistas caminan: cuántos recorridos se han completado, cuánta distancia suman y cuántas ubicaciones GPS se han recibido. El bloque <strong>Reportes Enviados</strong> muestra lo que los senderistas deciden avisar: cuántos reportes han creado, cuántas fotografías han adjuntado y cuántos reportes ya fueron validados por un administrador.</p>
 
                 <h6>Indicadores de la Comunidad</h6>
                 <p>Reúne las horas en movimiento, la velocidad promedio y los pasos totales de todos los recorridos finalizados. También indica qué porcentaje de senderistas ha realizado al menos un recorrido, qué porcentaje ha creado al menos un reporte y la tasa de aprobación, que compara los reportes aprobados con el total de reportes ya revisados (aprobados y rechazados).</p>
@@ -68,10 +68,10 @@
                 <p>Gráfico de anillo con cuántos senderos están en estado bueno, con alertas menores o crítico. Sirve para priorizar el mantenimiento.</p>
 
                 <h6>Recorridos sin Señal GPS</h6>
-                <p>Lista los recorridos que siguen en curso pero que no envían puntos GPS desde hace más de 30 minutos, con la última posición conocida. Al hacer clic en uno, el mapa se acerca a ese punto. Es un indicio de pérdida de señal, no una confirmación de emergencia: el senderista puede estar descansando, haberse quedado sin batería o sin cobertura.</p>
+                <p>Lista los recorridos que siguen en curso pero que no envían puntos GPS desde hace más de 30 minutos, con la última posición conocida. Al hacer clic en uno, se abre un mapa con la última posición conocida del senderista. Es un indicio de pérdida de señal, no una confirmación de emergencia: el senderista puede estar descansando, haberse quedado sin batería o sin cobertura.</p>
 
                 <h6>Mapa de Calor de Incidencias</h6>
-                <p>Muestra dónde se concentran los reportes no rechazados. Las zonas azules tienen pocos reportes y las rojas, muchos. Los puntos rojos con borde oscuro son las últimas posiciones conocidas de los recorridos sin señal.</p>
+                <p>Muestra dónde se concentran los reportes no rechazados. Las zonas azules tienen pocos reportes y las rojas, muchos.</p>
 
                 <h6>Actualización de los datos</h6>
                 <p>Los indicadores superiores, la actividad reciente y la lista de recorridos sin señal se actualizan solos cada minuto. El resto se actualiza al recargar la página.</p>
@@ -82,4 +82,25 @@
             </div>
         </div>
     </div>
+</div>
+
+
+<div class="modal fade" id="modalMapaSenal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title mb-0" id="modalSenalTitulo">Última posición conocida</h5>
+          <small class="text-muted" id="modalSenalSub"></small>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body p-0">
+        <div id="mapaSenal"></div>
+      </div>
+      <div class="modal-footer justify-content-start">
+        <span class="small text-muted" id="modalSenalDetalle"></span>
+      </div>
+    </div>
+  </div>
 </div>

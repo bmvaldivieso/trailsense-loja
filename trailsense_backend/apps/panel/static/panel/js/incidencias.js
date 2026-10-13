@@ -18,9 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <td>${capitalizar(r.estado)}</td>
                     <td>${r.fecha_creacion}</td>
                     <td>
-                        <button type="button" class="btn btn-light btn-gps-visual me-2" title="Ubicación" disabled>
-                            <i class="bi bi-geo-alt"></i>
-                        </button>
+                        <a href="/panel/mapa/?incidencia=${r.id}" class="btn btn-light btn-gps-visual me-2 d-inline-flex align-items-center justify-content-center align-middle p-0" title="Ver en el mapa"><i class="bi bi-geo-alt"></i></a>
                         <a href="/panel/incidencias/${r.id}/" class="btn btn-outline-primary btn-sm rounded-pill">Ver Detalles</a>
                     </td>
                 `;

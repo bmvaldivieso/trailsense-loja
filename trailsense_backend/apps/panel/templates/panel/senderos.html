@@ -37,11 +37,10 @@
                     class="btn {% if forloop.first %}btn-light-transparent text-white{% else %}btn-light-gray text-dark{% endif %} w-50 fw-semibold rounded-3 text-decoration-none text-center py-2">
                     Editar
                 </a>
-                <button
-                    class="btn {% if forloop.first %}btn-light text-primary{% else %}btn-primary{% endif %} w-50 fw-semibold rounded-3 py-2"
-                    disabled>
+                <a href="{% url 'panel:mapa-interactivo' %}?sendero={{ sendero.pk }}"
+                    class="btn {% if forloop.first %}btn-light text-primary{% else %}btn-primary{% endif %} w-50 fw-semibold rounded-3 py-2 text-decoration-none text-center">
                     Ver Mapa
-                </button>
+                </a>
             </div>
         </div>
     </div>

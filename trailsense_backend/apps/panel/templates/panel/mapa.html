@@ -1,0 +1,63 @@
+{% extends "panel/base.html" %}
+{% load static %}
+
+{% block cabecera_clases %}cabecera-mapa{% endblock %}
+{% block contenedor_clases %}position-relative overflow-hidden{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="{% static 'panel/css/mapa.css' %}">
+{% endblock %}
+
+{% block content %}
+<div id="mapaInteractivo" class="mapa-interactivo"></div>
+
+<button type="button" id="btnAjustarVista" class="btn-mapa-flotante" title="Ver todo en el mapa">
+    <i class="bi bi-crosshair"></i>
+</button>
+
+<section id="panelMapa" class="panel-mapa">
+    <div id="visorFoto" class="visor-foto d-none">
+        <img id="visorFotoImg" src="" alt="Foto ampliada" draggable="false">
+    </div>
+
+    <button type="button" id="btnTogglePanel" class="panel-mapa-toggle">
+        <i class="bi bi-chevron-down" id="iconoTogglePanel"></i> <span id="textoTogglePanel">Ocultar panel</span>
+    </button>
+
+    <div class="panel-cabecera d-flex justify-content-between align-items-end flex-wrap gap-2">
+        <div class="panel-tabs">
+            <button type="button" class="panel-tab activo" data-tab="senderos">Senderos<span class="contador-tab" id="contSenderos">0</span></button>
+            <button type="button" class="panel-tab" data-tab="incidencias">Incidencias<span class="contador-tab" id="contIncidencias">0</span></button>
+            <button type="button" class="panel-tab" data-tab="recorridos">Recorridos<span class="contador-tab" id="contRecorridos">0</span></button>
+        </div>
+        <div class="d-flex align-items-center gap-3 pb-2 flex-wrap">
+            <span class="small text-muted">Mostrar en el mapa:</span>
+            <label class="chip-capa"><input type="checkbox" data-capa="senderos" checked> Senderos</label>
+            <label class="chip-capa"><input type="checkbox" data-capa="incidencias" checked> Incidencias</label>
+            <label class="chip-capa"><input type="checkbox" data-capa="recorridos"> Recorridos</label>
+            <span id="textoActualizado" class="small text-muted"></span>
+        </div>
+    </div>
+
+    <div class="panel-mapa-cuerpo">
+        <div class="columna-mapa">
+            <div id="filtrosMapa" class="filtros-mapa"></div>
+            <div id="listaMapa" class="lista-mapa"></div>
+        </div>
+        <div class="columna-mapa">
+            <div class="detalle-rotulo">DETALLE</div>
+            <div id="detalleMapa" class="detalle-mapa"></div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    window.CARTO_API_KEY = "{{ carto_api_key }}";
+    window.MAPA_API = "{% url 'panel:mapa-datos' %}";
+</script>
+<script src="{% static 'panel/js/mapa.js' %}"></script>
+{% endblock %}

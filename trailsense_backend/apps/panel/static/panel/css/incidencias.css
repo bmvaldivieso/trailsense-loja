@@ -9,3 +9,5 @@
     width: 34px; height: 34px;
     border-radius: 50%;
 }
+
+.btn-gps-visual .bi::before { vertical-align: 0; }
