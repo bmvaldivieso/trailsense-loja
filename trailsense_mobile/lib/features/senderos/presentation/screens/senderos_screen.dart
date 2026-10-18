@@ -9,6 +9,8 @@ import '../../data/models/sendero_model.dart';
 
 import '../widgets/filtros_senderos_sheet.dart';
 
+import '../widgets/marquee_text.dart';
+
 class SenderosScreen extends GetView<SenderosController> {
   const SenderosScreen({super.key});
 
@@ -237,7 +239,10 @@ class SenderosScreen extends GetView<SenderosController> {
                 children: [
                   Text(sendero.nombre.toUpperCase(),
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.sp)),
-                  Text(sendero.canton, style: TextStyle(color: Colors.grey, fontSize: 12.sp)),
+                  MarqueeText(
+                    [sendero.canton, sendero.direccion].where((t) => t.isNotEmpty).join(' · '),
+                    style: TextStyle(color: Colors.grey, fontSize: 12.sp),
+                  ),
                   SizedBox(height: 8.h),
                   Row(
                     children: [

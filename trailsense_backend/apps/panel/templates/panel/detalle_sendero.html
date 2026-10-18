@@ -74,6 +74,22 @@
                         <input type="text" name="canton" class="form-control form-control-pill text-muted"
                             value="{{ sendero.canton|default:'Loja' }}">
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label text-dark fw-semibold small">Calles / dirección</label>
+                        <div class="input-group">
+                            <input type="text" name="direccion" id="direccion" maxlength="255"
+                                class="form-control form-control-pill text-muted"
+                                placeholder="Ej: Av. Pío Jaramillo, Calle Bolívar"
+                                value="{{ sendero.direccion|default:'' }}">
+                            <button type="button" id="btnCalcularDireccion" class="btn btn-outline-primary btn-sm"
+                                    title="Calcular con el trazado del sendero">
+                                <i class="bi bi-geo-alt"></i> Automática
+                            </button>
+                        </div>
+                        <div class="form-text" id="ayudaDireccion">
+                            Escríbela tú, o déjala vacía y se calculará con el trazado.
+                        </div>
+                    </div>
                     <!-- Longitud -->
                     <div class="mb-3">
                         <label class="form-label text-dark fw-semibold small">Longitud (Km)</label>
@@ -114,12 +130,17 @@
 
                         <div id="mapaGeometria" class="mapa-geometria-container rounded-4 mb-2"></div>
 
-                        <div class="d-flex gap-2 mb-2">
+                        <div class="d-flex flex-wrap gap-2 mb-2">
                             <button type="button" id="btnLimpiarDibujo" class="btn btn-sm btn-outline-secondary rounded-pill">
                                 <i class="bi bi-eraser"></i> Limpiar dibujo
                             </button>
                             <button type="button" id="btnFijarUbicacion" class="btn btn-sm btn-outline-primary rounded-pill">
                                 <i class="bi bi-geo-alt"></i> Fijar ubicación
+                            </button>
+
+                            <input type="file" id="inputTraza" accept=".gpx,.tcx" class="d-none">
+                            <button type="button" id="btnSubirTraza" class="btn btn-sm btn-outline-success rounded-pill">
+                                <i class="bi bi-upload"></i> Cargar GPX/TCX
                             </button>
 
                             <div class="dropup">
@@ -131,6 +152,13 @@
                                     <!-- Se llena dinámicamente desde JS -->
                                 </ul>
                             </div>
+                        </div>
+
+                        <div id="filaTraza" class="d-none align-items-center gap-2 mb-2 small">
+                            <span id="infoTraza" class="text-muted"></span>
+                            <button type="button" id="btnQuitarTraza" class="btn btn-sm btn-outline-danger rounded-pill py-0">
+                                <i class="bi bi-x-circle"></i> Quitar archivo
+                            </button>
                         </div>
 
                         <label class="form-label text-dark fw-semibold small d-block">
@@ -159,7 +187,10 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
     window.CARTO_API_KEY = "{{ carto_api_key }}";
+    window.URL_PROCESAR_TRAZA = "{% url 'senderos-procesar-traza' %}";
+    window.URL_DIRECCION_SUGERIDA = "{% url 'senderos-direccion-sugerida' %}";
 </script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="{% static 'panel/js/detalle_sendero.js' %}?v={% now 'U' %}"></script>
+<script src="{% static 'panel/js/traza_sendero.js' %}?v={% now 'U' %}"></script>
 {% endblock %}

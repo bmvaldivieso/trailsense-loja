@@ -41,9 +41,10 @@
 
 .panel-mapa-cuerpo {
     flex: 1 1 auto; min-height: 0; display: grid;
-    grid-template-columns: 1fr 1fr; grid-template-rows: minmax(0, 1fr); gap: 20px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr); gap: 20px;
 }
-.columna-mapa { display: flex; flex-direction: column; min-height: 0; }
+.columna-mapa { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
 
 .filtros-mapa { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
 .filtros-mapa .form-control, .filtros-mapa .form-select { border-radius: 20px; font-size: 0.8rem; width: auto; flex: 1 1 140px; }

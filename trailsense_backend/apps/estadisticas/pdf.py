@@ -9,14 +9,15 @@ from reportlab.lib.units import cm
 ETIQUETAS_PERIODO = {'dia': 'Hoy', 'semana': 'Última semana', 'mes': 'Último mes', 'todo': 'Histórico completo'}
 
 
-def generar_pdf_metricas(resumen, periodo):
+def generar_pdf_metricas(resumen, periodo, sufijo=None):
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4)
     estilos = getSampleStyleSheet()
+    periodo_texto = resumen.get('periodo_etiqueta') or ETIQUETAS_PERIODO.get(periodo, periodo)
 
     elementos = [
         Paragraph(f"Métricas Personales — {resumen['nombre']}", estilos['Title']),
-        Paragraph(f"Periodo: {ETIQUETAS_PERIODO.get(periodo, periodo)}", estilos['Normal']),
+        Paragraph(f"Periodo: {periodo_texto}", estilos['Normal']),
         Spacer(1, 0.6 * cm),
     ]
 
@@ -44,5 +45,5 @@ def generar_pdf_metricas(resumen, periodo):
 
     buffer.seek(0)
     response = HttpResponse(buffer, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="metricas_personales_{periodo}.pdf"'
+    response['Content-Disposition'] = f'attachment; filename="metricas_personales_{sufijo or periodo}.pdf"'
     return response

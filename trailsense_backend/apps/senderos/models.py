@@ -31,6 +31,12 @@ class Sendero(models.Model):
         default='Loja'
     )
 
+    direccion = models.CharField(
+        max_length=255,
+        blank=True,
+        default=''
+    )
+
     dificultad = models.CharField(
         max_length=10,
         choices=DIFICULTAD_CHOICES,

@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views, api_mapa
+from . import views, api_mapa, api_topbar 
 
 app_name = "panel"
 
@@ -27,4 +27,7 @@ urlpatterns = [
 
     path("mapa/", views.MapaInteractivoPanelView.as_view(), name="mapa-interactivo"),
     path("mapa/datos/", api_mapa.MapaDatosAPIView.as_view(), name="mapa-datos"),
+
+    path("buscar/", api_topbar.BuscadorGlobalAPIView.as_view(), name="buscar"),
+    path("alertas/", api_topbar.AlertasPanelAPIView.as_view(), name="alertas"),
 ]

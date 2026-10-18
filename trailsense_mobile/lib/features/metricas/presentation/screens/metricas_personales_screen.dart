@@ -119,20 +119,76 @@ class MetricasPersonalesScreen extends GetView<MetricasController> {
 
   Widget _buildSelectorPeriodo() {
     final opciones = {'dia': 'Día', 'semana': 'Semana', 'mes': 'Mes', 'todo': 'Todo'};
-    return Obx(() => Wrap(
-          spacing: 8.w,
-          children: opciones.entries.map((e) {
-            final seleccionado = controller.periodo.value == e.key;
+    return Obx(() {
+      final esMesEspecifico = controller.periodo.value == 'mes_especifico';
+      return Wrap(
+        spacing: 8.w,
+        children: [
+          ...opciones.entries.map((e) {
+            final sel = controller.periodo.value == e.key;
             return ChoiceChip(
               label: Text(e.value),
-              selected: seleccionado,
+              selected: sel,
               selectedColor: const Color(0xFF3B82F6),
-              labelStyle: TextStyle(color: seleccionado ? Colors.white : Colors.black87, fontSize: 12.sp),
+              labelStyle: TextStyle(color: sel ? Colors.white : Colors.black87, fontSize: 12.sp),
               backgroundColor: Colors.white,
               onSelected: (_) => controller.cambiarPeriodo(e.key),
             );
-          }).toList(),
-        ));
+          }),
+          // NUEVO: cuarta opción
+          ChoiceChip(
+            avatar: Icon(Icons.calendar_month, size: 16.r, color: esMesEspecifico ? Colors.white : Colors.black54),
+            label: Text(esMesEspecifico ? controller.etiquetaMesSeleccionado : 'Elegir mes'),
+            selected: esMesEspecifico,
+            selectedColor: const Color(0xFF3B82F6),
+            labelStyle: TextStyle(color: esMesEspecifico ? Colors.white : Colors.black87, fontSize: 12.sp),
+            backgroundColor: Colors.white,
+            onSelected: (_) => _mostrarSelectorMes(onSeleccion: controller.seleccionarMes),
+          ),
+        ],
+      );
+    });
+  }
+
+  void _mostrarSelectorMes({required void Function(String valor) onSeleccion}) {   // NUEVO
+    Get.bottomSheet(
+      Container(
+        constraints: BoxConstraints(maxHeight: 0.55.sh),
+        padding: EdgeInsets.all(20.r),
+        decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Selecciona un mes', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+            SizedBox(height: 4.h),
+            Text('Solo aparecen los meses con actividad tuya', style: TextStyle(fontSize: 12.sp, color: Colors.grey[600])),
+            SizedBox(height: 8.h),
+            Flexible(
+              child: Obx(() {
+                if (controller.meses.isEmpty) {
+                  return Padding(
+                    padding: EdgeInsets.symmetric(vertical: 24.h),
+                    child: Center(child: Text('Aún no tienes meses con actividad', style: TextStyle(color: Colors.grey[600]))),
+                  );
+                }
+                return ListView(
+                  shrinkWrap: true,
+                  children: controller.meses.map((m) => ListTile(
+                        leading: const Icon(Icons.calendar_month, color: Color(0xFF3B82F6)),
+                        title: Text(m.etiqueta),
+                        onTap: () {
+                          Get.back();
+                          onSeleccion(m.valor);
+                        },
+                      )).toList(),
+                );
+              }),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildFila(String label, String valor) {
@@ -300,6 +356,14 @@ class MetricasPersonalesScreen extends GetView<MetricasController> {
             _opcionPdf('dia', 'Día'),
             _opcionPdf('semana', 'Semana'),
             _opcionPdf('mes', 'Mes'),
+            ListTile(                                            
+              leading: const Icon(Icons.calendar_month, color: Color(0xFF3B82F6)),
+              title: const Text('Mes específico'),
+              onTap: () {
+                Get.back();
+                _mostrarSelectorMes(onSeleccion: (valor) => controller.descargarPdf('mes_especifico', mes: valor));
+              },
+            ),
             _opcionPdf('todo', 'Todo el historial'),
           ],
         ),

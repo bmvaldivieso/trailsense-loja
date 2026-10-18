@@ -17,14 +17,19 @@
 
 <div class="row g-4" id="senderosGrid">
     {% for sendero in senderos %}
-    <div class="col-12 col-md-6 col-xl-4 sendero-item" data-nombre="{{ sendero.nombre|lower }}">
+    <div class="col-12 col-md-6 col-xl-4 sendero-item" data-nombre="{{ sendero.nombre|lower }} {{ sendero.canton|lower }} {{ sendero.direccion|lower }}">
         <div class="card border-0 rounded-4 shadow-sm {% if forloop.first %}bg-primary text-white{% else %}bg-white{% endif %} h-100 p-3">
             <div class="d-flex justify-content-between mb-3">
-                <div>
+                <div class="flex-grow-1" style="min-width:0">
                     <span class="small {% if forloop.first %}opacity-75{% else %}text-muted{% endif %}">Nombre:</span>
                     <h5 class="fw-bold {% if not forloop.first %}text-dark{% endif %} mb-3">{{ sendero.nombre }}</h5>
                     <span class="small {% if forloop.first %}opacity-75{% else %}text-muted{% endif %}">Longitud:</span>
                     <h6 class="fw-bold {% if not forloop.first %}text-dark{% endif %} mb-0">{{ sendero.longitud_km|unlocalize }} Km</h6>
+
+                    <span class="small {% if forloop.first %}opacity-75{% else %}text-muted{% endif %} d-block mt-2">Ubicación:</span>
+                    <h6 class="fw-bold {% if not forloop.first %}text-dark{% endif %} mb-0 small marquee">
+                        <span class="marquee-texto">{{ sendero.canton }}{% if sendero.direccion %} · {{ sendero.direccion }}{% endif %}</span>
+                    </h6>
                 </div>
                 {% if sendero.imagen_portada %}
                 <img src="{{ sendero.imagen_portada.url }}" class="img-sendero-card rounded-3" alt="{{ sendero.nombre }}">
@@ -63,5 +68,6 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'panel/js/marquee.js' %}"></script>
 <script src="{% static 'panel/js/senderos.js' %}"></script>
 {% endblock %}

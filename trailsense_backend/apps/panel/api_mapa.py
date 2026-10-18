@@ -40,6 +40,7 @@ def _senderos(request):
 
     return [{
         "id": s.id, "nombre": s.nombre, "descripcion": s.descripcion, "canton": s.canton,
+        "direccion": s.direccion,
         "dificultad": s.dificultad, "dificultad_display": s.get_dificultad_display(),
         "estado": s.estado, "estado_display": s.get_estado_display(),
         "longitud_km": s.longitud_km,

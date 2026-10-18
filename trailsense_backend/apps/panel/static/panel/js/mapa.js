@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return datos[tipo].filter(x => {
             if (tipo === 'senderos') {
                 if (f.estado && x.estado !== f.estado) return false;
-                return !q || norm(`${x.nombre} ${x.canton} ${x.dificultad_display} ${x.estado_display}`).includes(q);
+                return !q || norm(`${x.nombre} ${x.canton} ${x.direccion} ${x.dificultad_display} ${x.estado_display}`).includes(q);
             }
             if (tipo === 'incidencias') {
                 if (f.categoria && x.categoria !== f.categoria) return false;
@@ -195,7 +195,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return `<div class="item-mapa${activo}" data-id="${x.id}">
                 <div style="min-width:0">
                     <div class="item-titulo text-truncate">${esc(x.nombre)}</div>
-                    <div class="item-sub">${esc(x.canton)}</div>
+                    <div class="item-sub marquee"><span class="marquee-texto">${esc([x.canton, x.direccion].filter(Boolean).join(' · '))}</span></div>
                     <div class="item-metricas">
                         <span>${num(x.longitud_km, 2)} km</span>
                         <span><span class="punto-estado" style="background:${COLOR_ESTADO_SENDERO[x.estado] || '#999'}"></span>${esc(x.estado_display)}</span>
@@ -232,6 +232,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
         lista.innerHTML = items.map(x => htmlItem(tipoActivo, x)).join('');
+        window.activarMarquee(lista);
     }
 
     function marcarListaActiva(desplazar) {
@@ -268,6 +269,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         ${metrica('bi-graph-up-arrow', 'Dificultad ' + x.dificultad_display.toLowerCase())}
                         ${metrica('bi-rulers', num(x.longitud_km, 2) + ' km de recorrido')}
                         ${metrica('bi-geo-alt', x.canton || 'Sin cantón')}
+                        ${metrica('bi-signpost-2', x.direccion || 'Calles no registradas')}
                         ${x.horario ? metrica('bi-clock', x.horario) : ''}
                         ${metrica('bi-signpost-split', x.recorridos + ' recorridos finalizados')}
                         ${metrica('bi-megaphone', x.reportes + ' incidencias reportadas')}
@@ -321,6 +323,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return `<div class="popup-titulo">${esc(x.nombre)}</div>
                 <div class="popup-linea"><span class="punto-estado" style="background:${COLOR_ESTADO_SENDERO[x.estado]}"></span>${esc(x.estado_display)} · ${esc(x.dificultad_display)}</div>
                 <div class="popup-linea"><i class="bi bi-rulers"></i> ${num(x.longitud_km, 2)} km · ${esc(x.canton)}</div>
+                ${x.direccion ? `<div class="popup-linea"><i class="bi bi-signpost-2"></i> ${esc(x.direccion)}</div>` : ''}
                 ${x.horario ? `<div class="popup-linea"><i class="bi bi-clock"></i> ${esc(x.horario)}</div>` : ''}
                 <div class="popup-linea">${x.recorridos} recorridos · ${x.reportes} incidencias</div>`;
         }

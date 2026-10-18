@@ -15,6 +15,8 @@ from apps.actividad.utils import registrar_actividad
 
 from apps.notificaciones.servicios import notificar_cambio_estado
 
+from apps.senderos.servicios_geo import completar_direccion
+
 
 class PanelLoginView(View):
     """
@@ -111,7 +113,9 @@ class DetalleSenderoPanelView(PermisoSenderosMixin, View):
     def post(self, request, pk=None):
         es_creacion = pk is None
         sendero = get_object_or_404(Sendero, pk=pk) if pk else Sendero()
-        estado_anterior = sendero.estado 
+        estado_anterior = sendero.estado
+        direccion_anterior = sendero.direccion
+        geometria_anterior = sendero.geometria if not es_creacion else None 
 
         sendero.nombre = request.POST.get("nombre", "").strip()
         sendero.descripcion = request.POST.get("descripcion", "").strip()
@@ -121,6 +125,7 @@ class DetalleSenderoPanelView(PermisoSenderosMixin, View):
         sendero.longitud_km = request.POST.get("longitud_km") or 0
         sendero.horario_apertura = request.POST.get("horario_apertura") or None
         sendero.horario_cierre = request.POST.get("horario_cierre") or None
+        sendero.direccion = request.POST.get("direccion", "").strip()
 
         wkt = request.POST.get("geometria_wkt", "").strip()
         try:
@@ -142,6 +147,14 @@ class DetalleSenderoPanelView(PermisoSenderosMixin, View):
                 "sendero": sendero if pk else None,
                 "carto_api_key": settings.CARTO_BASEMAPS_API_KEY,
             })
+            
+        # Si el trazado cambió y el admin no tocó la dirección, la anterior ya no corresponde: se recalcula
+        if (geometria_anterior is not None and sendero.direccion == direccion_anterior
+                and not sendero.geometria.equals_exact(geometria_anterior, 1e-7)):
+            sendero.direccion = ""
+        completar_direccion(sendero)            # solo actúa si la dirección quedó vacía
+        if not sendero.direccion:
+            messages.warning(request, "No se pudo calcular la dirección automáticamente. Puedes escribirla al editar el sendero.")    
 
         if "imagen_portada" in request.FILES:
             sendero.imagen_portada = request.FILES["imagen_portada"]

@@ -259,3 +259,8 @@ os.environ["PROJ_LIB"] = OSGEO4W_PROJ
 # CARTO BASEMAPS API KEY
 # ============================================================
 CARTO_BASEMAPS_API_KEY = config("CARTO_BASEMAPS_API_KEY", default="")
+
+
+# Geocodificación inversa (Nominatim). La política exige identificar la aplicación.
+GEOCODER_USER_AGENT = config('GEOCODER_USER_AGENT', default='TrailSenseLoja/1.0 (tesis UTPL)')
+NOMINATIM_URL = 'https://nominatim.openstreetmap.org/reverse'

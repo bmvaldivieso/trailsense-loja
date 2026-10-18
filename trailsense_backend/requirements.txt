@@ -4,6 +4,7 @@ botocore==1.43.93
 cffi==2.1.1
 charset-normalizer==3.5.1
 cryptography==50.0.0
+defusedxml==0.7.1
 Django==6.0.7
 django-cors-headers==4.9.0
 django-extensions==4.1

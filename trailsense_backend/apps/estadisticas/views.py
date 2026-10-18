@@ -12,6 +12,9 @@ from apps.sesiones.models import SesionCaminata
 from apps.reportes.models import Reporte, FotoReporte
 from .pdf import generar_pdf_metricas
 
+from datetime import datetime
+from django.db.models.functions import TruncMonth
+
 
 def _rango_fecha(periodo):
     ahora_local = timezone.localtime(timezone.now())   # Convierte a hora de Ecuador primero
@@ -29,15 +32,42 @@ def _rango_fecha(periodo):
 
     return None   # 'todo'
 
+MESES_ES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+            'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
 
-def _calcular_resumen(usuario, periodo):
-    desde = _rango_fecha(periodo)
+
+def _etiqueta_mes(anio, mes):
+    return f"{MESES_ES[mes - 1].capitalize()} {anio}"
+
+
+def _rango_mes(valor):
+    """'2026-08' -> (inicio, fin) en hora local de Ecuador. None si el valor no es válido."""
+    try:
+        anio, mes = (int(x) for x in str(valor).split('-'))
+        if not (2000 <= anio <= 2100 and 1 <= mes <= 12):
+            return None
+    except (ValueError, TypeError):
+        return None
+    inicio = timezone.make_aware(datetime(anio, mes, 1))
+    fin = timezone.make_aware(datetime(anio + 1, 1, 1) if mes == 12 else datetime(anio, mes + 1, 1))
+    return inicio, fin, _etiqueta_mes(anio, mes)    
+
+def _calcular_resumen(usuario, periodo, mes=None):
+    hasta = None
+    etiqueta = None
+    if periodo == 'mes_especifico':
+        desde, hasta, etiqueta = _rango_mes(mes)      
+    else:
+        desde = _rango_fecha(periodo)
 
     sesiones = SesionCaminata.objects.filter(usuario=usuario, estado='finalizada')
     reportes = Reporte.objects.filter(usuario=usuario)
     if desde:
         sesiones = sesiones.filter(iniciado_en__gte=desde)
         reportes = reportes.filter(fecha_creacion__gte=desde)
+    if hasta:                                          
+        sesiones = sesiones.filter(iniciado_en__lt=hasta)
+        reportes = reportes.filter(fecha_creacion__lt=hasta)
 
     agregados = sesiones.aggregate(distancia=Sum('distancia_km'), duracion=Sum('duracion_segundos'), pasos=Sum('pasos'))
     total_km = agregados['distancia'] or 0
@@ -46,7 +76,7 @@ def _calcular_resumen(usuario, periodo):
     total_recorridos = sesiones.count()
     total_reportes = reportes.count()
 
-    # NUEVO: indicador de actividad calculado (heurística simple, documentada)
+    # Indicador de actividad calculado (heurística simple, documentada)
     if total_recorridos == 0:
         estado = 'Inactivo'
     elif total_recorridos <= 3:
@@ -66,17 +96,27 @@ def _calcular_resumen(usuario, periodo):
         "recorridos": total_recorridos,
         "fecha_registro": usuario.date_joined.strftime('%d-%m-%Y'),
         "estado": estado,
+        "periodo_etiqueta": etiqueta,
     }
 
+def _validar_periodo(request):
+    """Devuelve (periodo, mes, error_response)."""
+    periodo = request.query_params.get('periodo', 'mes')
+    mes = request.query_params.get('mes')
+    if periodo == 'mes_especifico' and not _rango_mes(mes):
+        return periodo, mes, Response({'detail': 'Mes inválido. Usa el formato AAAA-MM.'}, status=400)
+    return periodo, mes, None    
 
 class MetricasPersonalesView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        periodo = request.query_params.get('periodo', 'mes')
+        periodo, mes, error = _validar_periodo(request)
+        if error:
+            return error
         usuario = request.user
 
-        resumen = _calcular_resumen(usuario, periodo)
+        resumen = _calcular_resumen(usuario, periodo, mes)
         resumen['foto'] = request.build_absolute_uri(usuario.foto_perfil.url) if usuario.foto_perfil else None
 
         # Gráfico "Estadísticas Mensuales": últimos 6 meses, vitalicio (no filtra por periodo)
@@ -131,6 +171,25 @@ class MetricasPersonalesPDFView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        periodo = request.query_params.get('periodo', 'mes')
-        resumen = _calcular_resumen(request.user, periodo)
-        return generar_pdf_metricas(resumen, periodo)
+        periodo, mes, error = _validar_periodo(request)
+        if error:
+            return error
+        resumen = _calcular_resumen(request.user, periodo, mes)
+        return generar_pdf_metricas(resumen, periodo, sufijo=mes)
+
+
+class MesesDisponiblesView(APIView):
+    """Meses (hora de Ecuador) en los que el usuario tiene recorridos o reportes."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        tz = timezone.get_current_timezone()
+        u = request.user
+        de_sesiones = (SesionCaminata.objects.filter(usuario=u, estado='finalizada')
+                       .annotate(m=TruncMonth('iniciado_en', tzinfo=tz))
+                       .order_by().values_list('m', flat=True).distinct())
+        de_reportes = (Reporte.objects.filter(usuario=u)
+                       .annotate(m=TruncMonth('fecha_creacion', tzinfo=tz))
+                       .order_by().values_list('m', flat=True).distinct())
+        meses = sorted({(d.year, d.month) for d in [*de_sesiones, *de_reportes] if d}, reverse=True)
+        return Response([{'valor': f'{a}-{m:02d}', 'etiqueta': _etiqueta_mes(a, m)} for a, m in meses])

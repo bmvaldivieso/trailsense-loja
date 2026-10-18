@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const elComentario = document.getElementById('detalleComentario');
     const grillaFotos = document.getElementById('grillaFotos');
     const btnGuardar = document.getElementById('btnGuardarEstado');
-    const btnMapa = document.getElementById('btnVerMapa');
     const opcionesEstado = document.querySelectorAll('.opcion-estado');
     const lightboxOverlay = document.getElementById('lightboxOverlay');
     const lightboxImagen = document.getElementById('lightboxImagen');
@@ -33,11 +32,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     opcionesEstado.forEach(op => op.addEventListener('click', () => marcarEstadoSeleccionado(op.dataset.estado)));
-
-    // Botón "Mapa" — sin funcionalidad por ahora
-    if (btnMapa) {
-        btnMapa.addEventListener('click', () => console.log('Botón Mapa: sin funcionalidad por ahora.'));
-    }
 
     function cargarDetalle() {
         fetch(URL_DETALLE, { credentials: 'same-origin' })

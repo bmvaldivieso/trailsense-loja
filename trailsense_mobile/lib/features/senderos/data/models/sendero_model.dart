@@ -5,6 +5,7 @@ class SenderoModel {
   final String nombre;
   final String descripcion;
   final String canton;
+  final String direccion;
   final String dificultad;
   final String estado;
   final double longitudKm;
@@ -18,6 +19,7 @@ class SenderoModel {
     required this.nombre,
     required this.descripcion,
     required this.canton,
+    this.direccion = '',
     required this.dificultad,
     required this.estado,
     required this.longitudKm,
@@ -40,6 +42,7 @@ class SenderoModel {
       nombre: properties['nombre'] ?? '',
       descripcion: properties['descripcion'] ?? '',
       canton: properties['canton'] ?? '',
+      direccion: properties['direccion'] ?? '',
       dificultad: properties['dificultad'] ?? '',
       estado: properties['estado'] ?? '',
       longitudKm: (properties['longitud_km'] ?? 0).toDouble(),

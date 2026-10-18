@@ -1,15 +1,84 @@
+{% load static %}
+
 <header class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold text-dark mb-0 fs-3">{{ page_title }}</h2>
     <div class="d-flex align-items-center gap-3">
         <div class="search-input-group position-relative">
             <i class="bi bi-search position-absolute start-0 top-50 translate-middle-y ms-3 text-muted"></i>
-            <input type="text" class="form-control rounded-pill bg-search border-0 ps-5 pe-3" placeholder="Buscar algo">
+            <input type="text" id="buscadorGlobal" data-url="{% url 'panel:buscar' %}" autocomplete="off"
+                class="form-control rounded-pill bg-search border-0 ps-5 pe-3" placeholder="{% if request.user.rol == 'superusuario' %}Buscar administradores{% else %}Buscar en el panel{% endif %}">
         </div>
         <button class="btn btn-icon rounded-circle bg-white border-0 shadow-sm"><i
                 class="bi bi-gear text-muted"></i></button>
-        <button class="btn btn-icon rounded-circle bg-white border-0 shadow-sm"><i
-                class="bi bi-bell text-muted"></i></button>
-        <img src="{% if request.user.foto_perfil %}{{ request.user.foto_perfil.url }}{% else %}https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png{% endif %}"
-            alt="{{ request.user.email }}" class="rounded-circle avatar-img">
+        <div class="position-relative">
+            <button type="button" id="btnNotificaciones" data-url="{% url 'panel:alertas' %}"
+                class="btn btn-icon rounded-circle bg-white border-0 shadow-sm" title="Pendientes">
+                <i class="bi bi-bell text-muted"></i>
+            </button>
+        </div>
+        <div class="perfil-topbar position-relative">
+        <button type="button" id="btnPerfilTopbar" class="btn p-0 border-0 bg-transparent rounded-circle"
+                aria-haspopup="true" aria-expanded="false" title="Mi perfil">
+            <img src="{% if request.user.foto_perfil %}{{ request.user.foto_perfil.url }}{% else %}https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png{% endif %}"
+                alt="{{ request.user.email }}" class="rounded-circle avatar-img">
+        </button>
+
+        <div id="tarjetaPerfil" class="tarjeta-perfil d-none" role="dialog" aria-label="Datos del perfil">
+            <button type="button" class="btn-close tarjeta-perfil-cerrar" id="btnCerrarPerfil" aria-label="Cerrar"></button>
+
+            <div class="text-center">
+                <img src="{% if request.user.foto_perfil %}{{ request.user.foto_perfil.url }}{% else %}https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png{% endif %}"
+                    alt="Foto de perfil" class="tarjeta-perfil-foto rounded-circle">
+                <h6 class="fw-bold mt-3 mb-1">
+                    {% if request.user.first_name or request.user.last_name %}{{ request.user.first_name }} {{ request.user.last_name }}{% else %}{{ request.user.email }}{% endif %}
+                </h6>
+                <span class="badge rounded-pill bg-primary">{{ request.user.get_rol_display }}</span>
+            </div>
+
+            <hr class="my-3">
+
+            <ul class="list-unstyled small mb-0">
+                <li class="d-flex justify-content-between py-1"><span class="text-muted">Correo</span><span class="fw-semibold text-break ms-3 text-end">{{ request.user.email }}</span></li>
+                <li class="d-flex justify-content-between py-1"><span class="text-muted">Nombre</span><span class="fw-semibold ms-3">{{ request.user.first_name|default:"—" }}</span></li>
+                <li class="d-flex justify-content-between py-1"><span class="text-muted">Apellido</span><span class="fw-semibold ms-3">{{ request.user.last_name|default:"—" }}</span></li>
+                {% if request.user.cedula %}
+                <li class="d-flex justify-content-between py-1"><span class="text-muted">Cédula</span><span class="fw-semibold ms-3">{{ request.user.cedula }}</span></li>
+                {% endif %}
+                {% if request.user.telefono %}
+                <li class="d-flex justify-content-between py-1"><span class="text-muted">Teléfono</span><span class="fw-semibold ms-3">{{ request.user.telefono }}</span></li>
+                {% endif %}
+                {% if request.user.fecha_nacimiento %}
+                <li class="d-flex justify-content-between py-1"><span class="text-muted">Nacimiento</span><span class="fw-semibold ms-3">{{ request.user.fecha_nacimiento|date:"d/m/Y" }}</span></li>
+                {% endif %}
+                {% if request.user.genero %}
+                <li class="d-flex justify-content-between py-1"><span class="text-muted">Género</span><span class="fw-semibold ms-3">{{ request.user.get_genero_display }}</span></li>
+                {% endif %}
+                <li class="d-flex justify-content-between py-1"><span class="text-muted">Miembro desde</span><span class="fw-semibold ms-3">{{ request.user.date_joined|date:"d/m/Y" }}</span></li>
+            </ul>
+        </div>
     </div>
+
+    <script>
+    (function () {
+        const btn = document.getElementById('btnPerfilTopbar');
+        const tarjeta = document.getElementById('tarjetaPerfil');
+        const cerrar = document.getElementById('btnCerrarPerfil');
+        if (!btn || !tarjeta) return;
+
+        function abrir() { tarjeta.classList.remove('d-none'); btn.setAttribute('aria-expanded', 'true'); }
+        function cerrarTarjeta() { tarjeta.classList.add('d-none'); btn.setAttribute('aria-expanded', 'false'); }
+
+        btn.addEventListener('click', function () {
+            tarjeta.classList.contains('d-none') ? abrir() : cerrarTarjeta();
+        });
+        cerrar.addEventListener('click', cerrarTarjeta);
+        document.addEventListener('click', function (e) {                    // clic afuera cierra
+            if (!btn.contains(e.target) && !tarjeta.contains(e.target)) cerrarTarjeta();
+        });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarTarjeta(); });
+    })();
+    </script>
+    </div>
+
+    <script src="{% static 'panel/js/topbar.js' %}"></script>
 </header>

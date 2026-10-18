@@ -36,7 +36,9 @@
             <textarea id="detalleComentario" class="form-control form-control-sm mb-3" rows="3" placeholder="Escriba algo......"></textarea>
 
             <div class="d-flex gap-2 mt-auto">
-                <button type="button" class="btn btn-primary btn-sm flex-fill" id="btnVerMapa">Mapa</button>
+                <a href="{% url 'panel:mapa-interactivo' %}?incidencia={{ reporte_id }}"
+                   target="_blank" rel="noopener"
+                   class="btn btn-primary btn-sm flex-fill text-decoration-none text-center">Mapa</a>
                 <button type="button" class="btn btn-primary btn-sm flex-fill" id="btnGuardarEstado">Guardar</button>
             </div>
         </div>
