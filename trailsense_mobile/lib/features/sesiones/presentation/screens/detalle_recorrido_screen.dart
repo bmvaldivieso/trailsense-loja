@@ -9,6 +9,8 @@ import '../controllers/detalle_recorrido_controller.dart';
 
 import 'package:marquee/marquee.dart';
 
+import '../../../../core/widgets/panel_deslizable.dart';
+
 class DetalleRecorridoScreen extends GetView<DetalleRecorridoController> {
   const DetalleRecorridoScreen({super.key});
 
@@ -50,64 +52,57 @@ class DetalleRecorridoScreen extends GetView<DetalleRecorridoController> {
                 ),
               ),
             ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-                decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Center(child: Container(width: 40.w, height: 4.h, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)))),
-                    SizedBox(height: 16.h),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: SizedBox(
-                            height: 24.h, // altura fija acorde al tamaño de fuente
-                            child: sesion.nombreMostrable.length > 22
-                                ? Marquee(
-                                    text: sesion.nombreMostrable,
-                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.sp),
-                                    velocity: 30.0,
-                                    blankSpace: 40.0,
-                                    pauseAfterRound: const Duration(seconds: 1),
-                                    startPadding: 0,
-                                    accelerationDuration: const Duration(seconds: 1),
-                                    accelerationCurve: Curves.linear,
-                                    decelerationDuration: const Duration(milliseconds: 500),
-                                    decelerationCurve: Curves.easeOut,
-                                  )
-                                : Text(
-                                    sesion.nombreMostrable,
-                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.sp),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                          ),
-                        ),
-                        IconButton(icon: Icon(Icons.cancel, color: Colors.grey.shade400, size: 24.r), onPressed: () => Get.back()),
-                      ],
+            PanelDeslizable(
+              espacioBajoBarra: 16.h,
+              encabezado: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: 24.h, // altura fija acorde al tamaño de fuente
+                      child: sesion.nombreMostrable.length > 22
+                          ? Marquee(
+                              text: sesion.nombreMostrable,
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.sp),
+                              velocity: 30.0,
+                              blankSpace: 40.0,
+                              pauseAfterRound: const Duration(seconds: 1),
+                              startPadding: 0,
+                              accelerationDuration: const Duration(seconds: 1),
+                              accelerationCurve: Curves.linear,
+                              decelerationDuration: const Duration(milliseconds: 500),
+                              decelerationCurve: Curves.easeOut,
+                            )
+                          : Text(
+                              sesion.nombreMostrable,
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.sp),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                     ),
-                    SizedBox(height: 6.h),
-                    Text('${sesion.iniciadoEn.day.toString().padLeft(2, '0')}/${sesion.iniciadoEn.month.toString().padLeft(2, '0')}/${sesion.iniciadoEn.year}',
-                        style: TextStyle(fontSize: 14.sp, color: Colors.grey)),
-                    SizedBox(height: 24.h),
-                    Row(children: [
-                      Expanded(child: _MetricItem(icon: Icons.straighten, text: '${sesion.distanciaKm.toStringAsFixed(2)} km', iconColor: Colors.redAccent)),
-                      Expanded(child: _MetricItem(icon: Icons.timer_outlined, text: _formatearDuracion(sesion.duracionSegundos), iconColor: Colors.redAccent)),
-                    ]),
-                    SizedBox(height: 14.h),
-                    Row(children: [
-                      Expanded(child: _MetricItem(icon: Icons.speed, text: '${sesion.velocidadPromedioKmh.toStringAsFixed(1)} km/h', iconColor: const Color(0xFF3B82F6))),
-                      Expanded(child: _MetricItem(icon: Icons.directions_walk, text: '${sesion.pasos} pasos', iconColor: Colors.amber.shade700)),
-                    ]),
-                    SizedBox(height: 20.h),
-                  ],
-                ),
+                  ),
+                  IconButton(icon: Icon(Icons.cancel, color: Colors.grey.shade400, size: 24.r), onPressed: () => Get.back()),
+                ],
+              ),
+              cuerpo: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 6.h),
+                  Text('${sesion.iniciadoEn.day.toString().padLeft(2, '0')}/${sesion.iniciadoEn.month.toString().padLeft(2, '0')}/${sesion.iniciadoEn.year}',
+                      style: TextStyle(fontSize: 14.sp, color: Colors.grey)),
+                  SizedBox(height: 24.h),
+                  Row(children: [
+                    Expanded(child: _MetricItem(icon: Icons.straighten, text: '${sesion.distanciaKm.toStringAsFixed(2)} km', iconColor: Colors.redAccent)),
+                    Expanded(child: _MetricItem(icon: Icons.timer_outlined, text: _formatearDuracion(sesion.duracionSegundos), iconColor: Colors.redAccent)),
+                  ]),
+                  SizedBox(height: 14.h),
+                  Row(children: [
+                    Expanded(child: _MetricItem(icon: Icons.speed, text: '${sesion.velocidadPromedioKmh.toStringAsFixed(1)} km/h', iconColor: const Color(0xFF3B82F6))),
+                    Expanded(child: _MetricItem(icon: Icons.directions_walk, text: '${sesion.pasos} pasos', iconColor: Colors.amber.shade700)),
+                  ]),
+                  SizedBox(height: 20.h),
+                ],
               ),
             ),
           ],

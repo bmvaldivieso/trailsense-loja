@@ -55,3 +55,18 @@ class FotoReporte(models.Model):
 
     def __str__(self):
         return f"Foto {self.orden} de reporte {self.reporte_id}"
+
+
+class VotoReporte(models.Model):
+    """Un voto de confirmación por usuario y reporte. No se puede revertir."""
+    reporte = models.ForeignKey(Reporte, on_delete=models.CASCADE, related_name='votos')
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='votos_reportes')
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['reporte', 'usuario'], name='voto_unico_por_usuario_y_reporte'),
+        ]
+
+    def __str__(self):
+        return f"Voto de {self.usuario_id} al reporte {self.reporte_id}"

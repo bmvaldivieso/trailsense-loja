@@ -10,6 +10,8 @@ import '../../../../core/constants/categorias_reporte.dart';
 
 import '../../../../core/widgets/marquee_text.dart';
 
+import '../../../../core/widgets/panel_deslizable.dart';
+
 class ReportesScreen extends GetView<ReportesController> {
   const ReportesScreen({super.key});
 
@@ -61,85 +63,70 @@ class ReportesScreen extends GetView<ReportesController> {
             ),
           ),
 
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              width: double.infinity,
-              constraints: BoxConstraints(maxHeight: 0.42.sh),
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, spreadRadius: 2)],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 40.w,
-                    height: 4.h,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  SizedBox(height: 12.h),
+          PanelDeslizable(
+            constraints: BoxConstraints(maxHeight: 0.42.sh),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, spreadRadius: 2)],
+            ),
+            encabezado: const Row(
+              children: [
+                Text('REPORTES', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              ],
+            ),
+            cuerpo: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(height: 12.h),
 
-                  const Row(
+                TextField(
+                  onChanged: controller.actualizarBusqueda,
+                  decoration: InputDecoration(
+                    hintText: 'Buscar reporte...',
+                    hintStyle: TextStyle(fontSize: 13.sp, color: Colors.grey),
+                    prefixIcon: const Icon(Icons.search, color: Color(0xFF3B82F6)),
+                    filled: true,
+                    fillColor: const Color(0xFFF0F2F5),
+                    contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 12.w),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(30.r), borderSide: BorderSide.none),
+                  ),
+                ),
+
+                SizedBox(height: 8.h),
+
+                Expanded(
+                  child: Obx(() {
+                    if (controller.isLoading.value) return const Center(child: CircularProgressIndicator());
+                    final lista = controller.reportesFiltrados;
+                    if (lista.isEmpty) return const Center(child: Text('No hay reportes registrados aún.'));
+                    return ListView.separated(
+                      padding: EdgeInsets.symmetric(horizontal: 0.w, vertical: 8.h),
+                      itemCount: lista.length,
+                      separatorBuilder: (_, __) => Divider(height: 1.h, color: Colors.grey[200]),
+                      itemBuilder: (context, index) => _buildReporteCard(lista[index]),
+                    );
+                  }),
+                ),
+
+                Divider(height: 1.h),
+
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.h),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('REPORTES', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                      GestureDetector(
+                        onTap: () => _mostrarFiltros(context),
+                        child: const Row(children: [Text('Filtros', style: TextStyle(fontWeight: FontWeight.bold)), Icon(Icons.chevron_right, size: 18)]),
+                      ),
+                      Obx(() => controller.filtroCategoria.value.isNotEmpty
+                          ? TextButton(onPressed: controller.limpiarFiltros, child: const Text('Limpiar'))
+                          : const SizedBox.shrink()),
                     ],
                   ),
-                  SizedBox(height: 12.h),
-
-                  TextField(  
-                    onChanged: controller.actualizarBusqueda,
-                    decoration: InputDecoration(
-                      hintText: 'Buscar reporte...',
-                      hintStyle: TextStyle(fontSize: 13.sp, color: Colors.grey),
-                      prefixIcon: const Icon(Icons.search, color: Color(0xFF3B82F6)),
-                      filled: true,
-                      fillColor: const Color(0xFFF0F2F5),
-                      contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 12.w),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(30.r), borderSide: BorderSide.none),
-                    ),
-                  ),
-                  
-                  SizedBox(height: 8.h),
-                  
-                  Expanded(
-                    child: Obx(() {
-                      if (controller.isLoading.value) return const Center(child: CircularProgressIndicator());
-                      final lista = controller.reportesFiltrados;
-                      if (lista.isEmpty) return const Center(child: Text('No hay reportes registrados aún.'));
-                      return ListView.separated(
-                        padding: EdgeInsets.symmetric(horizontal: 0.w, vertical: 8.h),
-                        itemCount: lista.length,
-                        separatorBuilder: (_, __) => Divider(height: 1.h, color: Colors.grey[200]),
-                        itemBuilder: (context, index) => _buildReporteCard(lista[index]),
-                      );
-                    }),
-                  ),
-
-                  Divider(height: 1.h),
-
-                  Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8.h),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        GestureDetector(
-                          onTap: () => _mostrarFiltros(context),
-                          child: const Row(children: [Text('Filtros', style: TextStyle(fontWeight: FontWeight.bold)), Icon(Icons.chevron_right, size: 18)]),
-                        ),
-                        Obx(() => controller.filtroCategoria.value.isNotEmpty
-                            ? TextButton(onPressed: controller.limpiarFiltros, child: const Text('Limpiar'))
-                            : const SizedBox.shrink()),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],

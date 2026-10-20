@@ -52,4 +52,29 @@ class ReportesRepository {
     final response = await _apiClient.dio.post('/reportes/crear/', data: formData);
     return ReporteModel.fromJson(response.data);
   }
+
+  Future<List<ReporteModel>> buscarSimilares({
+    required int senderoId,
+    required String categoria,
+    required double lat,
+    required double lon,
+  }) async {
+    final response = await _apiClient.dio.get('/reportes/similares/', queryParameters: {
+      'sendero': senderoId,
+      'categoria': categoria,
+      'lat': lat,
+      'lon': lon,
+    });
+    final List data = response.data;
+    return data.map((j) => ReporteModel.fromJson(j)).toList();
+  }
+
+  Future<int> votarReporte({
+    required int reporteId,
+    required double lat,
+    required double lon,
+  }) async {
+    final response = await _apiClient.dio.post('/reportes/$reporteId/votar/', data: {'lat': lat, 'lon': lon});
+    return response.data['votos_confirmacion'] as int;
+  }
 }

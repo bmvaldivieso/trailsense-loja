@@ -11,6 +11,8 @@ import '../widgets/filtros_senderos_sheet.dart';
 
 import '../widgets/marquee_text.dart';
 
+import '../../../../core/widgets/panel_deslizable.dart';
+
 class SenderosScreen extends GetView<SenderosController> {
   const SenderosScreen({super.key});
 
@@ -91,128 +93,111 @@ class SenderosScreen extends GetView<SenderosController> {
           ),
 
           // Botón de "mi ubicación", conectado
-          Positioned(
-            right: 16.w,
-            bottom: 300.h,
-            child: FloatingActionButton.small(
+          // Panel inferior: se oculta/muestra arrastrando la barra o el encabezado.
+          // El botón "mi ubicación" viaja pegado al borde superior del panel.
+          PanelDeslizable(
+            botonFlotante: FloatingActionButton.small(
               heroTag: 'gps_senderos',
               backgroundColor: Colors.white,
               onPressed: controller.centrarEnMiUbicacion,
               child: const Icon(Icons.my_location, color: Colors.black87),
             ),
-          ),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, spreadRadius: 2)],
+            ),
+            encabezado: const Row(
+              children: [
+                Text('SENDEROS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              ],
+            ),
+            cuerpo: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(height: 12.h),
 
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, spreadRadius: 2)],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 40.w,
-                    height: 4.h,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(2),
+                // Buscador por nombre
+                TextField(
+                  onChanged: controller.actualizarBusqueda,
+                  decoration: InputDecoration(
+                    hintText: 'Buscar sendero por nombre...',
+                    hintStyle: TextStyle(fontSize: 13.sp, color: Colors.grey),
+                    prefixIcon: const Icon(Icons.search, color: Color(0xFF3B82F6)),
+                    filled: true,
+                    fillColor: const Color(0xFFF0F2F5),
+                    contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 12.w),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30.r),
+                      borderSide: BorderSide.none,
                     ),
                   ),
-                  SizedBox(height: 12.h),
+                ),
+                SizedBox(height: 12.h),
 
-                  const Row(
+                Obx(() {
+                  if (controller.isLoading.value) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24),
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+
+                  final lista = controller.senderosFiltrados;
+
+                  if (lista.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24),
+                      child: Center(child: Text('No hay senderos disponibles')),
+                    );
+                  }
+
+                  return SizedBox(
+                    height: 180.h,
+                    child: ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: lista.length,
+                      itemBuilder: (context, index) {
+                        final sendero = lista[index];
+                        final activo = controller.senderoSeleccionado.value?.id == sendero.id;
+                        return _buildTrailCard(context, sendero, activo);
+                      },
+                    ),
+                  );
+                }),
+
+                const Divider(height: 1),
+
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.h),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('SENDEROS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                      GestureDetector(
+                        onTap: () => mostrarFiltrosSenderos(context, controller),
+                        child: const Row(
+                          children: [
+                            Text('Filtros', style: TextStyle(fontWeight: FontWeight.bold)),
+                            Icon(Icons.chevron_right, size: 18),
+                          ],
+                        ),
+                      ),
+                      Obx(
+                        () => (controller.filtroDificultad.value.isNotEmpty ||
+                                controller.filtroEstado.value.isNotEmpty)
+                            ? TextButton(
+                                onPressed: controller.limpiarFiltros,
+                                child: const Text(
+                                  'Limpiar',
+                                  style: TextStyle(color: Color(0xFF3B82F6)),
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                      ),
                     ],
                   ),
-                  SizedBox(height: 12.h),
-
-                  // Buscador por nombre
-                  TextField(
-                    onChanged: controller.actualizarBusqueda,
-                    decoration: InputDecoration(
-                      hintText: 'Buscar sendero por nombre...',
-                      hintStyle: TextStyle(fontSize: 13.sp, color: Colors.grey),
-                      prefixIcon: const Icon(Icons.search, color: Color(0xFF3B82F6)),
-                      filled: true,
-                      fillColor: const Color(0xFFF0F2F5),
-                      contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 12.w),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30.r),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 12.h),
-
-                  Obx(() {
-                    if (controller.isLoading.value) {
-                      return const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 24),
-                        child: Center(child: CircularProgressIndicator()),
-                      );
-                    }
-
-                    final lista = controller.senderosFiltrados;
-
-                    if (lista.isEmpty) {
-                      return const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 24),
-                        child: Center(child: Text('No hay senderos disponibles')),
-                      );
-                    }
-
-                    return SizedBox(
-                      height: 180.h,
-                      child: ListView.builder(
-                        physics: const BouncingScrollPhysics(),
-                        itemCount: lista.length,
-                        itemBuilder: (context, index) {
-                          final sendero = lista[index];
-                          final activo = controller.senderoSeleccionado.value?.id == sendero.id;
-                          return _buildTrailCard(context, sendero, activo);
-                        },
-                      ),
-                    );
-                  }),
-
-                  const Divider(height: 1),
-
-                  Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8.h),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        GestureDetector(
-                          onTap: () => mostrarFiltrosSenderos(context, controller),
-                          child: const Row(
-                            children: [
-                              Text('Filtros', style: TextStyle(fontWeight: FontWeight.bold)),
-                              Icon(Icons.chevron_right, size: 18),
-                            ],
-                          ),
-                        ),
-                        Obx(
-                          () => (controller.filtroDificultad.value.isNotEmpty ||
-                                  controller.filtroEstado.value.isNotEmpty)
-                              ? TextButton(
-                                  onPressed: controller.limpiarFiltros,
-                                  child: const Text(
-                                    'Limpiar',
-                                    style: TextStyle(color: Color(0xFF3B82F6)),
-                                  ),
-                                )
-                              : const SizedBox.shrink(),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],

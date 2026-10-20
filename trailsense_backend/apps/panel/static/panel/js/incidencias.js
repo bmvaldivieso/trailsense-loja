@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <td>${r.usuario_nombre}</td>
                     <td>${r.sendero_nombre}</td>
                     <td>${r.categoria}</td>
+                    <td><span class="badge text-bg-primary rounded-pill">${r.votos}</span></td>
                     <td>${capitalizar(r.estado)}</td>
                     <td>${r.fecha_creacion}</td>
                     <td>
@@ -26,6 +27,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             $('#tablaIncidencias').DataTable({
+                order: [[4, 'desc'], [0, 'desc']],
                 language: {
                     search: "Buscar:",
                     lengthMenu: "Mostrar _MENU_ registros",

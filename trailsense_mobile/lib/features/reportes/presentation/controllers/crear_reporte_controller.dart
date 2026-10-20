@@ -14,6 +14,9 @@ import 'package:dio/dio.dart';
 import '../../../reportes/presentation/controllers/mis_reportes_controller.dart';
 import '../../../reportes/presentation/controllers/reportes_controller.dart';
 
+import '../../data/models/reporte_model.dart';
+import '../widgets/reporte_similar_dialogs.dart';
+
 
 class CrearReporteController extends GetxController {
   final ReportesRepository _repository = ReportesRepository();
@@ -168,6 +171,22 @@ class CrearReporteController extends GetxController {
 
       final posicion = await _obtenerUbicacionPrecisa();
 
+      // ¿Ya existe esta incidencia? Si el chequeo falla, no bloquea el reporte.
+      List<ReporteModel> similares = [];
+      try {
+        similares = await _repository.buscarSimilares(
+          senderoId: senderoId,
+          categoria: categoriaSeleccionada.value,
+          lat: posicion.latitude,
+          lon: posicion.longitude,
+        );
+      } catch (_) {}
+
+      if (similares.isNotEmpty) {
+        final terminado = await _resolverSimilares(similares, posicion);
+        if (terminado) return; // votó o canceló; el finally restablece el botón
+      }
+
       await _repository.crearReporte(
         senderoId: senderoId,
         lat: posicion.latitude,
@@ -179,12 +198,7 @@ class CrearReporteController extends GetxController {
       );
 
       // Refresca ambos listados de reportes, igual que ya se hace con SesionesController
-      if (Get.isRegistered<MisReportesController>()) {
-        Get.find<MisReportesController>().cargarMisReportes();
-      }
-      if (Get.isRegistered<ReportesController>()) {
-        Get.find<ReportesController>().cargarReportes();
-      }
+      _refrescarListados();
 
       Get.offNamed('/reporte-enviado');
       } catch (e) {
@@ -200,6 +214,40 @@ class CrearReporteController extends GetxController {
         isLoading.value = false;
         estadoUbicacion.value = '';
       }
+  }
+
+    void _refrescarListados() {
+    if (Get.isRegistered<MisReportesController>()) {
+      Get.find<MisReportesController>().cargarMisReportes();
+    }
+    if (Get.isRegistered<ReportesController>()) {
+      Get.find<ReportesController>().cargarReportes();
+    }
+  }
+
+  /// true = el flujo terminó aquí (votó o canceló); false = seguir y crear el reporte nuevo.
+  Future<bool> _resolverSimilares(List<ReporteModel> similares, Position posicion) async {
+    while (true) {
+      final decision = await ReporteSimilarDialogs.preguntar(similares);
+      if (decision == null) return true;
+
+      final elegido = decision.votarPor;
+      if (elegido != null) {
+        if (!await ReporteSimilarDialogs.confirmarVoto(elegido)) continue;
+
+        estadoUbicacion.value = 'Registrando tu voto...';
+        await _repository.votarReporte(
+          reporteId: elegido.id,
+          lat: posicion.latitude,
+          lon: posicion.longitude,
+        );
+        _refrescarListados();
+        Get.offNamed('/reporte-enviado', arguments: {'esVoto': true});
+        return true;
+      }
+
+      if (await ReporteSimilarDialogs.confirmarNoEsLaMisma()) return false;
+    }
   }
 
   @override

@@ -11,6 +11,8 @@ import '../../../../core/widgets/marquee_text.dart';
 
 import '../../../main/presentation/controllers/main_controller.dart';
 
+import '../../../../core/widgets/panel_deslizable.dart';
+
 class DetalleReporteScreen extends GetView<DetalleReporteController> {
   const DetalleReporteScreen({super.key});
 
@@ -153,185 +155,137 @@ class DetalleReporteScreen extends GetView<DetalleReporteController> {
                 ),
               ),
 
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  width: double.infinity,
-                  constraints: BoxConstraints(maxHeight: 0.55.sh),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 20.w,
-                    vertical: 12.h,
-                  ),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(24),
+              PanelDeslizable(
+                constraints: BoxConstraints(maxHeight: 0.55.sh),
+                encabezado: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        cat.etiqueta,
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.sp),
+                      ),
                     ),
-                  ),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Center(
-                          child: Container(
-                            width: 40.w,
-                            height: 4.h,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[300],
-                              borderRadius: BorderRadius.circular(2),
+                    IconButton(
+                      icon: Icon(Icons.cancel, color: Colors.grey.shade400, size: 24.r),
+                      onPressed: () => _volverAReportes(),
+                    ),
+                  ],
+                ),
+                cuerpo: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 4.h),
+                      Text(
+                        reporte.senderoNombre,
+                        style: TextStyle(fontSize: 13.sp, color: Colors.grey),
+                      ),
+                      SizedBox(height: 16.h),
+
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _MetricItem(icon: cat.icono, text: cat.etiqueta, iconColor: cat.color),
+                                SizedBox(height: 8.h),
+                                _MetricItem(
+                                  icon: Icons.calendar_today_outlined,
+                                  text: '${reporte.fechaCreacion.day}/${reporte.fechaCreacion.month}/${reporte.fechaCreacion.year}',
+                                  iconColor: Colors.redAccent,
+                                ),
+                                SizedBox(height: 8.h),
+                                _MetricItem(
+                                  icon: reporte.estado == 'aprobado'
+                                      ? Icons.verified
+                                      : reporte.estado == 'rechazado'
+                                          ? Icons.cancel
+                                          : Icons.hourglass_empty,
+                                  text: reporte.estado == 'aprobado'
+                                      ? 'Aprobado'
+                                      : reporte.estado == 'rechazado'
+                                          ? 'Rechazado'
+                                          : 'Pendiente de validación',
+                                  iconColor: reporte.estado == 'aprobado'
+                                      ? Colors.green.shade600
+                                      : reporte.estado == 'rechazado'
+                                          ? Colors.red.shade600
+                                          : Colors.amber.shade700,
+                                ),
+                                SizedBox(height: 8.h),
+                                // Solo lectura: el voto se da únicamente al crear una incidencia
+                                _MetricItem(
+                                  icon: Icons.thumb_up_alt_outlined,
+                                  text: '${reporte.votosConfirmacion} '
+                                      '${reporte.votosConfirmacion == 1 ? 'voto de confirmación' : 'votos de confirmación'}',
+                                  iconColor: const Color(0xFF3B82F6),
+                                ),
+                              ],
                             ),
                           ),
-                        ),
-                        SizedBox(height: 12.h),
-
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                cat.etiqueta,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 20.sp,
-                                ),
-                              ),
-                            ),
-                            IconButton(
-                              icon: Icon(
-                                Icons.cancel,
-                                color: Colors.grey.shade400,
-                                size: 24.r,
-                              ),
-                              onPressed: () => _volverAReportes(),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          reporte.senderoNombre,
-                          style: TextStyle(fontSize: 13.sp, color: Colors.grey),
-                        ),
-                        SizedBox(height: 16.h),
-
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _MetricItem(
-                                    icon: cat.icono,
-                                    text: cat.etiqueta,
-                                    iconColor: cat.color,
-                                  ),
-                                  SizedBox(height: 8.h),
-                                  _MetricItem(
-                                    icon: Icons.calendar_today_outlined,
-                                    text:
-                                        '${reporte.fechaCreacion.day}/${reporte.fechaCreacion.month}/${reporte.fechaCreacion.year}',
-                                    iconColor: Colors.redAccent,
-                                  ),
-                                  SizedBox(height: 8.h),
-                                  _MetricItem(
-                                    icon: reporte.estado == 'aprobado'
-                                        ? Icons.verified
-                                        : reporte.estado == 'rechazado'
-                                            ? Icons.cancel
-                                            : Icons.hourglass_empty,
-                                    text: reporte.estado == 'aprobado'
-                                        ? 'Aprobado'
-                                        : reporte.estado == 'rechazado'
-                                            ? 'Rechazado'
-                                            : 'Pendiente de validación',
-                                    iconColor: reporte.estado == 'aprobado'
-                                        ? Colors.green.shade600
-                                        : reporte.estado == 'rechazado'
-                                            ? Colors.red.shade600
-                                            : Colors.amber.shade700,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            // Imagen principal
-                            if (reporte.fotos.isNotEmpty)
-                              GestureDetector(
-                                onTap: () => _abrirImagenCompleta(
-                                  context,
+                          // Imagen principal
+                          if (reporte.fotos.isNotEmpty)
+                            GestureDetector(
+                              onTap: () => _abrirImagenCompleta(context, reporte.fotos.first.url),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10.r),
+                                child: Image.network(
                                   reporte.fotos.first.url,
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(10.r),
-                                  child: Image.network(
-                                    reporte.fotos.first.url,
-                                    width: 140.w,
-                                    height: 90.h,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                        SizedBox(height: 16.h),
-
-                        Text(
-                          'DESCRIPCIÓN:',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12.sp,
-                            color: const Color(0xFF474B66),
-                          ),
-                        ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          reporte.descripcion,
-                          style: TextStyle(
-                            fontSize: 13.sp,
-                            color: const Color(0xFF474B66),
-                            height: 1.4,
-                          ),
-                        ),
-
-                        if (reporte.fotos.length > 1) ...[
-                          SizedBox(height: 16.h),
-                          Text(
-                            'MÁS FOTOS:',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12.sp,
-                              color: const Color(0xFF474B66),
-                            ),
-                          ),
-                          SizedBox(height: 8.h),
-                          SizedBox(
-                            height: 80.h,
-                            child: ListView.separated(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: reporte.fotos.length - 1,
-                              separatorBuilder: (_, __) => SizedBox(width: 8.w),
-                              // Tira de fotos adicionales
-                              itemBuilder: (context, index) => GestureDetector(
-                                onTap: () => _abrirImagenCompleta(
-                                  context,
-                                  reporte.fotos[index + 1].url,
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(8.r),
-                                  child: Image.network(
-                                    reporte.fotos[index + 1].url,
-                                    width: 80.w,
-                                    height: 80.h,
-                                    fit: BoxFit.cover,
-                                  ),
+                                  width: 140.w,
+                                  height: 90.h,
+                                  fit: BoxFit.cover,
                                 ),
                               ),
                             ),
-                          ),
                         ],
-                        SizedBox(height: 12.h),
+                      ),
+                      SizedBox(height: 16.h),
+
+                      Text(
+                        'DESCRIPCIÓN:',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.sp, color: const Color(0xFF474B66)),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        reporte.descripcion,
+                        style: TextStyle(fontSize: 13.sp, color: const Color(0xFF474B66), height: 1.4),
+                      ),
+
+                      if (reporte.fotos.length > 1) ...[
+                        SizedBox(height: 16.h),
+                        Text(
+                          'MÁS FOTOS:',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.sp, color: const Color(0xFF474B66)),
+                        ),
+                        SizedBox(height: 8.h),
+                        SizedBox(
+                          height: 80.h,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: reporte.fotos.length - 1,
+                            separatorBuilder: (_, __) => SizedBox(width: 8.w),
+                            // Tira de fotos adicionales
+                            itemBuilder: (context, index) => GestureDetector(
+                              onTap: () => _abrirImagenCompleta(context, reporte.fotos[index + 1].url),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8.r),
+                                child: Image.network(
+                                  reporte.fotos[index + 1].url,
+                                  width: 80.w,
+                                  height: 80.h,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
-                    ),
+                      SizedBox(height: 12.h),
+                    ],
                   ),
                 ),
               ),

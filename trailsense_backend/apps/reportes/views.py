@@ -7,12 +7,26 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
 from apps.senderos.models import Sendero
-from .models import Reporte, FotoReporte
+
+
+from django.db import transaction, IntegrityError
+from django.db.models import F
+from django.contrib.gis.measure import D
+from django.utils import timezone
+from datetime import timedelta
+from rest_framework.decorators import action
+
+from .models import Reporte, FotoReporte, VotoReporte
+
+
 from .serializers import ReporteListSerializer, ReporteDetailSerializer, ReporteCreateSerializer
 from .validaciones import (
     validar_proximidad_sendero,
     validar_no_duplicado,
     validar_limite_diario,
+    buscar_reportes_similares,
+    RADIO_SIMILAR_M,
+    VENTANA_SIMILAR_DIAS,
     ValidacionReporteError,
 )
 from .reputacion import actualizar_reputacion, PUNTOS_POR_REPORTE_CREADO
@@ -61,6 +75,58 @@ class ReporteViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_serializer_context(self):
         return {'request': self.request}
+
+    @action(detail=False, methods=['get'], url_path='similares')
+    def similares(self, request):
+        """GET /api/reportes/similares/?sendero=&categoria=&lat=&lon="""
+        try:
+            sendero_id = int(request.query_params['sendero'])
+            lat = float(request.query_params['lat'])
+            lon = float(request.query_params['lon'])
+        except (KeyError, ValueError):
+            return Response({"error": "parametros_invalidos", "message": "Faltan sendero, lat o lon."}, status=400)
+
+        categoria = request.query_params.get('categoria')
+        if categoria not in dict(Reporte.CATEGORIA_CHOICES):
+            return Response({"error": "categoria_invalida", "message": "Categoría no válida."}, status=400)
+
+        punto = Point(lon, lat, srid=4326)
+        similares = buscar_reportes_similares(request.user, sendero_id, categoria, punto)
+        return Response(ReporteDetailSerializer(similares, many=True, context={'request': request}).data)
+
+    @action(detail=True, methods=['post'], url_path='votar')
+    def votar(self, request, pk=None):
+        """POST /api/reportes/<id>/votar/  body: {lat, lon}. El voto no se puede revertir."""
+        reporte = get_object_or_404(Reporte, pk=pk)
+
+        if reporte.usuario_id == request.user.id:
+            return Response({"error": "voto_propio", "message": "No puedes votar tu propio reporte."}, status=400)
+        if reporte.estado == 'rechazado':
+            return Response({"error": "reporte_rechazado", "message": "Este reporte ya fue rechazado."}, status=400)
+        if reporte.fecha_creacion < timezone.now() - timedelta(days=VENTANA_SIMILAR_DIAS):
+            return Response({"error": "reporte_antiguo", "message": "Este reporte ya no admite votos."}, status=400)
+
+        try:
+            punto = Point(float(request.data['lon']), float(request.data['lat']), srid=4326)
+        except (KeyError, TypeError, ValueError):
+            return Response({"error": "parametros_invalidos", "message": "Faltan lat y lon."}, status=400)
+
+        # El voto solo es válido estando en el lugar del reporte
+        cerca = (Reporte.objects.filter(pk=reporte.pk)
+                 .annotate(dist=GDistance('ubicacion', punto))
+                 .filter(dist__lte=D(m=RADIO_SIMILAR_M)).exists())
+        if not cerca:
+            return Response({"error": "fuera_de_rango", "message": "Debes estar en el lugar del reporte para confirmarlo."}, status=400)
+
+        try:
+            with transaction.atomic():
+                VotoReporte.objects.create(reporte=reporte, usuario=request.user)
+                Reporte.objects.filter(pk=reporte.pk).update(votos_confirmacion=F('votos_confirmacion') + 1)
+        except IntegrityError:
+            return Response({"error": "ya_votaste", "message": "Ya votaste por este reporte."}, status=400)
+
+        reporte.refresh_from_db(fields=['votos_confirmacion'])
+        return Response({"votos_confirmacion": reporte.votos_confirmacion})    
 
 
 class CrearReporteView(APIView):
@@ -141,13 +207,14 @@ class ReportesPanelListView(APIView):
     permission_classes = [IsAuthenticated, EsAdminOSuperusuario]
 
     def get(self, request):
-        reportes = Reporte.objects.select_related('usuario', 'sendero').order_by('-fecha_creacion')
+        reportes = Reporte.objects.select_related('usuario', 'sendero').order_by('-votos_confirmacion', '-fecha_creacion')
 
         data = [{
             "id": r.id,
             "usuario_nombre": f"{r.usuario.first_name} {r.usuario.last_name}".strip() or r.usuario.email,
             "sendero_nombre": r.sendero.nombre if r.sendero else '',
             "categoria": r.get_categoria_display(),
+            "votos": r.votos_confirmacion,
             "estado": r.estado,
             "fecha_creacion": r.fecha_creacion.strftime("%d-%m-%Y"),
         } for r in reportes]

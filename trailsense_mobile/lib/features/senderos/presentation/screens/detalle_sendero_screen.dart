@@ -7,6 +7,8 @@ import '../controllers/detalle_sendero_controller.dart';
 
 import '../../../main/presentation/controllers/main_controller.dart';
 
+import '../../../../core/widgets/panel_deslizable.dart';
+
 class DetalleSenderoScreen extends GetView<DetalleSenderoController> {
   const DetalleSenderoScreen({super.key});
 
@@ -115,175 +117,111 @@ class DetalleSenderoScreen extends GetView<DetalleSenderoController> {
                 ),
               ),
 
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 20.w,
-                    vertical: 12.h,
-                  ),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(24),
+              PanelDeslizable(
+                encabezado: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      sendero.nombre,
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.sp),
                     ),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                        child: Container(
-                          width: 40.w,
-                          height: 4.h,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(2),
-                          ),
+                    IconButton(
+                      icon: Icon(Icons.cancel, color: Colors.grey.shade400, size: 24.r),
+                      onPressed: _volverASenderos,
+                    ),
+                  ],
+                ),
+                cuerpo: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 4.h),
+
+                    // Botón "Crear Incidencia"
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF3B82F6),
+                          padding: EdgeInsets.symmetric(vertical: 14.h),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                        ),
+                        onPressed: () => Get.toNamed(
+                          '/crear-reporte',
+                          arguments: {
+                            'senderoId': sendero.id,
+                            'senderoNombre': sendero.nombre,
+                          },
+                        ),
+                        child: Text(
+                          'Crear Incidencia',
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16.sp),
                         ),
                       ),
-                      SizedBox(height: 12.h),
+                    ),
 
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            sendero.nombre,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20.sp,
-                            ),
-                          ),
-                          IconButton(
-                            icon: Icon(
-                              Icons.cancel,
-                              color: Colors.grey.shade400,
-                              size: 24.r,
-                            ),
-                            onPressed: _volverASenderos,
-                          ),
-                        ],
-                      ),
+                    SizedBox(height: 10.h),
 
-                      SizedBox(height: 4.h),
-
-                      // Botón "Crear Incidencia"
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF3B82F6),
-                            padding: EdgeInsets.symmetric(vertical: 14.h),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12.r),
-                            ),
-                          ),
-                          onPressed: () => Get.toNamed(
-                            '/crear-reporte',
-                            arguments: {
-                              'senderoId': sendero.id,
-                              'senderoNombre': sendero.nombre,
-                            },
-                          ),
-                          child: Text(
-                            'Crear Incidencia',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16.sp,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      SizedBox(height: 10.h),
-
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _MetricItem(
-                                  icon: Icons.alt_route,
-                                  text: 'Estado: ${sendero.estado}',
-                                  iconColor: const Color(0xFF3B82F6),
-                                ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _MetricItem(
+                                icon: Icons.alt_route,
+                                text: 'Estado: ${sendero.estado}',
+                                iconColor: const Color(0xFF3B82F6),
+                              ),
+                              SizedBox(height: 8.h),
+                              _MetricItem(
+                                icon: Icons.location_on_outlined,
+                                text: '${sendero.longitudKm} km de recorrido',
+                                iconColor: Colors.redAccent,
+                              ),
+                              if (sendero.horarioApertura != null) ...[
                                 SizedBox(height: 8.h),
                                 _MetricItem(
-                                  icon: Icons.location_on_outlined,
-                                  text: '${sendero.longitudKm} km de recorrido',
+                                  icon: Icons.timer_outlined,
+                                  text: '${sendero.horarioApertura} - ${sendero.horarioCierre}',
                                   iconColor: Colors.redAccent,
                                 ),
-                                SizedBox(height: 8.h),
-                                _MetricItem(
-                                  icon: Icons.location_city,
-                                  text: 'Cantón: ${sendero.canton.isNotEmpty ? sendero.canton : 'No registrado'}',
-                                  iconColor: const Color(0xFF3B82F6),
-                                ),
-                                if (sendero.direccion.isNotEmpty) ...[
-                                  SizedBox(height: 8.h),
-                                  _MetricItem(
-                                    icon: Icons.map_outlined,
-                                    text: 'Calles: ${sendero.direccion}',
-                                    iconColor: Colors.teal,
-                                  ),
-                                ],
-                                if (sendero.horarioApertura != null) ...[
-                                  SizedBox(height: 8.h),
-                                  _MetricItem(
-                                    icon: Icons.timer_outlined,
-                                    text:
-                                        '${sendero.horarioApertura} - ${sendero.horarioCierre}',
-                                    iconColor: Colors.redAccent,
-                                  ),
-                                ],
-                                SizedBox(height: 8.h),
-                                _MetricItem(
-                                  icon: Icons.terrain,
-                                  text: 'Dificultad: ${sendero.dificultad}',
-                                  iconColor: Colors.amber.shade700,
-                                ),
                               ],
+                              SizedBox(height: 8.h),
+                              _MetricItem(
+                                icon: Icons.terrain,
+                                text: 'Dificultad: ${sendero.dificultad}',
+                                iconColor: Colors.amber.shade700,
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (sendero.imagenPortadaUrl != null)
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10.r),
+                            child: Image.network(
+                              sendero.imagenPortadaUrl!,
+                              width: 140.w,
+                              height: 90.h,
+                              fit: BoxFit.cover,
                             ),
                           ),
-                          if (sendero.imagenPortadaUrl != null)
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(10.r),
-                              child: Image.network(
-                                sendero.imagenPortadaUrl!,
-                                width: 140.w,
-                                height: 90.h,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                        ],
-                      ),
-                      SizedBox(height: 16.h),
+                      ],
+                    ),
+                    SizedBox(height: 16.h),
 
-                      Text(
-                        'DESCRIPCIÓN:',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12.sp,
-                          color: const Color(0xFF474B66),
-                        ),
-                      ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        sendero.descripcion.isNotEmpty
-                            ? sendero.descripcion
-                            : 'Sin descripción disponible.',
-                        style: TextStyle(
-                          fontSize: 13.sp,
-                          color: const Color(0xFF474B66),
-                          height: 1.4,
-                        ),
-                      ),
-                      SizedBox(height: 12.h),
-                    ],
-                  ),
+                    Text(
+                      'DESCRIPCIÓN:',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.sp, color: const Color(0xFF474B66)),
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      sendero.descripcion.isNotEmpty ? sendero.descripcion : 'Sin descripción disponible.',
+                      style: TextStyle(fontSize: 13.sp, color: const Color(0xFF474B66), height: 1.4),
+                    ),
+                    SizedBox(height: 12.h),
+                  ],
                 ),
               ),
             ],

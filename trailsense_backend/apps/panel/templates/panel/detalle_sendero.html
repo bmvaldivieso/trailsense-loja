@@ -10,9 +10,10 @@
 
 {% block content %}
 <div class="card border-0 rounded-4 shadow-sm bg-white overflow-hidden">
-    {% if sendero and sendero.imagen_portada %}
-    <div class="hero-banner-sendero position-relative">
-        <img src="{{ sendero.imagen_portada.url }}" alt="{{ sendero.nombre }}" class="w-100 h-100 object-fit-cover">
+    {% if sendero %}
+    <div id="heroBannerSendero" class="hero-banner-sendero position-relative {% if not sendero.imagen_portada %}d-none{% endif %}">
+        <img id="imgBanner" src="{% if sendero.imagen_portada %}{{ sendero.imagen_portada.url }}{% endif %}"
+             alt="{{ sendero.nombre }}" class="w-100 h-100 object-fit-cover">
     </div>
     {% endif %}
 
@@ -38,12 +39,12 @@
             <div class="row g-4">
                 <div class="col-12 col-md-3 text-center text-md-start">
                     <div class="position-relative d-inline-block profile-sendero-wrapper">
-                        <img src="{% if sendero and sendero.imagen_portada %}{{ sendero.imagen_portada.url }}{% else %}https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=300&q=80{% endif %}"
+                        <img id="imgCirculo" src="{% if sendero and sendero.imagen_portada %}{{ sendero.imagen_portada.url }}{% else %}https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=300&q=80{% endif %}"
                             alt="Portada" class="rounded-circle profile-sendero-img shadow-sm">
                         <label class="btn btn-primary rounded-circle position-absolute bottom-0 end-0 p-2 edit-img-btn"
                             style="cursor:pointer;">
                             <i class="bi bi-pencil-fill fs-6"></i>
-                            <input type="file" name="imagen_portada" accept="image/*" hidden>
+                            <input type="file" id="inputImagenPortada" name="imagen_portada" accept="image/*" hidden>
                         </label>
                     </div>
                 </div>
@@ -193,4 +194,6 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="{% static 'panel/js/detalle_sendero.js' %}?v={% now 'U' %}"></script>
 <script src="{% static 'panel/js/traza_sendero.js' %}?v={% now 'U' %}"></script>
+
+<script src="{% static 'panel/js/preview_portada.js' %}?v={% now 'U' %}"></script>
 {% endblock %}

@@ -53,12 +53,13 @@ def _senderos(request):
 
 def _incidencias(request):
     qs = (Reporte.objects.select_related('sendero', 'usuario').prefetch_related('fotos')
-          .order_by('-fecha_creacion')[:LIMITE_INCIDENCIAS])
+          .order_by('-votos_confirmacion', '-fecha_creacion')[:LIMITE_INCIDENCIAS])
 
     return [{
         "id": r.id,
         "categoria": r.categoria, "categoria_display": r.get_categoria_display(),
         "estado": r.estado, "estado_display": r.get_estado_display(),
+        "votos": r.votos_confirmacion,
         "descripcion": r.descripcion,
         "sendero_id": r.sendero_id, "sendero_nombre": r.sendero.nombre,
         "usuario_nombre": _nombre(r.usuario),

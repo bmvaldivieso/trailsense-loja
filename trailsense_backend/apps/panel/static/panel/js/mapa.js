@@ -211,6 +211,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <div class="item-metricas">
                         <span>${esc(x.categoria_display)}</span>
                         <span><span class="punto-estado" style="background:${COLOR_ESTADO_REPORTE[x.estado] || '#999'}"></span>${esc(x.estado_display)}</span>
+                        <span><i class="bi bi-hand-thumbs-up"></i> ${x.votos}</span>
                     </div>
                 </div>${miniatura(x.fotos[0], 'bi-megaphone')}</div>`;
         }
@@ -286,6 +287,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="metricas-detalle">
                     ${metrica('bi-tag-fill', x.categoria_display, COLOR_CATEGORIA[x.categoria])}
                     ${metrica('bi-circle-fill', x.estado_display, COLOR_ESTADO_REPORTE[x.estado])}
+                    ${metrica('bi-hand-thumbs-up-fill', x.votos + (x.votos === 1 ? ' voto' : ' votos') + ' de confirmación')}
                     ${metrica('bi-signpost-split', x.sendero_nombre)}
                     ${metrica('bi-person', x.usuario_nombre)}
                     ${metrica('bi-calendar3', x.fecha)}
@@ -332,6 +334,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return `<div class="popup-titulo">Incidencia ${x.id}: ${esc(x.categoria_display)}</div>
                 <div class="popup-linea"><span class="punto-estado" style="background:${COLOR_ESTADO_REPORTE[x.estado]}"></span>${esc(x.estado_display)} · ${esc(x.sendero_nombre)}</div>
                 <div class="popup-linea"><i class="bi bi-calendar3"></i> ${esc(x.fecha)}</div>
+                <div class="popup-linea"><i class="bi bi-hand-thumbs-up"></i> ${x.votos} ${x.votos === 1 ? 'voto' : 'votos'} de confirmación</div>
                 <div class="popup-linea">${esc(d)}</div>`;
         }
         return `<div class="popup-titulo">Recorrido #${x.numero_usuario ?? x.id} · ${esc(x.usuario_nombre)}</div>

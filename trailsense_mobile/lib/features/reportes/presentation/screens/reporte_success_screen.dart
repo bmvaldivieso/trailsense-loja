@@ -9,6 +9,10 @@ class ReporteSuccessScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    
+    final args = Get.arguments;
+    final esVoto = args is Map && args['esVoto'] == true;
+
     return Scaffold(
       backgroundColor: const Color(0xFF3B82F6),
       body: SafeArea(
@@ -37,9 +41,15 @@ class ReporteSuccessScreen extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 32.h),
-              Text('¡Reporte enviado!', style: TextStyle(color: Colors.white, fontSize: 28.sp, fontWeight: FontWeight.bold)),
+              Text(esVoto ? '¡Voto registrado!' : '¡Reporte enviado!', style: TextStyle(color: Colors.white, fontSize: 28.sp, fontWeight: FontWeight.bold)),
               SizedBox(height: 8.h),
-              Text('Gracias por ayudar a mantener seguros los senderos.', textAlign: TextAlign.center, style: TextStyle(color: Colors.white.withOpacity(0.85), fontSize: 14.sp)),
+              Text(
+                esVoto
+                    ? 'Gracias por confirmar. Tu voto ayuda a priorizar esta incidencia.'
+                    : 'Gracias por ayudar a mantener seguros los senderos.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white.withOpacity(0.85), fontSize: 14.sp),
+              ),
               const Spacer(flex: 5),
               SizedBox(
                 width: double.infinity, height: 54.h,
@@ -47,7 +57,7 @@ class ReporteSuccessScreen extends StatelessWidget {
                   onPressed: () {
                     Get.until((route) => route.settings.name == '/main');
                     Get.find<MainController>().changePage(3);
-                    Get.toNamed('/mis-reportes');
+                    if (!esVoto) Get.toNamed('/mis-reportes');
                   },
                   style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF5F7FA), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r))),
                   child: Text('Volver al listado de reportes', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: const Color(0xFF3B82F6))),

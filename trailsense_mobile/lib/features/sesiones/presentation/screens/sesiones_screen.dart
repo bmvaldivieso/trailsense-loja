@@ -6,6 +6,8 @@ import 'package:get/get.dart';
 import '../controllers/sesiones_controller.dart';
 import '../../data/models/sesion_model.dart';
 
+import '../../../../core/widgets/panel_deslizable.dart';
+
 class SesionesScreen extends GetView<SesionesController> {
   const SesionesScreen({super.key});
 
@@ -38,51 +40,42 @@ class SesionesScreen extends GetView<SesionesController> {
             ),
           ),
 
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              width: double.infinity,
-              constraints: BoxConstraints(maxHeight: 0.40.sh),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(topLeft: Radius.circular(30.r), topRight: Radius.circular(30.r)),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 15, spreadRadius: 2)],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 12.h),
-                  Center(
-                    child: Container(
-                      width: 40.w,
-                      height: 5.h,
-                      decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10.r)),
-                    ),
-                  ),
-                  SizedBox(height: 16.h),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20.w),
-                    child: Text('RECORRIDOS',
-                        style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w800, letterSpacing: 0.5, color: const Color(0xFF2D3142))),
-                  ),
-                  SizedBox(height: 8.h),
-                  Padding(padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h), child: _buildNuevoCard()),
-                  Divider(height: 1.h, thickness: 1, color: Colors.grey[200]),
-                  Expanded(
-                    child: Obx(() {
-                      if (controller.isLoading.value) return const Center(child: CircularProgressIndicator());
-                      if (controller.sesiones.isEmpty) return const Center(child: Text('Aún no tienes recorridos registrados.'));
-                      return ListView.separated(
-                        padding: EdgeInsets.symmetric(vertical: 8.h),
-                        itemCount: controller.sesiones.length,
-                        separatorBuilder: (_, __) => Divider(height: 1.h, color: Colors.grey[200]),
-                        itemBuilder: (context, index) => _buildRecorridoCard(controller.sesiones[index]),
-                      );
-                    }),
-                  ),
-                ],
-              ),
+          PanelDeslizable(
+            constraints: BoxConstraints(maxHeight: 0.40.sh),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(topLeft: Radius.circular(30.r), topRight: Radius.circular(30.r)),
+              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 15, spreadRadius: 2)],
+            ),
+            horizontal: 0,
+            alturaBarra: 5.h,
+            espacioBajoBarra: 16.h,
+            espacioInferior: 0,
+            encabezado: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Text('RECORRIDOS',
+                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w800, letterSpacing: 0.5, color: const Color(0xFF2D3142))),
+            ),
+            cuerpo: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 8.h),
+                Padding(padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h), child: _buildNuevoCard()),
+                Divider(height: 1.h, thickness: 1, color: Colors.grey[200]),
+                Expanded(
+                  child: Obx(() {
+                    if (controller.isLoading.value) return const Center(child: CircularProgressIndicator());
+                    if (controller.sesiones.isEmpty) return const Center(child: Text('Aún no tienes recorridos registrados.'));
+                    return ListView.separated(
+                      padding: EdgeInsets.symmetric(vertical: 8.h),
+                      itemCount: controller.sesiones.length,
+                      separatorBuilder: (_, __) => Divider(height: 1.h, color: Colors.grey[200]),
+                      itemBuilder: (context, index) => _buildRecorridoCard(controller.sesiones[index]),
+                    );
+                  }),
+                ),
+              ],
             ),
           ),
         ],

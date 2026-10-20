@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const opcionesEstado = document.querySelectorAll('.opcion-estado');
     const lightboxOverlay = document.getElementById('lightboxOverlay');
     const lightboxImagen = document.getElementById('lightboxImagen');
+    const elVotos = document.getElementById('detalleVotos');
 
     function actualizarTransform() {
         lightboxImagen.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${escala})`;
@@ -45,6 +46,7 @@ document.addEventListener('DOMContentLoaded', function () {
         elLon.value = data.lon;
         elSendero.value = data.sendero_nombre || 'Sin sendero';
         elDistancia.value = data.distancia_sendero_m != null ? `${data.distancia_sendero_m.toFixed(1)} m` : 'No calculada';
+        elVotos.value = data.votos_confirmacion ?? 0;
         elComentario.value = data.comentario_admin || '';
 
         marcarEstadoSeleccionado(data.estado);

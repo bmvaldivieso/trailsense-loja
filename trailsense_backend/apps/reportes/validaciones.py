@@ -15,6 +15,11 @@ RADIO_DUPLICADO_M = 30 #30
 # --- Límite general de reportes por usuario (resguardo anti-flood) ---
 LIMITE_REPORTES_POR_DIA = 10 #10
 
+# --- Votos de confirmación (incidencia ya reportada por otro senderista) ---
+RADIO_SIMILAR_M = 10
+VENTANA_SIMILAR_DIAS = 7
+MAX_SIMILARES = 3
+
 
 class ValidacionReporteError(Exception):
     """Se lanza cuando un reporte no pasa alguna validación anti-spam/proximidad."""
@@ -58,3 +63,25 @@ def validar_limite_diario(usuario):
             "limite_diario_alcanzado",
             f"Has alcanzado el límite de {LIMITE_REPORTES_POR_DIA} reportes en las últimas 24 horas.",
         )
+
+
+def buscar_reportes_similares(usuario, sendero_id, categoria, punto):
+    """Reportes ajenos, recientes, del mismo sendero y categoría, cerca del punto,
+    que el usuario todavía no ha votado. Los más votados primero."""
+    desde = timezone.now() - timedelta(days=VENTANA_SIMILAR_DIAS)
+    return (
+        Reporte.objects
+        .filter(
+            sendero_id=sendero_id,
+            categoria=categoria,
+            fecha_creacion__gte=desde,
+            estado__in=('pendiente', 'aprobado'),
+        )
+        .exclude(usuario=usuario)
+        .exclude(votos__usuario=usuario)
+        .annotate(dist=Distance('ubicacion', punto))
+        .filter(dist__lte=D(m=RADIO_SIMILAR_M))
+        .select_related('sendero', 'usuario')
+        .prefetch_related('fotos')
+        .order_by('-votos_confirmacion', 'dist')[:MAX_SIMILARES]
+    )
