@@ -19,6 +19,26 @@ document.addEventListener('DOMContentLoaded', function () {
     if (buscador) {
         const cont = buscador.parentElement;
         const panel = crearDropdown(cont, 'topbar-dropdown-buscador');
+        
+        // Texto de ayuda: se oculta al escribir y se desplaza solo si no cabe
+        const ayuda = cont.querySelector('.buscador-ayuda');
+        function actualizarAyuda() {
+            cont.classList.toggle('con-texto', buscador.value.length > 0);
+            if (!ayuda) return;
+            const texto = ayuda.querySelector('.buscador-ayuda-texto');
+            ayuda.classList.remove('desplazando');
+            const exceso = texto.scrollWidth - ayuda.clientWidth;
+            if (exceso > 4) {
+                ayuda.style.setProperty('--desp', `-${exceso + 8}px`);
+                ayuda.style.setProperty('--dur', `${Math.max(4, (exceso + 8) / 30)}s`);   // ~30 px/s
+                ayuda.classList.add('desplazando');
+            }
+        }
+        buscador.addEventListener('input', actualizarAyuda);
+        window.addEventListener('resize', actualizarAyuda);
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(actualizarAyuda);
+        actualizarAyuda();
+
         let temporizador = null, ultima = 0;
 
         async function buscar(q) {

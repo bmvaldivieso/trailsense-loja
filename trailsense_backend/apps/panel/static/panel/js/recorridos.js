@@ -34,8 +34,9 @@ document.addEventListener('DOMContentLoaded', function () {
         div.dataset.sendero = (recorrido.sendero_nombre || '').toLowerCase();
         div.dataset.estado = recorrido.estado;
 
+        const ETIQUETAS = { en_curso: 'En curso', pausada: 'Pausada', interrumpida: 'Interrumpido' };
         const etiquetaEstado = !esValido
-            ? `<span class="badge-estado-invalido">${recorrido.estado === 'en_curso' ? 'En curso' : 'Pausada'}</span>`
+            ? `<span class="badge-estado-invalido">${ETIQUETAS[recorrido.estado] || recorrido.estado}</span>`
             : '';
 
         div.innerHTML = `

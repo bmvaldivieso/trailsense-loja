@@ -80,17 +80,47 @@ class ReportesScreen extends GetView<ReportesController> {
               children: [
                 SizedBox(height: 12.h),
 
-                TextField(
-                  onChanged: controller.actualizarBusqueda,
-                  decoration: InputDecoration(
-                    hintText: 'Buscar reporte...',
-                    hintStyle: TextStyle(fontSize: 13.sp, color: Colors.grey),
-                    prefixIcon: const Icon(Icons.search, color: Color(0xFF3B82F6)),
-                    filled: true,
-                    fillColor: const Color(0xFFF0F2F5),
-                    contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 12.w),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(30.r), borderSide: BorderSide.none),
-                  ),
+                Stack(
+                  alignment: Alignment.centerLeft,
+                  children: [
+                    Obx(() {
+                      final bool vacio = controller.busqueda.value.isEmpty;
+                      return TextField(
+                        controller: controller.busquedaCtrl,
+                        onChanged: controller.actualizarBusqueda,
+                        textInputAction: TextInputAction.search,
+                        decoration: InputDecoration(
+                          prefixIcon: const Icon(Icons.search, color: Color(0xFF3B82F6)),
+                          suffixIcon: vacio
+                              ? null
+                              : IconButton(
+                                  icon: const Icon(Icons.close, color: Colors.grey),
+                                  tooltip: 'Limpiar búsqueda',
+                                  onPressed: controller.limpiarBusqueda,
+                                ),
+                          filled: true,
+                          fillColor: const Color(0xFFF0F2F5),
+                          contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 12.w),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(30.r), borderSide: BorderSide.none),
+                        ),
+                      );
+                    }),
+                    // Texto de ayuda con marquee (el hintText nativo no se desplaza)
+                    Positioned(
+                      left: 48,   // ancho reservado del prefixIcon
+                      right: 16.w,
+                      child: Obx(() => controller.busqueda.value.isEmpty
+                          ? IgnorePointer(
+                              child: MarqueeText(
+                                text: 'Busca por tipo, descripción, fecha (dd/mm/aaaa), autor o sendero',
+                                style: TextStyle(fontSize: 13.sp, color: Colors.grey),
+                                height: 18.h,
+                                umbral: 38,
+                              ),
+                            )
+                          : const SizedBox.shrink()),
+                    ),
+                  ],
                 ),
 
                 SizedBox(height: 8.h),
@@ -99,7 +129,15 @@ class ReportesScreen extends GetView<ReportesController> {
                   child: Obx(() {
                     if (controller.isLoading.value) return const Center(child: CircularProgressIndicator());
                     final lista = controller.reportesFiltrados;
-                    if (lista.isEmpty) return const Center(child: Text('No hay reportes registrados aún.'));
+                    if (lista.isEmpty) {
+                      final bool hayBusqueda = controller.busqueda.value.trim().isNotEmpty;
+                      return Center(
+                        child: Text(
+                          hayBusqueda ? 'Ningún reporte coincide con tu búsqueda.' : 'No hay reportes registrados aún.',
+                          textAlign: TextAlign.center,
+                        ),
+                      );
+                    }
                     return ListView.separated(
                       padding: EdgeInsets.symmetric(horizontal: 0.w, vertical: 8.h),
                       itemCount: lista.length,

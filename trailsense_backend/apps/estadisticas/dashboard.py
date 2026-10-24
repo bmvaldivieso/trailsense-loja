@@ -17,7 +17,7 @@ DIAS_ES = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
 
 # Heurística de "sin señal": un recorrido en curso cuyo último punto GPS recibido
 # tiene más de UMBRAL minutos, y que inició hace menos de VIGENCIA horas.
-UMBRAL_SIN_SENAL_MIN = 1 #Por defecto 30 minutos
+UMBRAL_SIN_SENAL_MIN = 30 #Por defecto 30 minutos
 VIGENCIA_ALERTA_HORAS = 24
 
 

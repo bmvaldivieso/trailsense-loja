@@ -9,6 +9,12 @@ import '../../data/repositories/senderos_repository.dart';
 
 import '../../../main/presentation/controllers/main_controller.dart';
 
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+
+import '../../../../core/location/ajustes_gps.dart';
+
 class SenderosController extends GetxController {
 
   static const LatLng _centroLoja = LatLng(-3.9973, -79.2005);
@@ -24,6 +30,12 @@ class SenderosController extends GetxController {
   final RxString filtroEstado = ''.obs;
   final RxString busqueda = ''.obs;
   final Rx<LatLng?> ubicacionActual = Rx<LatLng?>(null);
+  final RxBool buscandoUbicacion = false.obs;
+
+  final RxDouble precisionM = 0.0.obs; // precisión (radio de error) de la última lectura, en metros
+
+  static const double _precisionObjetivoM = 5;                     // se detiene al alcanzar esta precisión
+  static const Duration _tiempoMaxLectura = Duration(seconds: 20); // tope de espera
 
   LatLng get centroInicial => _centroLoja;
 
@@ -79,11 +91,93 @@ class SenderosController extends GetxController {
     }
   }
 
+  /// Escucha el GPS hasta alcanzar la precisión objetivo o agotar el tiempo,
+  /// y devuelve la MEJOR lectura. Mueve el punto del mapa mientras mejora.
+  Future<Position> _lecturaPrecisa() async {
+    
+    final LocationSettings ajustes = ajustesGpsAltaPrecision();
+
+    final inicio = DateTime.now();
+    Position? mejor;
+    final completer = Completer<Position>();
+    late StreamSubscription<Position> suscripcion;
+
+    final temporizador = Timer(_tiempoMaxLectura, () {
+      suscripcion.cancel();
+      if (completer.isCompleted) return;
+      if (mejor != null) {
+        completer.complete(mejor);
+      } else {
+        completer.completeError(TimeoutException('Sin lectura de GPS'));
+      }
+    });
+
+    suscripcion = Geolocator.getPositionStream(locationSettings: ajustes).listen(
+      (p) {
+        // Descarta lecturas en caché anteriores a esta solicitud
+        final DateTime? ts = p.timestamp;
+        if (ts != null && ts.isBefore(inicio.subtract(const Duration(seconds: 2)))) return;
+
+        if (mejor == null || p.accuracy < mejor!.accuracy) {
+          mejor = p;
+          // El punto rojo se va corrigiendo mientras la lectura mejora
+          ubicacionActual.value = LatLng(p.latitude, p.longitude);
+          precisionM.value = p.accuracy;
+        }
+
+        if (p.accuracy <= _precisionObjetivoM) {
+          temporizador.cancel();
+          suscripcion.cancel();
+          if (!completer.isCompleted) completer.complete(p);
+        }
+      },
+      onError: (e) {
+        temporizador.cancel();
+        suscripcion.cancel();
+        if (!completer.isCompleted) completer.completeError(e);
+      },
+    );
+
+    return completer.future;
+  }
+
   Future<void> centrarEnMiUbicacion() async {
+    if (buscandoUbicacion.value) return; // evita lecturas simultáneas por toques repetidos
+
+    // Respuesta inmediata: centra en la última ubicación conocida mientras se recalcula
     if (ubicacionActual.value != null) {
       mapController.move(ubicacionActual.value!, 15);
-    } else {
-      await _inicializarUbicacion();
+    }
+
+    buscandoUbicacion.value = true;
+    try {
+      if (!await Geolocator.isLocationServiceEnabled()) {
+        Get.snackbar('GPS desactivado', 'Activa la ubicación del dispositivo para centrarte en el mapa.');
+        return;
+      }
+
+      LocationPermission permiso = await Geolocator.checkPermission();
+      if (permiso == LocationPermission.denied) {
+        permiso = await Geolocator.requestPermission();
+      }
+      if (permiso == LocationPermission.denied || permiso == LocationPermission.deniedForever) {
+        Get.snackbar('Permiso denegado', 'Permite el acceso a la ubicación para usar esta función.');
+        return;
+      }
+
+      // Lectura de alta precisión
+      final posicion = await _lecturaPrecisa();
+
+      final punto = LatLng(posicion.latitude, posicion.longitude);
+      ubicacionActual.value = punto;
+      precisionM.value = posicion.accuracy;
+      mapController.move(punto, 17); // más zoom para apreciar la posición exacta
+    } on TimeoutException {
+      Get.snackbar('Ubicación', 'No se pudo obtener una ubicación precisa. Intenta nuevamente al aire libre.');
+    } catch (e) {
+      Get.snackbar('Ubicación', 'No se pudo actualizar tu ubicación.');
+    } finally {
+      buscandoUbicacion.value = false;
     }
   }
 

@@ -22,6 +22,7 @@ class FotoReporteSerializer(serializers.ModelSerializer):
 class ReporteListSerializer(serializers.ModelSerializer):
     sendero_nombre = serializers.CharField(source='sendero.nombre', read_only=True)
     usuario_email = serializers.CharField(source='usuario.email', read_only=True)
+    usuario_nombre = serializers.SerializerMethodField()
     foto_portada = serializers.SerializerMethodField()
     lat = serializers.SerializerMethodField()
     lon = serializers.SerializerMethodField()
@@ -29,11 +30,16 @@ class ReporteListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reporte
         fields = [
-            'id', 'sendero', 'sendero_nombre', 'usuario_email', 'categoria',
-            'descripcion', 'estado', 'votos_confirmacion', 'fecha_creacion',
+            'id', 'sendero', 'sendero_nombre', 'usuario_email', 'usuario_nombre',
+            'categoria', 'descripcion', 'estado', 'votos_confirmacion', 'fecha_creacion',
             'foto_portada', 'lat', 'lon',
         ]
         read_only_fields = fields
+
+    def get_usuario_nombre(self, obj):
+        usuario = obj.usuario
+        nombre = f"{usuario.first_name} {usuario.last_name}".strip()
+        return nombre or usuario.email.split('@')[0]
 
     def get_foto_portada(self, obj):
         primera = obj.fotos.order_by('orden').first()

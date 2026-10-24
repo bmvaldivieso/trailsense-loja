@@ -15,6 +15,7 @@ class ReporteModel {
   final int senderoId;
   final String senderoNombre;
   final String usuarioEmail;
+  final String usuarioNombre;  
   final String categoria;
   final String descripcion;
   final String estado; 
@@ -31,6 +32,7 @@ class ReporteModel {
     required this.senderoId,
     required this.senderoNombre,
     required this.usuarioEmail,
+    required this.usuarioNombre,   
     required this.categoria,
     required this.descripcion,
     required this.estado,
@@ -43,12 +45,20 @@ class ReporteModel {
     this.fotos = const [],
   });
 
+  /// Fecha de creación en hora local del dispositivo, formato dd/mm/aaaa.
+  String get fechaTexto {
+    final DateTime f = fechaCreacion.toLocal();
+    String dos(int v) => v.toString().padLeft(2, '0');
+    return '${dos(f.day)}/${dos(f.month)}/${f.year}';
+  }
+
   factory ReporteModel.fromJson(Map<String, dynamic> json) {
     return ReporteModel(
       id: json['id'],
       senderoId: json['sendero'],
       senderoNombre: json['sendero_nombre'] ?? '',
       usuarioEmail: json['usuario_email'] ?? '',
+      usuarioNombre: json['usuario_nombre'] as String? ?? '',
       categoria: json['categoria'] ?? '',
       descripcion: json['descripcion'] ?? '',
       estado: json['estado'] ?? 'pendiente',

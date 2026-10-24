@@ -15,9 +15,12 @@
     </a>
 </div>
 
+<div id="avisoFiltroSenderos" class="alert alert-danger d-none d-flex justify-content-between align-items-center py-2"></div>
+
 <div class="row g-4" id="senderosGrid">
     {% for sendero in senderos %}
-    <div class="col-12 col-md-6 col-xl-4 sendero-item" data-nombre="{{ sendero.nombre|lower }} {{ sendero.canton|lower }} {{ sendero.direccion|lower }}">
+    <div class="col-12 col-md-6 col-xl-4 sendero-item" data-id="{{ sendero.pk }}" data-estado="{{ sendero.estado }}"
+         data-nombre="{{ sendero.nombre|lower }} {{ sendero.canton|lower }} {{ sendero.direccion|lower }}">
         <div class="card border-0 rounded-4 shadow-sm {% if forloop.first %}bg-primary text-white{% else %}bg-white{% endif %} h-100 p-3">
             <div class="d-flex justify-content-between mb-3">
                 <div class="flex-grow-1" style="min-width:0">

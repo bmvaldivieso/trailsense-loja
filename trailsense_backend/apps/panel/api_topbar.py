@@ -33,7 +33,8 @@ def _filtro_persona(q, prefijo=''):
 
 
 def _persona(u, url):
-    return {'titulo': f'{u.first_name} {u.last_name}'.strip() or u.email, 'detalle': u.email, 'url': url}
+    return {'titulo': f'{u.first_name} {u.last_name}'.strip() or u.email,
+            'detalle': u.email, 'url': f'{url}?id={u.pk}'}
 
 
 class BuscadorGlobalAPIView(APIView):
@@ -113,12 +114,20 @@ class AlertasPanelAPIView(APIView):
                               'titulo': f'{n_act} acción(es) de administradores', 'detalle': 'En las últimas 24 horas',
                               'url': _url('panel:superusuario-historial')})
         else:
-            n_criticos = Sendero.objects.filter(estado='critico').count() if request.user.is_staff else 0
+            criticos = (Sendero.objects.filter(estado='critico').order_by('nombre')
+                        if request.user.is_staff else Sendero.objects.none())
+            n_criticos = criticos.count()
             if n_criticos:
                 total += n_criticos
                 items.append({'icono': 'bi-exclamation-triangle', 'color': '#f97316',
                               'titulo': f'{n_criticos} sendero(s) en estado crítico',
-                              'detalle': 'Requieren atención', 'url': _url('panel:senderos')})
+                              'detalle': 'Ver solo los críticos',
+                              'url': _url('panel:senderos') + '?estado=critico'})
+                for s in criticos[:LIMITE]:          # uno por sendero, igual que las incidencias pendientes
+                    items.append({'icono': 'bi-signpost-split', 'color': '#dc2626',
+                                  'titulo': s.nombre,
+                                  'detalle': ' · '.join(t for t in ('Estado crítico', s.canton) if t),
+                                  'url': _url('panel:detalle-sendero', s.pk, alterno='panel:senderos')})
 
             pendientes = Reporte.objects.filter(estado='pendiente')
             n_pend = pendientes.count()

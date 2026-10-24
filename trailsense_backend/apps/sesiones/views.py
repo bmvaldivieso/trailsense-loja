@@ -23,6 +23,9 @@ from core.permissions.roles import EsAdminOSuperusuario
 
 from apps.actividad.utils import registrar_actividad
 
+from django.db import transaction
+from .cierre import ESTADOS_CERRADOS, cerrar_huerfanas, cerrar_sesion, parece_cierre_de_huerfana
+
 
 class SesionesListView(generics.ListAPIView):
     """GET /api/sesiones/ -> mis sesiones."""
@@ -30,7 +33,7 @@ class SesionesListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return SesionCaminata.objects.filter(usuario=self.request.user)
+        return SesionCaminata.objects.filter(usuario=self.request.user).exclude(estado='interrumpida')
 
 
 class SesionDetailView(generics.RetrieveAPIView):
@@ -56,6 +59,9 @@ class IniciarSesionView(APIView):
         # Si no se especificó sendero pero sí ubicación, detecta el más cercano
         if sendero is None and lat is not None and lon is not None:
             sendero = detectar_sendero_cercano(Point(lon, lat, srid=4326))
+
+        # Cierra en el servidor los recorridos que quedaron abiertos (app cerrada o sin conexión)
+        cerrar_huerfanas(usuario=request.user)  
 
         sesion = SesionCaminata.objects.create(
             usuario=request.user,
@@ -95,6 +101,7 @@ class EnviarPuntosView(APIView):
                 precision_m=item.get('precision_m'),
                 altitud_m=item.get('altitud_m'),
                 velocidad_mps=item.get('velocidad_mps'),
+                inicia_tramo=item.get('inicia_tramo', False),
             )
             for item in serializer.validated_data
         ]
@@ -146,60 +153,20 @@ class FinalizarSesionView(APIView):
 
     def post(self, request, pk):
         try:
-            sesion = SesionCaminata.objects.get(pk=pk, usuario=request.user)
+            sesion = SesionCaminata.objects.select_related('usuario').get(pk=pk, usuario=request.user)
         except SesionCaminata.DoesNotExist:
             return Response({"detail": "Sesión no encontrada."}, status=status.HTTP_404_NOT_FOUND)
 
-        if sesion.estado == 'finalizada':
-            return Response(SesionDetailSerializer(sesion).data)
+        if sesion.estado in ESTADOS_CERRADOS:
+            return Response(SesionDetailSerializer(sesion, context={'request': request}).data)
 
         tiempo_pausado = int(request.data.get('tiempo_pausado_segundos', 0))
         pasos = int(request.data.get('pasos', 0))
+        # Versiones anteriores de la app cerraban huérfanas por aquí: se tratan como cierre automático
+        automatico = parece_cierre_de_huerfana(sesion, pasos, tiempo_pausado)
 
-        puntos = list(sesion.puntos.order_by('capturado_en'))
-
-        if len(puntos) >= 2:
-            coords = [(p.ubicacion.x, p.ubicacion.y) for p in puntos]
-            sesion.traza = LineString(coords, srid=4326)
-
-        # Vinculación autoritativa sendero-recorrido (Sprint 9)
-        sesion.sendero = detectar_sendero_para_sesion(sesion)
-
-        # Número correlativo propio del senderista
-        if sesion.numero_usuario is None:
-            ultimo = SesionCaminata.objects.filter(usuario=sesion.usuario).aggregate(
-                m=Max('numero_usuario')
-            )['m'] or 0
-            sesion.numero_usuario = ultimo + 1
-
-        sesion.finalizado_en = timezone.now()
-        sesion.tiempo_pausado_segundos = tiempo_pausado
-        sesion.pasos = pasos
-        sesion.estado = 'finalizada'
-
-        duracion_total = (sesion.finalizado_en - sesion.iniciado_en).total_seconds() - tiempo_pausado
-        sesion.duracion_segundos = max(int(duracion_total), 0)
-        sesion.save()
-
-        if sesion.traza:
-            resultado = SesionCaminata.objects.filter(pk=sesion.pk).annotate(
-                longitud=Length('traza')
-            ).first()
-            distancia_m = resultado.longitud.m if resultado.longitud else 0
-            sesion.distancia_km = round(distancia_m / 1000, 3)
-
-            if sesion.duracion_segundos > 0:
-                sesion.velocidad_promedio_kmh = round(
-                    sesion.distancia_km / (sesion.duracion_segundos / 3600), 2
-                )
-            sesion.save(update_fields=['distancia_km', 'velocidad_promedio_kmh'])
-
-        # Alimenta el perfil del senderista (Sprint 9)
-        usuario = sesion.usuario
-        usuario.kilometros_recorridos = (usuario.kilometros_recorridos or 0) + sesion.distancia_km
-        usuario.save(update_fields=['kilometros_recorridos'])
-
-        registrar_actividad(sesion.usuario, 'recorrido_finalizado', f"Distancia: {sesion.distancia_km} km")
+        with transaction.atomic():
+            sesion = cerrar_sesion(sesion, pasos=pasos, tiempo_pausado=tiempo_pausado, automatico=automatico)
         return Response(SesionDetailSerializer(sesion, context={'request': request}).data)
 
 

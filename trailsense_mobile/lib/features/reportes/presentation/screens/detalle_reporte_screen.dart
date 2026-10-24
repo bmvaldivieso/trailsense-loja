@@ -13,6 +13,10 @@ import '../../../main/presentation/controllers/main_controller.dart';
 
 import '../../../../core/widgets/panel_deslizable.dart';
 
+import '../../../senderos/presentation/widgets/marquee_text.dart' as ancho;
+
+import '../../../../core/widgets/visor_imagen.dart';
+
 class DetalleReporteScreen extends GetView<DetalleReporteController> {
   const DetalleReporteScreen({super.key});
 
@@ -21,30 +25,7 @@ class DetalleReporteScreen extends GetView<DetalleReporteController> {
     Get.back();
   }
 
-  void _abrirImagenCompleta(BuildContext context, String url) {
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        opaque: false,
-        barrierColor: Colors.black87,
-        pageBuilder: (context, animation, __) => FadeTransition(
-          opacity: animation,
-          child: GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
-            child: Scaffold(
-              backgroundColor: Colors.transparent,
-              body: Center(
-                child: InteractiveViewer(
-                  minScale: 0.8,
-                  maxScale: 4,
-                  child: Image.network(url, fit: BoxFit.contain),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  void _abrirImagenCompleta(BuildContext context, String url) => abrirVisorImagen(context, url);
 
   @override
   Widget build(BuildContext context) {
@@ -195,8 +176,15 @@ class DetalleReporteScreen extends GetView<DetalleReporteController> {
                                 SizedBox(height: 8.h),
                                 _MetricItem(
                                   icon: Icons.calendar_today_outlined,
-                                  text: '${reporte.fechaCreacion.day}/${reporte.fechaCreacion.month}/${reporte.fechaCreacion.year}',
+                                  text: reporte.fechaTexto,
                                   iconColor: Colors.redAccent,
+                                ),
+                                SizedBox(height: 8.h),
+                                _MetricItem(
+                                  icon: Icons.person_outline,
+                                  text: 'Reportado por: ${reporte.usuarioNombre.isNotEmpty ? reporte.usuarioNombre : 'Senderista'}',
+                                  iconColor: const Color(0xFF8B5CF6),
+                                  desplazable: true,
                                 ),
                                 SizedBox(height: 8.h),
                                 _MetricItem(
@@ -301,26 +289,27 @@ class _MetricItem extends StatelessWidget {
   final IconData icon;
   final String text;
   final Color iconColor;
+  final bool desplazable; // true: una sola línea que se desplaza si no cabe
+
   const _MetricItem({
     required this.icon,
     required this.text,
     required this.iconColor,
+    this.desplazable = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 18.r, color: iconColor),
-        SizedBox(width: 8.w),
-        Expanded(
-          child: MarqueeText(
-            text: text,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.sp),
-            height: 18.h,
-          ),
+    final TextStyle estilo = TextStyle(fontWeight: FontWeight.bold, fontSize: 13.sp);
+    return Row(children: [
+      Icon(icon, size: 18.r, color: iconColor),
+      SizedBox(width: 8.w),
+      if (desplazable)
+        Expanded(child: ancho.MarqueeText(text, style: estilo))
+      else
+        Flexible(
+          child: Text(text, maxLines: 2, overflow: TextOverflow.ellipsis, style: estilo),
         ),
-      ],
-    );
+    ]);
   }
 }

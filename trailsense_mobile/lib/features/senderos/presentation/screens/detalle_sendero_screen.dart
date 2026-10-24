@@ -180,6 +180,20 @@ class DetalleSenderoScreen extends GetView<DetalleSenderoController> {
                                 text: '${sendero.longitudKm} km de recorrido',
                                 iconColor: Colors.redAccent,
                               ),
+                              SizedBox(height: 8.h),
+                              _MetricItem(
+                                icon: Icons.location_city,
+                                text: 'Cantón: ${sendero.canton.isNotEmpty ? sendero.canton : 'No registrado'}',
+                                iconColor: const Color(0xFF3B82F6),
+                              ),
+                              if (sendero.direccion.isNotEmpty) ...[
+                                SizedBox(height: 8.h),
+                                _MetricItem(
+                                  icon: Icons.map_outlined,
+                                  text: 'Calles: ${sendero.direccion}',
+                                  iconColor: Colors.teal,
+                                ),
+                              ],
                               if (sendero.horarioApertura != null) ...[
                                 SizedBox(height: 8.h),
                                 _MetricItem(

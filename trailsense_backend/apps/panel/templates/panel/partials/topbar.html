@@ -3,10 +3,19 @@
 <header class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold text-dark mb-0 fs-3">{{ page_title }}</h2>
     <div class="d-flex align-items-center gap-3">
+        {% if request.user.rol == 'superusuario' %}
+            {% firstof "Busca administradores por nombre, apellido, correo o cédula (mínimo 2 letras)" as ayuda_buscador %}
+        {% elif request.user.is_staff %}
+            {% firstof "Busca senderos (nombre, cantón o dirección), incidencias (n.º, descripción, sendero o autor) y senderistas (nombre, correo o cédula) · mínimo 2 letras" as ayuda_buscador %}
+        {% else %}
+            {% firstof "Busca senderistas por nombre, apellido, correo o cédula (mínimo 2 letras)" as ayuda_buscador %}
+        {% endif %}
         <div class="search-input-group position-relative">
             <i class="bi bi-search position-absolute start-0 top-50 translate-middle-y ms-3 text-muted"></i>
             <input type="text" id="buscadorGlobal" data-url="{% url 'panel:buscar' %}" autocomplete="off"
-                class="form-control rounded-pill bg-search border-0 ps-5 pe-3" placeholder="{% if request.user.rol == 'superusuario' %}Buscar administradores{% else %}Buscar en el panel{% endif %}">
+                class="form-control rounded-pill bg-search border-0 ps-5 pe-3"
+                aria-label="{{ ayuda_buscador }}" title="{{ ayuda_buscador }}">
+            <span class="buscador-ayuda" aria-hidden="true"><span class="buscador-ayuda-texto">{{ ayuda_buscador }}</span></span>
         </div>
         <button class="btn btn-icon rounded-circle bg-white border-0 shadow-sm"><i
                 class="bi bi-gear text-muted"></i></button>

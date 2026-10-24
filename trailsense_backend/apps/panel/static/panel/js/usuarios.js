@@ -35,6 +35,19 @@ document.addEventListener('DOMContentLoaded', function () {
         ],
     });
 
+    let idDesdeBuscador = parseInt(new URLSearchParams(window.location.search).get('id'), 10) || null;
+
+    // Llegada desde el buscador superior (?id=): filtra, resalta la fila y abre la edición
+    function resaltarAdmin(id, lista) {
+        const a = lista.find(x => Number(x.id) === id);
+        if (!a) return;
+        tabla.search(a.email).draw();
+        const fila = tabla.rows((i, d) => Number(d.id) === id).nodes()[0];
+        if (fila) fila.classList.add('fila-resaltada');
+        abrirDetalle(id);
+        history.replaceState(null, '', window.location.pathname);
+    }
+
     function cargarListado() {
         fetch('/api/auth/panel/admins/listado/', { credentials: 'same-origin' })
             .then(r => r.json())
@@ -46,6 +59,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 tabla.clear();
                 tabla.rows.add(data);
                 tabla.draw();
+                if (idDesdeBuscador) { resaltarAdmin(idDesdeBuscador, data); idDesdeBuscador = null; }
             });
     }
 

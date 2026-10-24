@@ -43,6 +43,19 @@ class SenderosScreen extends GetView<SenderosController> {
                     );
                   }).toList(),
                 ),
+                if (controller.ubicacionActual.value != null && controller.precisionM.value > 0)
+                  CircleLayer(
+                    circles: [
+                      CircleMarker(
+                        point: controller.ubicacionActual.value!,
+                        radius: controller.precisionM.value,
+                        useRadiusInMeter: true,
+                        color: const Color(0xFF3B82F6).withOpacity(0.15),
+                        borderColor: const Color(0xFF3B82F6).withOpacity(0.5),
+                        borderStrokeWidth: 1,
+                      ),
+                    ],
+                  ),
                 // Marcadores tipo pin
                 MarkerLayer(
                   markers: [
@@ -100,7 +113,13 @@ class SenderosScreen extends GetView<SenderosController> {
               heroTag: 'gps_senderos',
               backgroundColor: Colors.white,
               onPressed: controller.centrarEnMiUbicacion,
-              child: const Icon(Icons.my_location, color: Colors.black87),
+              child: Obx(() => controller.buscandoUbicacion.value
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.my_location, color: Colors.black87)),
             ),
             decoration: const BoxDecoration(
               color: Colors.white,

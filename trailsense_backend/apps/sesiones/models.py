@@ -7,6 +7,7 @@ class SesionCaminata(models.Model):
         ('en_curso', 'En curso'),
         ('pausada', 'Pausada'),
         ('finalizada', 'Finalizada'),
+        ('interrumpida', 'Interrumpida'),  # Cierre del sistema sin datos útiles; fuera de métricas
     )
 
     usuario = models.ForeignKey(
@@ -42,6 +43,10 @@ class SesionCaminata(models.Model):
     # Sensado oportunista adicional (Tabla 2 tesis, categoría Movimiento)
     pasos = models.PositiveIntegerField(default=0)
 
+    # True = la cerró el sistema (app cerrada o sin conexión), no el senderista.
+    # Sus métricas se reconstruyeron con los puntos GPS que llegaron.
+    cierre_automatico = models.BooleanField(default=False)
+
     class Meta:
         ordering = ['-iniciado_en']
 
@@ -60,6 +65,9 @@ class PuntoGPS(models.Model):
     precision_m = models.FloatField(null=True, blank=True)
     altitud_m = models.FloatField(null=True, blank=True)
     velocidad_mps = models.FloatField(null=True, blank=True)
+
+    # Primer punto después de reanudar una pausa. La distancia no une este punto con el anterior.
+    inicia_tramo = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['capturado_en']

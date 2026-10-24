@@ -18,6 +18,7 @@ class PuntoGPSInputSerializer(serializers.Serializer):
     precision_m = serializers.FloatField(required=False, allow_null=True)
     altitud_m = serializers.FloatField(required=False, allow_null=True)
     velocidad_mps = serializers.FloatField(required=False, allow_null=True)
+    inicia_tramo = serializers.BooleanField(required=False, default=False)
 
 
 class SesionListSerializer(serializers.ModelSerializer):
@@ -32,6 +33,7 @@ class SesionListSerializer(serializers.ModelSerializer):
             'iniciado_en', 'finalizado_en',
             'distancia_km', 'duracion_segundos', 'velocidad_promedio_kmh', 'pasos',
             'punto_inicio',
+            'cierre_automatico',
         ]
         read_only_fields = fields
 

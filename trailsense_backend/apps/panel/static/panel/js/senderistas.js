@@ -28,15 +28,30 @@ document.addEventListener('DOMContentLoaded', function () {
                 tbody.appendChild(tr);
             });
 
-            $('#tablaSenderistas').DataTable({
+            const tabla = $('#tablaSenderistas').DataTable({
                 language: { search: "Buscar:", lengthMenu: "Mostrar _MENU_ registros", info: "Mostrando _START_ a _END_", paginate: { previous: "Anterior", next: "Siguiente" }, zeroRecords: "Sin resultados" },
             });
+            resaltarDesdeUrl(tabla, data.senderistas);
         });
 
     document.getElementById('cuerpoTablaSenderistas').addEventListener('click', function (e) {
         const btn = e.target.closest('.btn-ver-senderista');
         if (btn) abrirDetalle(btn.dataset.id);
     });
+
+    // Llegada desde el buscador superior (?id=): filtra la tabla, resalta la fila y abre el detalle
+    function resaltarDesdeUrl(tabla, lista) {
+        const id = parseInt(new URLSearchParams(window.location.search).get('id'), 10);
+        if (!id) return;
+        const s = lista.find(x => Number(x.id) === id);
+        if (!s) return;
+
+        tabla.search(s.email).draw();   // el correo es único: deja solo a ese senderista
+        const btn = document.querySelector(`#cuerpoTablaSenderistas .btn-ver-senderista[data-id="${id}"]`);
+        if (btn) btn.closest('tr').classList.add('fila-resaltada');
+        abrirDetalle(id);
+        history.replaceState(null, '', window.location.pathname);   // al recargar no se vuelve a abrir
+    }
 
     function abrirDetalle(id) {
         sidebar.classList.add('abierto');

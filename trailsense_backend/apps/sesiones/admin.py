@@ -6,8 +6,8 @@ from .models import SesionCaminata, PuntoGPS
 
 @admin.register(SesionCaminata)
 class SesionCaminataAdmin(GISModelAdmin):
-    list_display = ('id', 'usuario', 'numero_usuario', 'estado', 'distancia_km', 'duracion_segundos', 'pasos', 'iniciado_en')
-    list_filter = ('estado',)
+    list_display = ('id', 'usuario', 'numero_usuario', 'estado', 'distancia_km', 'duracion_segundos', 'pasos', 'iniciado_en', 'cierre_automatico')
+    list_filter = ('estado', 'cierre_automatico')
     search_fields = ('usuario__email',)
     gis_widget = CartoOSMWidget 
     # default_lon = -79.2005
