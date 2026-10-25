@@ -15,11 +15,19 @@ class SesionModel {
   final LatLng? puntoInicio;
   final List<LatLng> traza;
 
+  static const List<String> _diasSemana = <String>[
+    'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo',
+  ];
+
+  /// Día de la semana en que inició el recorrido (hora local del teléfono).
+  String get diaSemana => _diasSemana[iniciadoEn.toLocal().weekday - 1];
+
+  /// "Sendero Catamayo - Recorrido Jueves" o "Recorrido Libre Lunes".
   String get nombreMostrable {
-    final sufijo = numeroUsuario != null ? '$numeroUsuario' : '(sin finalizar)';
-    return senderoNombre != null
-        ? '$senderoNombre - Recorrido $sufijo'
-        : 'Recorrido Libre $sufijo';
+    final String base = senderoNombre != null
+        ? '$senderoNombre - Recorrido $diaSemana'
+        : 'Recorrido Libre $diaSemana';
+    return estado == 'finalizada' ? base : '$base (sin finalizar)';
   }
 
   SesionModel({

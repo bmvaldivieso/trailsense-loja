@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:pedometer/pedometer.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:permission_handler/permission_handler.dart' hide ServiceStatus;
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../data/models/punto_gps_model.dart';
@@ -31,6 +31,50 @@ class NuevoRecorridoController extends GetxController {
   final RxInt duracionSegundos = 0.obs;
   final RxDouble velocidadPromedioKmh = 0.0.obs;
   final RxInt pasos = 0.obs;
+
+
+
+  // ---- Requisitos para iniciar (se verifican en cada entrada a la pantalla) ----
+  final RxBool gpsActivo = false.obs;
+  final RxBool permisoUbicacion = false.obs;
+  final RxBool ubicacionPrecisa = false.obs;
+  final RxBool permisoActividad = false.obs;
+  final RxBool ubicacionBloqueada = false.obs;   // negado permanentemente: solo desde Ajustes
+  final RxBool actividadBloqueada = false.obs;
+  final RxBool verificando = false.obs;
+
+  bool get requisitosListos =>
+      gpsActivo.value && permisoUbicacion.value && ubicacionPrecisa.value && permisoActividad.value;
+
+  StreamSubscription<ServiceStatus>? _servicioGpsSub;
+  AppLifecycleListener? _cicloVida;
+  Future<void>? _verificacionEnCurso;
+
+
+
+
+
+
+  final RxBool comprobando = false.obs;   // comprobación manual (indicador visible)
+  final RxBool resolviendo = false.obs;   // hay una solicitud de permiso en curso
+
+  // Android dejó de mostrar el diálogo: se recuerda mientras la pantalla está abierta
+  bool _ubicacionSinDialogo = false;
+  bool _actividadSinDialogo = false;
+
+  /// Una respuesta "denegado" más rápida que esto significa que el sistema no mostró ventana.
+  static const int _umbralSinDialogoMs = 500;
+
+  List<String> get requisitosFaltantes => <String>[
+        if (!gpsActivo.value) 'GPS del teléfono',
+        if (!permisoUbicacion.value) 'Permiso de ubicación',
+        if (permisoUbicacion.value && !ubicacionPrecisa.value) 'Ubicación precisa',
+        if (!permisoActividad.value) 'Actividad física',
+      ];
+
+
+
+
 
   StreamSubscription<Position>? _posicionSub;
   StreamSubscription<StepCount>? _pasosSub;
@@ -77,7 +121,28 @@ class NuevoRecorridoController extends GetxController {
   static const Duration intervaloProximidad = Duration(seconds: 60);
 
   @override
+  void onReady() {
+    super.onReady();
+    verificarRequisitos(solicitar: true);   // al entrar: pide lo que falte
+
+    // GPS encendido/apagado desde la barra de notificaciones: se refleja al instante
+    _servicioGpsSub = Geolocator.getServiceStatusStream().listen((ServiceStatus s) {
+      gpsActivo.value = s == ServiceStatus.enabled;
+      if (!gpsActivo.value && estado.value == 'grabando') {
+        Get.snackbar('GPS desactivado', 'Vuelve a activar el GPS: el recorrido no está registrando tu ubicación.',
+            duration: const Duration(seconds: 6));
+      }
+      if (gpsActivo.value) verificarRequisitos();
+    }, onError: (Object _) {});
+
+    // Al volver de Ajustes se vuelve a comprobar sin que el usuario toque nada
+    _cicloVida = AppLifecycleListener(onResume: () => verificarRequisitos());
+  }
+
+  @override
   void onClose() {
+    _servicioGpsSub?.cancel();
+    _cicloVida?.dispose();
     _detenerStreams();
     WakelockPlus.disable();
     super.onClose();
@@ -90,22 +155,18 @@ class NuevoRecorridoController extends GetxController {
     if (_iniciando || estado.value == 'grabando' || estado.value == 'pausada') return;
     _iniciando = true;
     try {
-      if (!await _asegurarPermisoUbicacion()) {
-        Get.snackbar('Permiso requerido', 'Activa el permiso de ubicación para iniciar el recorrido.');
+      // Última comprobación justo antes de iniciar (el usuario pudo apagar el GPS hace un segundo)
+      await verificarRequisitos();
+      if (!requisitosListos) {
+        Get.snackbar('Faltan requisitos', 'Completa lo indicado en pantalla para iniciar el recorrido.');
         return;
       }
 
       _reiniciarEstadoLocal();
-      _iniciarCapturaGps();// el GPS converge mientras se prepara la sesión
+      _iniciarCapturaGps();       // precalentamiento del GPS
+      _iniciarEstimadorPasos();   // pasos visibles desde el primer segundo
+      _iniciarContadorPasos();    // contador exacto (el permiso ya está garantizado)
 
-      _iniciarEstimadorPasos();// muestra pasos desde el primer segundo
-      if (await _asegurarPermisoPasos()) {
-        _iniciarContadorPasos();
-      } else {
-        Get.snackbar('Permiso de actividad física', 'Los pasos se estimarán con el acelerómetro y pueden ser menos exactos.');
-      }
-
-      // En paralelo: cerrar recorridos huérfanos y obtener la posición para detectar el sendero
       final Position? posicionInicial = await _posicionInicialRapida();
 
       final SesionModel nuevaSesion = await _repository.iniciarSesion(
@@ -153,17 +214,161 @@ class NuevoRecorridoController extends GetxController {
     _nuevoTramo = false;
   }
 
-  Future<bool> _asegurarPermisoPasos() async {
-    PermissionStatus permiso = await Permission.activityRecognition.status;
-    if (!permiso.isGranted) permiso = await Permission.activityRecognition.request();
-    return permiso.isGranted;
+  /// Comprueba los 4 requisitos. Con [solicitar], muestra los diálogos del sistema que aún se puedan mostrar.
+  Future<void> verificarRequisitos({bool solicitar = false}) {
+    return _verificacionEnCurso ??= _verificar(solicitar).whenComplete(() => _verificacionEnCurso = null);
   }
 
-  Future<bool> _asegurarPermisoUbicacion() async {
-    if (!await Geolocator.isLocationServiceEnabled()) return false;
-    LocationPermission permiso = await Geolocator.checkPermission();
-    if (permiso == LocationPermission.denied) permiso = await Geolocator.requestPermission();
-    return permiso == LocationPermission.always || permiso == LocationPermission.whileInUse;
+  Future<void> _verificar(bool solicitar) async {
+    verificando.value = true;
+    try {
+      gpsActivo.value = await Geolocator.isLocationServiceEnabled();
+
+      PermissionStatus ubicacion = await Permission.locationWhenInUse.status;
+      if (solicitar && ubicacion.isDenied && !_ubicacionSinDialogo) {
+        final ({PermissionStatus estado, bool sinDialogo}) r = await _solicitar(Permission.locationWhenInUse);
+        ubicacion = r.estado;
+        if (r.sinDialogo) _ubicacionSinDialogo = true;
+      }
+      permisoUbicacion.value = ubicacion.isGranted || ubicacion.isLimited;
+      if (permisoUbicacion.value) _ubicacionSinDialogo = false;
+      ubicacionBloqueada.value = !permisoUbicacion.value &&
+          (ubicacion.isPermanentlyDenied || ubicacion.isRestricted || _ubicacionSinDialogo);
+
+      ubicacionPrecisa.value = permisoUbicacion.value &&
+          await Geolocator.getLocationAccuracy() == LocationAccuracyStatus.precise;
+
+      PermissionStatus actividad = await Permission.activityRecognition.status;
+      if (solicitar && actividad.isDenied && !_actividadSinDialogo) {
+        final ({PermissionStatus estado, bool sinDialogo}) r = await _solicitar(Permission.activityRecognition);
+        actividad = r.estado;
+        if (r.sinDialogo) _actividadSinDialogo = true;
+      }
+      permisoActividad.value = actividad.isGranted;
+      if (permisoActividad.value) _actividadSinDialogo = false;
+      actividadBloqueada.value =
+          !permisoActividad.value && (actividad.isPermanentlyDenied || actividad.isRestricted || _actividadSinDialogo);
+    } catch (e) {
+      debugPrint('Error verificando requisitos: $e');
+    } finally {
+      verificando.value = false;
+    }
+  }
+
+  /// Pide un permiso y detecta si Android lo negó sin mostrar ninguna ventana.
+  Future<({PermissionStatus estado, bool sinDialogo})> _solicitar(Permission permiso) async {
+    final Stopwatch reloj = Stopwatch()..start();
+    final PermissionStatus estado = await permiso.request();
+    final bool sinDialogo = !estado.isGranted && !estado.isLimited && reloj.elapsedMilliseconds < _umbralSinDialogoMs;
+    return (estado: estado, sinDialogo: sinDialogo);
+  }
+
+  /// Botón "Volver a comprobar": duración mínima visible y resultado explícito.
+  Future<void> comprobarManualmente() async {
+    if (comprobando.value) return;
+    comprobando.value = true;
+    try {
+      await Future.wait<void>(<Future<void>>[
+        verificarRequisitos(),
+        Future<void>.delayed(const Duration(milliseconds: 800)),
+      ]);
+    } finally {
+      comprobando.value = false;
+    }
+    final List<String> faltan = requisitosFaltantes;
+    Get.snackbar(
+      faltan.isEmpty ? 'Todo listo' : 'Aún falta',
+      faltan.isEmpty ? 'Ya puedes iniciar el recorrido.' : faltan.join(' · '),
+      snackPosition: SnackPosition.BOTTOM,
+      duration: const Duration(seconds: 3),
+      margin: const EdgeInsets.all(12),
+    );
+  }
+
+  Future<void> resolverGps() async {
+    try {
+      await Geolocator.openLocationSettings();   // al volver, onResume verifica de nuevo
+    } catch (e) {
+      Get.snackbar('GPS', 'Activa la ubicación desde la barra de notificaciones del teléfono.');
+    }
+  }
+
+  Future<void> resolverUbicacion() => _resolverPermiso(
+        permiso: Permission.locationWhenInUse,
+        bloqueado: ubicacionBloqueada.value,
+        marcarSinDialogo: () => _ubicacionSinDialogo = true,
+        ruta: 'Ajustes > Aplicaciones > TrailSense > Permisos > Ubicación > '
+            '"Permitir solo mientras se usa la app" y activa "Usar ubicación precisa".',
+      );
+
+  Future<void> resolverActividad() => _resolverPermiso(
+        permiso: Permission.activityRecognition,
+        bloqueado: actividadBloqueada.value,
+        marcarSinDialogo: () => _actividadSinDialogo = true,
+        ruta: 'Ajustes > Aplicaciones > TrailSense > Permisos > Actividad física > "Permitir".',
+      );
+
+  Future<void> resolverPrecision() async {
+    if (resolviendo.value) return;
+    resolviendo.value = true;
+    try {
+      // Android 12+: volver a pedir muestra el diálogo "cambiar a ubicación precisa"
+      await _solicitar(Permission.locationWhenInUse);
+      await verificarRequisitos();
+      if (!ubicacionPrecisa.value) {
+        await _explicarYAbrirAjustes(
+          'TrailSense necesita la ubicación precisa para que el recorrido no se desvíe.\n\n'
+          'Ve a Ajustes > Aplicaciones > TrailSense > Permisos > Ubicación y activa "Usar ubicación precisa".',
+        );
+      }
+    } catch (e) {
+      debugPrint('Error pidiendo ubicación precisa: $e');
+      await _explicarYAbrirAjustes('Activa "Usar ubicación precisa" en los permisos de ubicación de TrailSense.');
+    } finally {
+      resolviendo.value = false;
+      await verificarRequisitos();
+    }
+  }
+
+  Future<void> _resolverPermiso({
+    required Permission permiso,
+    required bool bloqueado,
+    required void Function() marcarSinDialogo,
+    required String ruta,
+  }) async {
+    if (resolviendo.value) return;
+    resolviendo.value = true;
+    try {
+      if (bloqueado) {
+        await _explicarYAbrirAjustes('Android ya no muestra la ventana de este permiso porque se negó antes.\n\n$ruta');
+        return;
+      }
+      final ({PermissionStatus estado, bool sinDialogo}) r = await _solicitar(permiso);
+      if (r.sinDialogo || r.estado.isPermanentlyDenied || r.estado.isRestricted) {
+        marcarSinDialogo();
+        await _explicarYAbrirAjustes('Android no mostró la ventana de permisos porque se negó antes.\n\n$ruta');
+      }
+    } catch (e) {
+      debugPrint('Error solicitando permiso: $e');
+      await _explicarYAbrirAjustes('No se pudo mostrar la ventana de permisos.\n\n$ruta');
+    } finally {
+      resolviendo.value = false;
+      await verificarRequisitos();
+    }
+  }
+
+  Future<void> _explicarYAbrirAjustes(String mensaje) async {
+    final bool? abrir = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('Activa el permiso en Ajustes'),
+        content: Text(mensaje),
+        actions: [
+          TextButton(onPressed: () => Get.back(result: false), child: const Text('Ahora no')),
+          TextButton(onPressed: () => Get.back(result: true), child: const Text('Abrir ajustes')),
+        ],
+      ),
+    );
+    if (abrir ?? false) await openAppSettings();   // al volver, onResume verifica de nuevo
   }
 
   /// Posición para detectar el sendero sin esperar a una lectura precisa (antes: getCurrentPosition).

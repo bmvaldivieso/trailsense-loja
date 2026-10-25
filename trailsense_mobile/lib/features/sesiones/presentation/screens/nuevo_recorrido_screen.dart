@@ -27,53 +27,55 @@ class NuevoRecorridoScreen extends GetView<NuevoRecorridoController> {
         ),
       ),
       body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 24.w),
-          child: Column(
-            children: [
-              ClipOval(
-                child: Image.asset(
-                  'assets/images/logo_trailsense.png',
-                  width: 50.w,
-                  height: 50.h,
-                  fit: BoxFit.cover,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.w),
+            child: Column(
+              children: [
+                ClipOval(
+                  child: Image.asset(
+                    'assets/images/logo_trailsense.png',
+                    width: 50.w,
+                    height: 50.h,
+                    fit: BoxFit.cover,
+                  ),
                 ),
-              ),
-              SizedBox(height: 16.h),
-              Text('Nuevo Recorrido', style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold, color: const Color(0xFF2D3142))),
-              SizedBox(height: 8.h),
-              Obx(() => _buildEstadoBadge(controller.estado.value)),
-              // Nombre del sendero detectado, si lo hay
-              Obx(() {
-                final nombre = controller.sesion.value?.senderoNombre;
-                if (nombre == null) return const SizedBox.shrink();
-                return Padding(
-                  padding: EdgeInsets.only(top: 6.h),
-                  child: Text('Recorriendo: $nombre', style: TextStyle(fontSize: 13.sp, color: Colors.grey[600])),
-                );
-              }),
-              SizedBox(height: 20.h),
-              Container(
-                width: 90.w,
-                height: 90.h,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Color(0xFFEBF3FE),
-                ),
-                child: ClipOval(
-                  child: Padding(
-                    padding: EdgeInsets.all(14.w),
-                    child: Image.asset(
-                      'assets/images/ruta.png',
-                      fit: BoxFit.contain,
+                SizedBox(height: 16.h),
+                Text('Nuevo Recorrido', style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold, color: const Color(0xFF2D3142))),
+                SizedBox(height: 8.h),
+                Obx(() => _buildEstadoBadge(controller.estado.value)),
+                // Nombre del sendero detectado, si lo hay
+                Obx(() {
+                  final nombre = controller.sesion.value?.senderoNombre;
+                  if (nombre == null) return const SizedBox.shrink();
+                  return Padding(
+                    padding: EdgeInsets.only(top: 6.h),
+                    child: Text('Recorriendo: $nombre', style: TextStyle(fontSize: 13.sp, color: Colors.grey[600])),
+                  );
+                }),
+                SizedBox(height: 20.h),
+                Container(
+                  width: 90.w,
+                  height: 90.h,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0xFFEBF3FE),
+                  ),
+                  child: ClipOval(
+                    child: Padding(
+                      padding: EdgeInsets.all(14.w),
+                      child: Image.asset(
+                        'assets/images/ruta.png',
+                        fit: BoxFit.contain,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              SizedBox(height: 20.h),
-              Expanded(
-                child: Obx(
+                SizedBox(height: 20.h),
+                Obx(
                   () => ListView(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
                     children: [
                       _buildStatRow('Distancia', '${controller.distanciaKm.value.toStringAsFixed(2)} km'),
                       _buildStatRow('Duración', controller.duracionFormateada),
@@ -82,10 +84,10 @@ class NuevoRecorridoScreen extends GetView<NuevoRecorridoController> {
                     ],
                   ),
                 ),
-              ),
-              Obx(() => _buildControles()),
-              SizedBox(height: 140.h),
-            ],
+                Obx(() => _buildControles()),
+                SizedBox(height: 140.h),
+              ],
+            ),
           ),
         ),
       ),
@@ -119,7 +121,9 @@ class NuevoRecorridoScreen extends GetView<NuevoRecorridoController> {
   Widget _buildControles() {
     switch (controller.estado.value) {
       case 'inicial':
-        return _BotonObturador(detener: false, onTap: controller.iniciarRecorrido);
+        return controller.requisitosListos
+            ? _BotonObturador(detener: false, onTap: controller.iniciarRecorrido)
+            : const _PanelRequisitos();
 
       case 'grabando':
         return Row(
@@ -259,6 +263,149 @@ class _BotonSecundario extends StatelessWidget {
             child: Icon(icono, key: ValueKey(icono), color: const Color(0xFF2D3142), size: 26.sp),
           ),
         ),
+      ),
+    );
+  }
+}
+
+
+/// Lista de requisitos obligatorios. Ocupa el lugar del botón de inicio mientras falte alguno.
+class _PanelRequisitos extends GetView<NuevoRecorridoController> {
+  const _PanelRequisitos();
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() => Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(16.r),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFF7ED),
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(color: const Color(0xFFFDBA74)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(children: [
+                Icon(Icons.warning_amber_rounded, color: const Color(0xFFF97316), size: 22.r),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: Text('Antes de iniciar el recorrido',
+                      style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold, color: const Color(0xFF2D3142))),
+                ),
+              ]),
+              SizedBox(height: 4.h),
+              Text(
+                'Estos requisitos son obligatorios. El botón de inicio aparecerá cuando todo esté listo.',
+                style: TextStyle(fontSize: 12.sp, color: Colors.black54),
+              ),
+              SizedBox(height: 12.h),
+              _FilaRequisito(
+                ok: controller.gpsActivo.value,
+                titulo: 'GPS del teléfono',
+                detalle: 'Activa el GPS: es obligatorio para grabar un recorrido.',
+                accion: 'Activar GPS',
+                onTap: controller.resolverGps,
+                habilitado: !controller.resolviendo.value,
+              ),
+              _FilaRequisito(
+                ok: controller.permisoUbicacion.value,
+                titulo: 'Permiso de ubicación',
+                detalle: controller.ubicacionBloqueada.value
+                    ? 'Fue negado antes. Actívalo en Ajustes > Permisos > Ubicación.'
+                    : 'Permite que TrailSense use tu ubicación mientras usas la app.',
+                accion: controller.ubicacionBloqueada.value ? 'Abrir ajustes' : 'Permitir',
+                onTap: controller.resolverUbicacion,
+                habilitado: !controller.resolviendo.value,
+              ),
+              if (controller.permisoUbicacion.value)
+                _FilaRequisito(
+                  ok: controller.ubicacionPrecisa.value,
+                  titulo: 'Ubicación precisa',
+                  detalle: 'Elige "Ubicación precisa": la aproximada desvía el recorrido cientos de metros.',
+                  accion: 'Activar',
+                  onTap: controller.resolverPrecision,
+                  habilitado: !controller.resolviendo.value,
+                ),
+              _FilaRequisito(
+                ok: controller.permisoActividad.value,
+                titulo: 'Actividad física',
+                detalle: controller.actividadBloqueada.value
+                    ? 'Fue negado antes. Actívalo en Ajustes > Permisos > Actividad física.'
+                    : 'Necesario para contar tus pasos durante el recorrido.',
+                accion: controller.actividadBloqueada.value ? 'Abrir ajustes' : 'Permitir',
+                onTap: controller.resolverActividad,
+                habilitado: !controller.resolviendo.value,
+              ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: controller.comprobando.value || controller.resolviendo.value
+                      ? null
+                      : controller.comprobarManualmente,
+                  icon: controller.comprobando.value
+                      ? SizedBox(width: 16.r, height: 16.r, child: const CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.refresh_rounded),
+                  label: Text(controller.comprobando.value ? 'Comprobando…' : 'Volver a comprobar'),
+                ),
+              ),
+            ],
+          ),
+        ));
+  }
+}
+
+class _FilaRequisito extends StatelessWidget {
+  final bool ok;
+  final String titulo;
+  final String detalle;
+  final String accion;
+  final Future<void> Function() onTap;
+  final bool habilitado;
+
+  const _FilaRequisito({
+    required this.ok,
+    required this.titulo,
+    required this.detalle,
+    required this.accion,
+    required this.onTap,
+    this.habilitado = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 10.h),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            ok ? Icons.check_circle_rounded : Icons.cancel_rounded,
+            color: ok ? const Color(0xFF138A72) : const Color(0xFFDC2626),
+            size: 22.r,
+          ),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(titulo, style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w700, color: const Color(0xFF2D3142))),
+                if (!ok)
+                  Text(detalle, style: TextStyle(fontSize: 12.sp, color: Colors.black54)),
+              ],
+            ),
+          ),
+          if (!ok)
+            TextButton(
+              onPressed: habilitado ? onTap : null,
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF3B82F6),
+                visualDensity: VisualDensity.compact,
+              ),
+              child: Text(accion, style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold)),
+            ),
+        ],
       ),
     );
   }
