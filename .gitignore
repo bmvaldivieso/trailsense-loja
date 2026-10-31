@@ -1,14 +1,51 @@
-# Sistema operativo
+
+# ==============================
+# SISTEMA OPERATIVO
+# ==============================
 Thumbs.db
 desktop.ini
 .DS_Store
 
-# Editores / IDEs
+# ==============================
+# EDITORES / IDEs
+# ==============================
 .vscode/
 .idea/
 *.iml
 
-# Archivos de entorno sensibles
+# ==============================
+# ARCHIVOS DE ENTORNO SENSIBLES
+# ==============================
 .env
-*.env.localestructura.txt
+.env.*
+!.env.example
+
+# ==============================
+# CERTIFICADOS SSL/TLS Y CLAVES PRIVADAS
+# ==============================
+certs/
+*.pem
+*.key
+*.p12
+*.pfx
+
+# ==============================
+# RESPALDOS Y EXPORTACIONES DE BASE DE DATOS
+# ==============================
+*.dump
+*.sql.gz
+
+# ==============================
+# ARCHIVOS Y DIRECTORIOS GENERADOS
+# ==============================
+build/
+.dart_tool/
+venv/
+env/
+*.venv
+
+# ==============================
+# ARCHIVOS TEMPORALES Y ESTRUCTURA
+# ==============================
+*.swp
 estructura.txt
