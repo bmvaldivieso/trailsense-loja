@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
-from decouple import config
+from decouple import config, Csv
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -22,13 +22,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-#SECRET_KEY = 'django-insecure-3hvu1jb3^_s23x2&btvo8f)5@kjto!q5c&6xcc7o(mjakgok@u'
+
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*', cast=Csv())
 
 
 # Application definition
@@ -130,7 +130,7 @@ SIMPLE_JWT = {
 }
 
 CORS_ALLOWED_ORIGINS = []
-CORS_ALLOW_ALL_ORIGINS = True  # en dev; en prod restringir
+CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL_ORIGINS', default=True, cast=bool)  # prod.py lo desactiva
 
 
 # Password validation
@@ -168,6 +168,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# Carpeta donde collectstatic junta el CSS/JS (en el servidor la sirve Nginx)
+STATIC_ROOT = config('STATIC_ROOT', default=str(BASE_DIR / 'staticfiles'))
 
 # Archivos multimedia
 MEDIA_URL = '/media/'
@@ -236,23 +239,18 @@ DEFAULT_FROM_EMAIL = config(
 
 
 # ============================================================
-# GDAL / GEOS / PROJ - OSGeo4W
+# GDAL / GEOS / PROJ - OSGeo4W (solo en Windows; en Linux se instalan con apt)
 # ============================================================
+if os.name == 'nt':
+    OSGEO4W_ROOT = r"C:\Users\valdi\AppData\Local\Programs\OSGeo4W"
+    OSGEO4W_BIN = os.path.join(OSGEO4W_ROOT, "bin")
+    OSGEO4W_PROJ = os.path.join(OSGEO4W_ROOT, "share", "proj")
 
-OSGEO4W_ROOT = r"C:\Users\valdi\AppData\Local\Programs\OSGeo4W"
-OSGEO4W_BIN = os.path.join(OSGEO4W_ROOT, "bin")
-OSGEO4W_PROJ = os.path.join(OSGEO4W_ROOT, "share", "proj")
+    GDAL_LIBRARY_PATH = os.path.join(OSGEO4W_BIN, "gdal313.dll")
+    GEOS_LIBRARY_PATH = os.path.join(OSGEO4W_BIN, "geos_c.dll")
 
-GDAL_LIBRARY_PATH = os.path.join(OSGEO4W_BIN, "gdal313.dll")
-GEOS_LIBRARY_PATH = os.path.join(OSGEO4W_BIN, "geos_c.dll")
-
-os.environ["PATH"] = (
-    OSGEO4W_BIN
-    + os.pathsep
-    + os.environ["PATH"]
-)
-
-os.environ["PROJ_LIB"] = OSGEO4W_PROJ
+    os.environ["PATH"] = OSGEO4W_BIN + os.pathsep + os.environ["PATH"]
+    os.environ["PROJ_LIB"] = OSGEO4W_PROJ
 
 
 # ============================================================

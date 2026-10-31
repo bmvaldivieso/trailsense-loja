@@ -1,0 +1,3 @@
+# Scripts que corren en Linux: siempre con saltos de línea LF, aunque se editen en Windows
+deploy/** text eol=lf
+*.sh text eol=lf

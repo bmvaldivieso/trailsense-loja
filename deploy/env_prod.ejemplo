@@ -1,0 +1,42 @@
+# =============================================================================
+# .env de PRODUCCIÓN - TrailSense Loja
+# En el servidor, copia este archivo a ~/trailsense-loja/trailsense_backend/.env
+# y reemplaza cada valor <...>. NUNCA subas el .env real a GitHub.
+# =============================================================================
+
+# --- Django ---
+# Genera una clave NUEVA en el servidor con:
+#   python3 -c "import secrets; print(secrets.token_urlsafe(64))"
+SECRET_KEY=<clave_nueva_generada_en_el_servidor>
+ALLOWED_HOSTS=trailsense-loja.com,www.trailsense-loja.com
+CSRF_TRUSTED_ORIGINS=https://trailsense-loja.com,https://www.trailsense-loja.com
+
+# --- Base de datos (Amazon RDS) ---
+DB_NAME=trailsense
+DB_USER=trailsense_admin
+DB_PASSWORD=<contraseña_maestra_de_rds>
+DB_HOST=<punto_de_enlace_de_rds>.us-east-2.rds.amazonaws.com
+DB_PORT=5432
+
+# --- Archivos (Amazon S3) ---
+# Las claves quedan VACÍAS: el servidor accede a S3 con su rol de IAM.
+USE_S3=True
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_STORAGE_BUCKET_NAME=<nombre_del_bucket_de_produccion>
+AWS_S3_REGION_NAME=us-east-2
+
+# --- Archivos estáticos del panel (los sirve Nginx) ---
+STATIC_ROOT=/var/www/trailsense/static
+
+# --- Correo (los mismos valores que usas en local) ---
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=<tu_correo@gmail.com>
+EMAIL_HOST_PASSWORD=<contraseña_de_aplicacion_de_gmail>
+DEFAULT_FROM_EMAIL=TrailSense Loja <tu_correo@gmail.com>
+
+# --- Servicios de mapas ---
+CARTO_BASEMAPS_API_KEY=<tu_clave_de_carto>
+GEOCODER_USER_AGENT=TrailSenseLoja/1.0 (tesis UTPL; https://trailsense-loja.com)

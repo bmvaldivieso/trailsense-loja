@@ -28,3 +28,6 @@ media/*
 
 # Certificados SSL/TLS locales
 certs/
+
+# Archivos estáticos recopilados
+staticfiles/

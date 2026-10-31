@@ -1,0 +1,26 @@
+[Unit]
+Description=TrailSense Loja - Django con Gunicorn
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=ubuntu
+Group=www-data
+WorkingDirectory=/home/ubuntu/trailsense-loja/trailsense_backend
+Environment=DJANGO_SETTINGS_MODULE=config.settings.prod
+# 3 procesos: suficiente para ~20 usuarios simultáneos con 1 GB de RAM.
+# timeout 120 s: margen para generar PDFs y procesar archivos GPX.
+# max-requests: recicla cada proceso cada ~1000 peticiones para evitar acumular memoria.
+ExecStart=/home/ubuntu/venv/bin/gunicorn config.wsgi:application \
+    --bind 127.0.0.1:8000 \
+    --workers 3 \
+    --timeout 120 \
+    --max-requests 1000 \
+    --max-requests-jitter 100 \
+    --access-logfile - \
+    --error-logfile -
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

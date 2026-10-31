@@ -5,14 +5,12 @@ import 'package:flutter/services.dart' show rootBundle, ByteData;
 import '../storage/token_storage.dart';
 
 class ApiClient {
-  // Emulador Android
-  // static const String baseUrl = 'http://10.0.2.2:8000/api';
-
-  // Dispositivo físico HTTP
-  //static const String baseUrl = 'http://172.17.164.28:8000/api';
-
-  // Dispositivo físico con HTTPS
-  static const String baseUrl = 'https://192.168.100.42:8000/api';
+  /// URL del backend. Por defecto, el servidor local con HTTPS.
+  /// Para la nube: --dart-define=API_BASE_URL=https://trailsense-loja.com/api
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://192.168.100.42:8000/api',
+  );
 
   final Dio dio = Dio(
     BaseOptions(

@@ -1,0 +1,14 @@
+[Unit]
+Description=TrailSense Loja - actualizar la IP del servidor en Cloudflare
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/cloudflare-ddns.sh
+# Si la red aún no está lista al arrancar, reintenta.
+Restart=on-failure
+RestartSec=15
+
+[Install]
+WantedBy=multi-user.target

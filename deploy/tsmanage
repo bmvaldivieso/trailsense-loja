@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Ejecuta manage.py de TrailSense con los ajustes de producción y el entorno virtual.
+# Uso:   tsmanage migrate
+#        tsmanage collectstatic --noinput
+#        tsmanage check --deploy
+#        tsmanage revisar_recorridos
+set -euo pipefail
+cd /home/ubuntu/trailsense-loja/trailsense_backend
+export DJANGO_SETTINGS_MODULE=config.settings.prod
+exec /home/ubuntu/venv/bin/python manage.py "$@"
